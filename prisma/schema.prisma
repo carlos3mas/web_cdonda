@@ -1,0 +1,42 @@
+// Esquema de base de datos para Campus CD Onda
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Inscripcion {
+  id              String   @id @default(cuid())
+  nombreJugador   String
+  apellidos       String
+  fechaNacimiento DateTime
+  dni             String
+  nombreTutor     String
+  telefono1       String
+  telefono2       String?
+  email           String
+  tieneHermanos   Boolean  @default(false)
+  alergias        String?
+  observaciones   String?
+  pagada          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("inscripciones")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  nombre    String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+

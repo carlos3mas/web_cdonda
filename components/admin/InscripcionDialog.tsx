@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Inscripcion } from '@/types'
 import { formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { FileText, Download, ExternalLink } from 'lucide-react'
 
 interface InscripcionDialogProps {
   inscripcion: Inscripcion | null
@@ -25,10 +27,16 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Estado */}
-          <div>
+          {/* Estado y Tipo */}
+          <div className="flex items-center gap-3">
             <Badge variant={inscripcion.pagada ? "default" : "secondary"}>
               {inscripcion.pagada ? "Pagada" : "Pendiente"}
+            </Badge>
+            <Badge variant="outline">
+              {inscripcion.tipoInscripcion === 'campus-navidad' ? 'Campus de Navidad' :
+               inscripcion.tipoInscripcion === 'campus-verano' ? 'Campus de Verano' :
+               inscripcion.tipoInscripcion === 'anual' ? 'Inscripción Anual' :
+               inscripcion.tipoInscripcion}
             </Badge>
           </div>
 
@@ -86,6 +94,14 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
                 <p className="text-sm text-gray-500">¿Tiene hermanos en el campus?</p>
                 <p className="font-medium">{inscripcion.tieneHermanos ? 'Sí' : 'No'}</p>
               </div>
+              <div>
+                <p className="text-sm text-gray-500">Derechos de Imagen</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant={inscripcion.derechosImagen ? "default" : "secondary"}>
+                    {inscripcion.derechosImagen ? 'Autorizados' : 'No Autorizados'}
+                  </Badge>
+                </div>
+              </div>
               {inscripcion.alergias && (
                 <div>
                   <p className="text-sm text-gray-500">Alergias o Enfermedades</p>
@@ -100,6 +116,45 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
               )}
             </div>
           </div>
+
+          {/* Justificante de Pago */}
+          {inscripcion.justificantePago && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-red-600">Justificante de Pago</h3>
+              <div className="bg-gray-50 border rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-10 w-10 text-blue-600" />
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-800">
+                      {inscripcion.nombreArchivoJustificante || 'Justificante de pago'}
+                    </p>
+                    <p className="text-sm text-gray-500">Archivo adjuntado</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <a 
+                      href={`/api/justificantes/${inscripcion.justificantePago}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      <Button size="sm" variant="outline">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Ver
+                      </Button>
+                    </a>
+                    <a 
+                      href={`/api/justificantes/${inscripcion.justificantePago}`} 
+                      download={inscripcion.nombreArchivoJustificante || 'justificante.pdf'}
+                    >
+                      <Button size="sm" variant="outline">
+                        <Download className="h-4 w-4 mr-2" />
+                        Descargar
+                      </Button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Fechas */}
           <div className="pt-4 border-t">

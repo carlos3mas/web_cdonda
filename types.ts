@@ -2,6 +2,7 @@
 
 export interface Inscripcion {
   id: string;
+  tipoInscripcion: string;
   nombreJugador: string;
   apellidos: string;
   fechaNacimiento: Date;
@@ -14,11 +15,15 @@ export interface Inscripcion {
   alergias?: string | null;
   observaciones?: string | null;
   pagada: boolean;
+  justificantePago?: string | null;
+  nombreArchivoJustificante?: string | null;
+  derechosImagen: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface InscripcionFormData {
+  tipoInscripcion: string;
   nombreJugador: string;
   apellidos: string;
   fechaNacimiento: string;
@@ -30,6 +35,8 @@ export interface InscripcionFormData {
   tieneHermanos: string; // "si" | "no"
   alergias?: string;
   observaciones?: string;
+  justificantePago?: File;
+  derechosImagen: boolean;
 }
 
 export interface Admin {
@@ -50,5 +57,15 @@ export interface DashboardStats {
 export interface PDFData {
   inscripcion: Inscripcion;
   fechaEmision: Date;
+}
+
+export interface PlantillaPDF {
+  id: string;
+  tipoInscripcion: string;
+  nombreArchivo: string;
+  rutaArchivo: string;
+  activa: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 

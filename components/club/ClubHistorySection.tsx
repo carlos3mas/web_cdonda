@@ -6,24 +6,34 @@ import { Trophy, Users, Heart, Award } from 'lucide-react'
 
 const achievements = [
   {
-    year: '1944',
+    year: '1921',
     title: 'Fundación del Club',
-    description: 'Nace el Club Deportivo Onda con el sueño de fomentar el deporte en la ciudad.'
+    description: 'Nace el Club Deportivo Onda. Hasta 1950 el club pasó por diversas denominaciones y nunca sobrepasó las divisiones regionales.'
   },
   {
-    year: '1960-1980',
-    title: 'Consolidación',
-    description: 'El club se consolida como referente deportivo en la Comunidad Valenciana.'
+    year: '1955-56',
+    title: 'Primer Ascenso a Tercera División',
+    description: 'El club consigue su primer gran hito al ascender a Tercera División, permaneciendo en esta categoría durante 14 temporadas consecutivas hasta 1969/70.'
   },
   {
-    year: '1990-2010',
-    title: 'Crecimiento',
-    description: 'Ampliación de instalaciones y creación de la cantera con equipos de todas las categorías.'
+    year: '1988-89',
+    title: 'Regreso a Tercera División',
+    description: 'Tras casi 20 años en regionales, el CD Onda vuelve a Tercera División. Desde entonces se ha mantenido en esta categoría salvo breves descensos.'
   },
   {
-    year: '2020-Actualidad',
-    title: 'Modernización',
-    description: 'Renovación de infraestructuras y apuesta por la formación integral de jóvenes talentos.'
+    year: '2001-02',
+    title: 'Ascenso a Segunda División B',
+    description: 'El mayor hito de la historia del club: ascenso a la categoría de bronce del fútbol español tras proclamarse campeón de su liguilla.'
+  },
+  {
+    year: '2008',
+    title: 'Estreno del Himno del Club',
+    description: 'Bajo la presidencia de Juan Carlos Ten, se estrena el himno del club con música y letra de Joan Castells Badenes.'
+  },
+  {
+    year: 'Actualidad',
+    title: 'Formación, Valores y Modernización',
+    description: 'El CD Onda continúa su legado formando jugadores y personas, con modernas instalaciones y una sólida cantera.'
   }
 ]
 
@@ -66,9 +76,11 @@ export function ClubHistorySection() {
             Nuestra <span className="text-gradient">Historia</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Desde 1944, el CD Onda ha sido mucho más que un club de fútbol. 
-            Somos una institución que ha formado generaciones de deportistas 
-            y ha sido testigo de la evolución del fútbol en nuestra región.
+            Desde 1921, el CD Onda ha sido mucho más que un club de fútbol. 
+            Con más de 100 años de historia, hemos vivido momentos inolvidables como 
+            nuestro ascenso a Segunda División B en 2002, el mayor hito deportivo del club. 
+            Somos una institución que ha formado generaciones de deportistas y ha sido 
+            testigo de la evolución del fútbol en nuestra región.
           </p>
         </motion.div>
 

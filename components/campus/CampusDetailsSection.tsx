@@ -39,7 +39,7 @@ const details = [
 
 export function CampusDetailsSection() {
   return (
-    <section className="py-20 bg-white">
+    <section id="campus-info" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

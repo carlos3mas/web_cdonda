@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { SponsorsBanner } from '@/components/layout/SponsorsBanner'
+import '@/lib/env-validation' // Validar variables de entorno al inicio
 
 const inter = Inter({ subsets: ['latin'] })
 

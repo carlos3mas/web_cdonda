@@ -1,6 +1,14 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { Star } from 'lucide-react'
+
+// Patrocinador principal de la escuela
+const mainSponsor = {
+  name: 'Patrocinador Principal',
+  logo: '⭐',
+  description: 'Patrocinador oficial de la escuela'
+}
 
 // Sponsors del club (placeholder - reemplazar con logos reales)
 const sponsors = [
@@ -19,19 +27,56 @@ export function SponsorsSection() {
   const duplicatedSponsors = [...sponsors, ...sponsors, ...sponsors]
 
   return (
-    <section className="py-16 bg-white border-y border-gray-200 overflow-hidden">
-      <div className="container mx-auto px-4 mb-8">
+    <section id="patrocinadores" className="py-16 bg-white border-y border-gray-200 overflow-hidden">
+      <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center"
+          className="text-center mb-12"
         >
           <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
             Nuestros <span className="text-gradient">Patrocinadores</span>
           </h3>
           <p className="text-gray-600">Gracias por confiar en nosotros</p>
+        </motion.div>
+
+        {/* Patrocinador Principal */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mb-12"
+        >
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center gap-2 text-red-600 mb-2">
+              <Star className="h-5 w-5 fill-current" />
+              <span className="text-sm font-semibold">Patrocinador Principal</span>
+              <Star className="h-5 w-5 fill-current" />
+            </div>
+          </div>
+          <div className="max-w-md mx-auto">
+            <div className="bg-gradient-to-br from-red-50 to-gray-50 rounded-2xl p-8 border-2 border-red-200 shadow-lg hover:shadow-xl transition-shadow">
+              <div className="flex flex-col items-center justify-center">
+                <div className="text-6xl mb-4">{mainSponsor.logo}</div>
+                <h4 className="text-xl font-bold text-gray-800 mb-2">{mainSponsor.name}</h4>
+                <p className="text-sm text-gray-600 text-center">{mainSponsor.description}</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Título para los demás patrocinadores */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-center mb-6"
+        >
+          <h4 className="text-lg font-semibold text-gray-700">Otros Patrocinadores</h4>
         </motion.div>
       </div>
 

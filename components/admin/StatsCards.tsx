@@ -7,12 +7,13 @@ import { Users, CheckCircle, Clock } from 'lucide-react'
 
 interface StatsCardsProps {
   stats: DashboardStats
+  tipoLabel?: string
 }
 
-export function StatsCards({ stats }: StatsCardsProps) {
+export function StatsCards({ stats, tipoLabel }: StatsCardsProps) {
   const cards = [
     {
-      title: 'Total Inscripciones',
+      title: tipoLabel ? `Total ${tipoLabel}` : 'Total Inscripciones',
       value: stats.totalInscripciones,
       icon: Users,
       color: 'text-blue-600',

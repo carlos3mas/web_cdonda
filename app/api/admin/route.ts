@@ -30,6 +30,19 @@ export async function GET() {
 
 // POST - Crear nuevo admin
 export async function POST(request: NextRequest) {
+  // Proteger con autenticación - solo admins pueden crear otros admins
+  const authError = await requireAuth(request)
+  if (authError) return authError
+  
+  // Rate limiting
+  const rateLimitError = apiRateLimit(request)
+  if (rateLimitError) {
+    return NextResponse.json(
+      { error: rateLimitError.error },
+      { status: rateLimitError.status }
+    )
+  }
+  
   try {
     const body = await request.json()
 

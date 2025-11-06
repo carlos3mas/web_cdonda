@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAuth } from '@/lib/auth-middleware'
+import { apiRateLimit } from '@/lib/rate-limit'
 
 // GET - Obtener una inscripción específica
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // Proteger con autenticación
+  const authError = await requireAuth(request)
+  if (authError) return authError
+  
+  // Rate limiting
+  const rateLimitError = apiRateLimit(request)
+  if (rateLimitError) {
+    return NextResponse.json(
+      { error: rateLimitError.error },
+      { status: rateLimitError.status }
+    )
+  }
+  
   try {
     const inscripcion = await prisma.inscripcion.findUnique({
       where: { id: params.id }
@@ -33,6 +48,19 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // Proteger con autenticación
+  const authError = await requireAuth(request)
+  if (authError) return authError
+  
+  // Rate limiting
+  const rateLimitError = apiRateLimit(request)
+  if (rateLimitError) {
+    return NextResponse.json(
+      { error: rateLimitError.error },
+      { status: rateLimitError.status }
+    )
+  }
+  
   try {
     const body = await request.json()
 
@@ -56,6 +84,19 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // Proteger con autenticación
+  const authError = await requireAuth(request)
+  if (authError) return authError
+  
+  // Rate limiting
+  const rateLimitError = apiRateLimit(request)
+  if (rateLimitError) {
+    return NextResponse.json(
+      { error: rateLimitError.error },
+      { status: rateLimitError.status }
+    )
+  }
+  
   try {
     await prisma.inscripcion.delete({
       where: { id: params.id }

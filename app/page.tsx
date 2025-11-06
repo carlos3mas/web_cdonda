@@ -4,6 +4,8 @@ import { ClubHistorySection } from '@/components/club/ClubHistorySection'
 import { LocationSection } from '@/components/landing/LocationSection'
 import { ClubTeamsSection } from '@/components/club/ClubTeamsSection'
 import { ClubStatsSection } from '@/components/club/ClubStatsSection'
+import { ClubKitsSection } from '@/components/club/ClubKitsSection'
+import { SponsorsSection } from '@/components/club/SponsorsSection'
 import { ContactSection } from '@/components/club/ContactSection'
 import { Footer } from '@/components/landing/Footer'
 
@@ -16,7 +18,9 @@ export default function HomePage() {
         <ClubHistorySection />
         <ClubStatsSection />
         <LocationSection />
-        <ClubTeamsSection />
+        <ClubKitsSection />
+        <ClubTeamsSection />      
+        <SponsorsSection />
         <ContactSection />
         <Footer />
       </main>

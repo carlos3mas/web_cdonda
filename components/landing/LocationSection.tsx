@@ -1,12 +1,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { MapPin, Clock, Phone, Mail } from 'lucide-react'
+import { MapPin, Clock, Phone, Mail, Users, Award } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import Image from 'next/image'
 
 export function LocationSection() {
   return (
-    <section className="py-20 bg-white">
+    <section id="instalaciones" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -31,19 +32,42 @@ export function LocationSection() {
             transition={{ duration: 0.6 }}
           >
             <Card className="overflow-hidden h-full">
-              <div className="aspect-video bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
-                <div className="text-white text-center p-8">
-                  <MapPin className="h-16 w-16 mx-auto mb-4" />
-                  <p className="text-xl font-semibold">Campo Principal</p>
-                  <p className="text-red-100">Césped artificial de última generación</p>
-                </div>
+              <div className="aspect-video relative bg-gradient-to-br from-red-500 to-red-700 overflow-hidden">
+                <Image
+                  src="/images/campos/enrique-saura.jpg"
+                  alt="Campo Municipal Enrique Saura Gil - Vista aérea del complejo deportivo con campo de fútbol y velódromo"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                
               </div>
               <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-2">Campo Municipal de Fútbol</h3>
-                <p className="text-gray-600">
-                  Nuestro campo principal cuenta con césped artificial de última generación, 
-                  iluminación profesional y gradas para espectadores. Un espacio ideal para 
-                  el desarrollo de nuestros jóvenes talentos.
+                <h3 className="text-xl font-bold mb-3 text-red-600">Campo Municipal Enrique Saura Gil</h3>
+                <div className="space-y-2 mb-4">
+                  <p className="text-sm text-gray-600">
+                    <strong className="text-gray-800">Dirección:</strong>{' '}
+                    <a
+                      href="https://www.google.com/maps?q=Calle+Torrechiva+2,+12200+Onda,+Castellón"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-red-600 hover:text-red-700 hover:underline transition-colors"
+                    >
+                      Calle Torrechiva 2, 12200 Onda (Castellón)
+                    </a>
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong className="text-gray-800">Terreno:</strong> Césped artificial
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong className="text-gray-800">Capacidad:</strong> Aproximadamente 5.000 espectadores
+                  </p>
+                  
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  Campo principal, vestuarios equipados y apto para competiciones federadas. 
+                  Renombrado en honor de Enrique Saura, jugador internacional con España.
+                  Está ubicado en zona accesible en Onda, con aparcamiento cercano listado entre los servicios.
                 </p>
               </CardContent>
             </Card>
@@ -56,19 +80,42 @@ export function LocationSection() {
             transition={{ duration: 0.6 }}
           >
             <Card className="overflow-hidden h-full">
-              <div className="aspect-video bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
-                <div className="text-white text-center p-8">
-                  <MapPin className="h-16 w-16 mx-auto mb-4" />
-                  <p className="text-xl font-semibold">Campos de Entrenamiento</p>
-                  <p className="text-gray-200">Espacios adaptados para todas las edades</p>
-                </div>
+              <div className="aspect-video relative bg-gradient-to-br from-gray-600 to-gray-800 overflow-hidden">
+                                                       
+                <Image
+                  src="/images/campos/la-cossa.webp"
+                  alt="Campo Municipal La Cossa"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                             
               </div>
               <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-2">Instalaciones Complementarias</h3>
-                <p className="text-gray-600">
-                  Disponemos de campos de entrenamiento adicionales, vestuarios equipados, 
-                  zona de descanso y áreas recreativas para garantizar la comodidad de 
-                  todos los participantes.
+                <h3 className="text-xl font-bold mb-3 text-red-600">Campo Municipal La Cossa</h3>
+                <div className="space-y-2 mb-4">
+                  <p className="text-sm text-gray-600">
+                    <strong className="text-gray-800">Dirección:</strong>{' '}
+                    <a
+                      href="https://www.google.com/maps?q=Calle+San+Fermín+s/n,+12200+Onda,+Castellón"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-red-600 hover:text-red-700 hover:underline transition-colors"
+                    >
+                      Calle San Fermín s/n, 12200 Onda (Castellón)
+                    </a>
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong className="text-gray-800">Terreno:</strong> Césped artificial
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong className="text-gray-800">Horario oficinas del club:</strong> 17:00-20:00h
+                  </p>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  Campo municipal con césped artificial para entrenamientos 
+                  y actividades del club. Espacios adaptados para todas las categorías y edades.
+                  Junto al campo un nuevo aparcamiento público de más de 200 plazas, con acceso directo al recinto deportivo.
                 </p>
               </CardContent>
             </Card>
@@ -90,8 +137,15 @@ export function LocationSection() {
               </div>
               <h4 className="font-semibold mb-2">Dirección</h4>
               <p className="text-gray-300 text-sm">
-                Campo Municipal de Fútbol<br />
-                Onda, Castellón
+              Campo Municipal La Cossa<br />
+                <a
+                  href="https://www.google.com/maps?q=Calle+San+Fermín+s/n,+12200+Onda,+Castellón"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-red-400 hover:text-red-300 hover:underline transition-colors"
+                >
+                  Calle San Fermín s/n, 12200 Onda (Castellón)
+                </a>
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -101,7 +155,7 @@ export function LocationSection() {
               <h4 className="font-semibold mb-2">Horario</h4>
               <p className="text-gray-300 text-sm">
                 Lunes a Viernes<br />
-                9:00 - 14:00h
+                17:00 - 20:00h
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -110,8 +164,8 @@ export function LocationSection() {
               </div>
               <h4 className="font-semibold mb-2">Teléfono</h4>
               <p className="text-gray-300 text-sm">
-                964 77 00 00<br />
-                688 00 00 00
+                Municipal: 964 600 050<br />
+                Club: 964 77 00 00
               </p>
             </div>
             <div className="flex flex-col items-center text-center">

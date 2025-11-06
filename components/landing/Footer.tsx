@@ -11,7 +11,7 @@ export function Footer() {
           <div>
             <h3 className="text-white font-bold text-xl mb-4">CD Onda</h3>
             <p className="text-sm">
-              Club Deportivo Onda, formando jugadores y personas desde 1944.
+              Club Deportivo Onda, formando jugadores y personas desde 1921.
             </p>
           </div>
           

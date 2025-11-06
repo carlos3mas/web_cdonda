@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { generateInscripcionPDF } from '@/lib/pdfGenerator'
+import { generatePDFForInscripcion } from '@/lib/pdfGenerator'
 
 export async function GET(
   request: NextRequest,
@@ -18,8 +18,8 @@ export async function GET(
       )
     }
 
-    // Generar el PDF
-    const pdfBytes = await generateInscripcionPDF(inscripcion)
+    // Generar el PDF (usa plantilla si existe, sino genera desde cero)
+    const pdfBytes = await generatePDFForInscripcion(inscripcion)
 
     // Devolver el PDF
     return new NextResponse(pdfBytes, {

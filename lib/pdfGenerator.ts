@@ -1,7 +1,77 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { Inscripcion } from '@/types'
 import { formatDate } from './utils'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
+import { existsSync } from 'fs'
 
+// Mapeo de nombres de campos que deben usarse en los PDFs
+const FIELD_NAMES = {
+  nombreJugador: 'nombreJugador',
+  apellidos: 'apellidos',
+  fechaNacimiento: 'fechaNacimiento',
+  dni: 'dni',
+  nombreTutor: 'nombreTutor',
+  telefono1: 'telefono1',
+  telefono2: 'telefono2',
+  email: 'email',
+  tieneHermanos: 'tieneHermanos',
+  alergias: 'alergias',
+  observaciones: 'observaciones',
+  fechaInscripcion: 'fechaInscripcion',
+  idInscripcion: 'idInscripcion'
+}
+
+// Función para rellenar un PDF con plantilla
+export async function fillPDFTemplate(templatePath: string, inscripcion: Inscripcion): Promise<Uint8Array> {
+  try {
+    // Cargar la plantilla PDF
+    const templateBytes = await readFile(templatePath)
+    const pdfDoc = await PDFDocument.load(templateBytes)
+    const form = pdfDoc.getForm()
+
+    // Obtener todos los campos del formulario
+    const fields = form.getFields()
+    console.log(`Plantilla cargada. Campos disponibles: ${fields.length}`)
+
+    // Función auxiliar para rellenar campo de texto de forma segura
+    const fillTextField = (fieldName: string, value: string) => {
+      try {
+        const field = form.getTextField(fieldName)
+        field.setText(value)
+      } catch (error) {
+        console.warn(`Campo '${fieldName}' no encontrado en la plantilla`)
+      }
+    }
+
+    // Rellenar campos básicos
+    fillTextField(FIELD_NAMES.nombreJugador, inscripcion.nombreJugador)
+    fillTextField(FIELD_NAMES.apellidos, inscripcion.apellidos)
+    fillTextField(FIELD_NAMES.fechaNacimiento, formatDate(inscripcion.fechaNacimiento))
+    fillTextField(FIELD_NAMES.dni, inscripcion.dni)
+    fillTextField(FIELD_NAMES.nombreTutor, inscripcion.nombreTutor)
+    fillTextField(FIELD_NAMES.telefono1, inscripcion.telefono1)
+    fillTextField(FIELD_NAMES.telefono2, inscripcion.telefono2 || '')
+    fillTextField(FIELD_NAMES.email, inscripcion.email)
+    fillTextField(FIELD_NAMES.tieneHermanos, inscripcion.tieneHermanos ? 'Sí' : 'No')
+    fillTextField(FIELD_NAMES.alergias, inscripcion.alergias || '')
+    fillTextField(FIELD_NAMES.observaciones, inscripcion.observaciones || '')
+    fillTextField(FIELD_NAMES.fechaInscripcion, formatDate(inscripcion.createdAt))
+    fillTextField(FIELD_NAMES.idInscripcion, inscripcion.id.substring(0, 8).toUpperCase())
+
+    // Aplanar el formulario para que los campos no sean editables
+    form.flatten()
+
+    // Guardar el PDF
+    const pdfBytes = await pdfDoc.save()
+    return pdfBytes
+  } catch (error) {
+    console.error('Error al rellenar plantilla PDF:', error)
+    throw error
+  }
+}
+
+// Función original para generar PDF desde cero (fallback)
 export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<Uint8Array> {
   // Crear un nuevo documento PDF
   const pdfDoc = await PDFDocument.create()
@@ -280,6 +350,25 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
   // Generar el PDF
   const pdfBytes = await pdfDoc.save()
   return pdfBytes
+}
+
+// Función principal que decide si usar plantilla o generar desde cero
+export async function generatePDFForInscripcion(inscripcion: Inscripcion): Promise<Uint8Array> {
+  try {
+    // Intentar cargar la plantilla para el tipo de inscripción
+    const templatePath = join(process.cwd(), 'public', 'templates', `${inscripcion.tipoInscripcion}.pdf`)
+    
+    if (existsSync(templatePath)) {
+      console.log(`Usando plantilla para ${inscripcion.tipoInscripcion}`)
+      return await fillPDFTemplate(templatePath, inscripcion)
+    } else {
+      console.log(`No se encontró plantilla para ${inscripcion.tipoInscripcion}, generando PDF por defecto`)
+      return await generateInscripcionPDF(inscripcion)
+    }
+  } catch (error) {
+    console.error('Error al generar PDF, usando generador por defecto:', error)
+    return await generateInscripcionPDF(inscripcion)
+  }
 }
 
 // Función auxiliar para dividir texto largo en líneas

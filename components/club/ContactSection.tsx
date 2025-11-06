@@ -8,7 +8,7 @@ const contactInfo = [
   {
     icon: MapPin,
     title: 'Dirección',
-    details: ['Campo Municipal de Fútbol', 'Onda, Castellón']
+    details: ['Campo Municipal de Fútbol "La Cossa"', 'Onda, Castellón']
   },
   {
     icon: Phone,
@@ -23,7 +23,7 @@ const contactInfo = [
   {
     icon: Clock,
     title: 'Horario',
-    details: ['Lunes a Viernes', '9:00 - 21:00h']
+    details: ['Lunes a Viernes', '17:00 - 20:00h']
   }
 ]
 

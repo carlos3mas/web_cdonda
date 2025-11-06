@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 
 // Sponsors del club (versión compacta para banner global)
@@ -15,6 +16,13 @@ const sponsors = [
 ]
 
 export function SponsorsBanner() {
+  const pathname = usePathname()
+  
+  // No mostrar el banner en rutas de administración
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
+
   // Duplicar los sponsors para crear el efecto infinito
   const duplicatedSponsors = [...sponsors, ...sponsors, ...sponsors]
 

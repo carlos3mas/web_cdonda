@@ -10,7 +10,7 @@ export default function CampusNavidadPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen pt-24">
+      <main className="min-h-screen pt-28">
         <HeroSection />
         <CampusInfoSection />
         <CampusDetailsSection />

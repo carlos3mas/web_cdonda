@@ -10,21 +10,25 @@ datasource db {
 }
 
 model Inscripcion {
-  id              String   @id @default(cuid())
-  nombreJugador   String
-  apellidos       String
-  fechaNacimiento DateTime
-  dni             String
-  nombreTutor     String
-  telefono1       String
-  telefono2       String?
-  email           String
-  tieneHermanos   Boolean  @default(false)
-  alergias        String?
-  observaciones   String?
-  pagada          Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  tipoInscripcion        String   @default("campus-navidad") // campus-navidad, campus-verano, anual, etc.
+  nombreJugador          String
+  apellidos              String
+  fechaNacimiento        DateTime
+  dni                    String
+  nombreTutor            String
+  telefono1              String
+  telefono2              String?
+  email                  String
+  tieneHermanos          Boolean  @default(false)
+  alergias               String?
+  observaciones          String?
+  pagada                 Boolean  @default(false)
+  justificantePago       String?  // Ruta al archivo del justificante
+  nombreArchivoJustificante String?  // Nombre original del archivo
+  derechosImagen         Boolean  @default(false) // Autorización para usar imágenes en redes sociales
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   @@map("inscripciones")
 }
@@ -38,5 +42,17 @@ model Admin {
   updatedAt DateTime @updatedAt
 
   @@map("admins")
+}
+
+model PlantillaPDF {
+  id              String   @id @default(cuid())
+  tipoInscripcion String   @unique // campus-navidad, campus-verano, anual
+  nombreArchivo   String
+  rutaArchivo     String
+  activa          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("plantillas_pdf")
 }
 

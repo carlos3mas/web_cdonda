@@ -1,8 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Trophy } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 export function ClubHeroSection() {
@@ -22,17 +23,32 @@ export function ClubHeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex justify-center mb-6">
-              <Trophy className="h-20 w-20" />
+            <div className="flex justify-center mb-8">
+              <motion.div 
+                className="relative w-32 h-32 md:w-40 md:h-40"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, type: "spring" }}
+              >
+                <Image
+                  src="/images/logo/cd-onda-logo.png"
+                  alt="CD Onda Logo"
+                  fill
+                  className="object-contain drop-shadow-2xl"
+                  style={{ background: 'transparent' }}
+                  priority
+                  unoptimized
+                />
+              </motion.div>
             </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
               Club Deportivo Onda
             </h1>
             <p className="text-xl md:text-2xl mb-4 text-red-50">
-              Más de 75 años formando jugadores y personas
+              Más de 100 años formando jugadores y personas
             </p>
             <p className="text-lg md:text-xl mb-8 text-red-100 max-w-3xl mx-auto">
-              Un club con historia, pasión y valores. Desde 1944 transmitiendo 
+              Un club con historia, pasión y valores. Desde 1921 transmitiendo 
               el amor por el fútbol en el corazón de Castellón.
             </p>
           </motion.div>

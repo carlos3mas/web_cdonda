@@ -5,14 +5,14 @@ import { Trophy, Users, Target } from 'lucide-react'
 import { AnimatedCounter } from '@/components/ui/animated-counter'
 
 const stats = [
-  { label: 'Años de Historia', value: 75, icon: Trophy, suffix: '+' },
+  { label: 'Años de Historia', value: 100, icon: Trophy, suffix: '+' },
   { label: 'Jugadores Formados', value: 5000, icon: Users, suffix: '+' },
   { label: 'Campeonatos', value: 50, icon: Target, suffix: '+' },
 ]
 
 export function ClubStatsSection() {
   return (
-    <section className="py-20 bg-gray-900 text-white">
+    <section id="trayectoria" className="py-20 bg-gray-900 text-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -25,7 +25,7 @@ export function ClubStatsSection() {
             Nuestra <span className="text-red-500">Trayectoria</span>
           </h2>
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            Más de 75 años formando jugadores y transmitiendo valores deportivos.
+            Más de 100 años formando jugadores y transmitiendo valores deportivos.
           </p>
         </motion.div>
 

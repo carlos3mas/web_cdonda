@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
-import { Trophy, Users, Heart, Award } from 'lucide-react'
+import { Trophy, Users, Heart, Award, Handshake, Smile } from 'lucide-react'
 
 const achievements = [
   {
@@ -57,6 +57,16 @@ const values = [
     icon: Award,
     title: 'Compromiso',
     description: 'Con nuestros jugadores, familias y la ciudad'
+  },
+  {
+    icon: Handshake,
+    title: 'Deportividad',
+    description: 'Respeto, fair play y espíritu deportivo en cada partido'
+  },
+  {
+    icon: Smile,
+    title: 'Humildad',
+    description: 'Aprendemos de cada experiencia con los pies en la tierra'
   }
 ]
 
@@ -72,7 +82,7 @@ export function ClubHistorySection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-4xl md:text-5xl text-blue-600 font-bold mb-4">
             Nuestra <span className="text-gradient">Historia</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -100,7 +110,7 @@ export function ClubHistorySection() {
               </div>
               <Card className="flex-1">
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{achievement.title}</h3>
+                  <h3 className="text-xl font-bold text-blue-600 mb-2">{achievement.title}</h3>
                   <p className="text-gray-600">{achievement.description}</p>
                 </CardContent>
               </Card>
@@ -116,7 +126,7 @@ export function ClubHistorySection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h3 className="text-3xl md:text-4xl font-bold mb-4">
+          <h3 className="text-3xl md:text-4xl text-blue-600 font-bold mb-4">
             Nuestros <span className="text-gradient">Valores</span>
           </h3>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -124,7 +134,7 @@ export function ClubHistorySection() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {values.map((value, index) => {
             const Icon = value.icon
             return (
@@ -137,10 +147,10 @@ export function ClubHistorySection() {
               >
                 <Card className="h-full text-center hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-                      <Icon className="h-8 w-8 text-red-600" />
+                    <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                      <Icon className="h-16 w-16 text-red-600" />
                     </div>
-                    <h4 className="text-xl font-bold mb-2">{value.title}</h4>
+                    <h4 className="text-xl font-bold text-blue-600 mb-2">{value.title}</h4>
                     <p className="text-gray-600 text-sm">{value.description}</p>
                   </CardContent>
                 </Card>

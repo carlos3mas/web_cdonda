@@ -21,7 +21,7 @@ export function ClubStatsSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-4xl md:text-5xl text-blue-600 font-bold mb-4">
             Nuestra <span className="text-red-500">Trayectoria</span>
           </h2>
           <p className="text-lg text-gray-300 max-w-3xl mx-auto">

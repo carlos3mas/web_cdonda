@@ -17,10 +17,10 @@ const inscripciones = [
     href: '/campus-navidad/inscripcion?tipo=campus-navidad',
     features: [
       'Entrenamientos especializados',
-      'Camiseta oficial del campus',
-      'Seguro deportivo incluido',
-      'Diploma de participación',
-      'Fotos del campus'
+      'Comidas diarias incluidas',
+      'Seguro para jugadores federados',
+      'Actividades lúdicas y partidos adaptados',
+      'Reportaje fotográfico del campus'
     ],
     badge: 'Disponible'
   },
@@ -67,7 +67,7 @@ export function InscripcionSelection() {
         className="text-center mb-12"
       >
         <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          Elige tu <span className="text-gradient">Inscripción</span>
+          <span className="text-blue-600">Elige tu</span> <span className="text-red-600">Inscripción</span>
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           Selecciona el tipo de inscripción que mejor se adapte a tus necesidades. 
@@ -92,22 +92,20 @@ export function InscripcionSelection() {
               }`}>
                 <CardHeader>
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`w-14 h-14 rounded-lg ${
-                      inscripcion.available 
-                        ? 'bg-red-100 text-red-600' 
-                        : 'bg-gray-100 text-gray-400'
-                    } flex items-center justify-center`}>
-                      <Icon className="h-7 w-7" />
+                    <div className="flex items-center gap-3">
+                      <Icon className={`h-8 w-8 ${inscripcion.available ? 'text-blue-600' : 'text-gray-400'}`} />
+                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                        inscripcion.available
+                          ? 'bg-red-100 text-red-600'
+                          : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {inscripcion.badge}
+                      </span>
                     </div>
-                    <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                      inscripcion.available
-                        ? 'bg-red-100 text-red-600'
-                        : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      {inscripcion.badge}
-                    </span>
                   </div>
-                  <CardTitle className="text-2xl mb-2">{inscripcion.title}</CardTitle>
+                  <CardTitle className={`text-2xl mb-2 ${inscripcion.available ? 'text-red-600' : 'text-gray-500'}`}>
+                    {inscripcion.title}
+                  </CardTitle>
                   <CardDescription className="text-base">
                     {inscripcion.description}
                   </CardDescription>
@@ -161,25 +159,22 @@ export function InscripcionSelection() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="bg-gradient-to-r from-red-50 to-gray-50 rounded-2xl p-8 text-center max-w-4xl mx-auto"
+        className="bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] rounded-2xl p-8 text-center max-w-4xl mx-auto text-white shadow-[0_18px_45px_rgba(139,0,0,0.25)]"
       >
-        <Users className="h-12 w-12 text-red-600 mx-auto mb-4" />
-        <h3 className="text-2xl font-bold text-gray-800 mb-2">
+        <div className="flex items-center justify-center gap-3 text-sm uppercase tracking-[0.35em] text-white/70 mb-4">
+          <Users className="h-9 w-9 text-blue-600" />
+          <span>Atención personalizada</span>
+        </div>
+        <h3 className="text-2xl font-bold text-white mb-2">
           ¿Necesitas más información?
         </h3>
-        <p className="text-gray-600 mb-6">
-          Si tienes dudas sobre algún tipo de inscripción o necesitas ayuda, 
-          no dudes en contactarnos.
+        <p className="text-white/85 mb-6">
+          Si tienes dudas sobre algún tipo de inscripción o necesitas ayuda, no dudes en contactarnos.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a href="/#contacto">
-            <Button variant="outline" className="border-red-600 text-red-600 hover:bg-red-50">
+            <Button variant="outline" className="border-white text-red-600 hover:bg-red-600 hover:text-white">
               Ver Información de Contacto
-            </Button>
-          </a>
-          <a href="tel:964770000">
-            <Button className="bg-red-600 hover:bg-red-700">
-              Llamar: 964 77 00 00
             </Button>
           </a>
         </div>

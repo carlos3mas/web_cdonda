@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { InscripcionFormData } from '@/types'
 import { Download, Loader2, CheckCircle, AlertCircle, Upload, FileText } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import SignaturePad from 'signature_pad'
 
 interface InscripcionFormProps {
   tipoInscripcion?: string
@@ -25,6 +26,9 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [justificanteFile, setJustificanteFile] = useState<File | null>(null)
+  const [signatureFile, setSignatureFile] = useState<File | null>(null)
+  const signatureCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const signaturePadRef = useRef<SignaturePad | null>(null)
   
   const [formData, setFormData] = useState<Omit<InscripcionFormData, 'justificantePago'>>({
     tipoInscripcion: tipoFromUrl,
@@ -35,10 +39,10 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     nombreTutor: '',
     telefono1: '',
     telefono2: '',
-    email: '',
-    tieneHermanos: 'no',
-    alergias: '',
-    observaciones: '',
+    enfermedad: '',
+    medicacion: '',
+    alergico: '',
+    numeroSeguridadSocial: '',
     derechosImagen: false
   })
 
@@ -47,6 +51,39 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     const tipo = searchParams?.get('tipo') || tipoInscripcion || 'campus-navidad'
     setFormData(prev => ({ ...prev, tipoInscripcion: tipo }))
   }, [searchParams, tipoInscripcion])
+
+  useEffect(() => {
+    if (!signatureCanvasRef.current) return
+
+    const pad = new SignaturePad(signatureCanvasRef.current, {
+      minWidth: 1,
+      maxWidth: 2.5,
+      penColor: '#111827',
+      backgroundColor: 'rgba(255,255,255,0)',
+    })
+
+    signaturePadRef.current = pad
+
+    const resizeCanvas = () => {
+      const canvas = signatureCanvasRef.current
+      if (!canvas) return
+      const ratio = Math.max(window.devicePixelRatio || 1, 1)
+      canvas.width = canvas.offsetWidth * ratio
+      canvas.height = canvas.offsetHeight * ratio
+      canvas.getContext('2d')?.scale(ratio, ratio)
+      pad.clear()
+      setSignatureFile(null)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas)
+      pad.off()
+      signaturePadRef.current = null
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,6 +100,13 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     }
 
     try {
+      if (signaturePadRef.current && signaturePadRef.current.isEmpty()) {
+        setSubmitStatus('error')
+        setErrorMessage('Debes firmar en el recuadro antes de enviar la inscripción')
+        setIsSubmitting(false)
+        return
+      }
+
       // Crear FormData para enviar archivos
       const formDataToSend = new FormData()
       
@@ -77,6 +121,11 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       
       // Añadir el archivo
       formDataToSend.append('justificantePago', justificanteFile)
+      if (signaturePadRef.current) {
+        const dataUrl = signaturePadRef.current.toDataURL('image/png')
+        const blob = await (await fetch(dataUrl)).blob()
+        formDataToSend.append('firmaTutor', blob, 'firma.png')
+      }
 
       const response = await fetch('/api/inscripciones', {
         method: 'POST',
@@ -127,25 +176,28 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Validar tipo de archivo (imágenes y PDFs)
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
       if (!validTypes.includes(file.type)) {
         setErrorMessage('El archivo debe ser una imagen (JPG, PNG, WEBP) o PDF')
         setSubmitStatus('error')
         return
       }
-      
-      // Validar tamaño (máximo 5MB)
+
       if (file.size > 5 * 1024 * 1024) {
         setErrorMessage('El archivo no debe superar los 5MB')
         setSubmitStatus('error')
         return
       }
-      
+
       setJustificanteFile(file)
       setSubmitStatus('idle')
       setErrorMessage('')
     }
+  }
+
+  const clearSignature = () => {
+    signaturePadRef.current?.clear()
+    setSignatureFile(null)
   }
 
   if (submitStatus === 'success') {
@@ -177,12 +229,22 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <Card>
+      <Card className="border border-red-100">
         <CardHeader>
-          <CardTitle>Formulario de Inscripción</CardTitle>
+          <CardTitle className="text-2xl font-semibold">
+            <span className="text-red-600">Formulario de</span>{' '}
+            <span className="text-red-600">Inscripción</span>
+          </CardTitle>
           <CardDescription>
-            Todos los campos marcados con * son obligatorios
+            Completa los datos del jugador. Todas las posiciones marcadas con * son obligatorias.
           </CardDescription>
+          <div className="mt-4 rounded-xl bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] px-5 py-4 text-sm text-white shadow">
+            <p className="font-semibold">Información importante</p>
+            <p className="mt-1 text-white/85">
+              El campus incluye entrenamientos, actividades y comidas. El seguro deportivo se aplica únicamente a jugadores federados.
+              No se entrega camiseta ni diploma; el justificante de pago es obligatorio para completar la inscripción.
+            </p>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -213,19 +275,46 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                 </div>
               </div>
 
+              <div>
+                <Label htmlFor="fechaNacimiento">Fecha de Nacimiento *</Label>
+                <Input
+                  id="fechaNacimiento"
+                  type="date"
+                  required
+                  value={formData.fechaNacimiento}
+                  onChange={(e) => handleChange('fechaNacimiento', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="numeroSeguridadSocial">SIP del Jugador *</Label>
+                <Input
+                  id="numeroSeguridadSocial"
+                  required
+                  value={formData.numeroSeguridadSocial}
+                  onChange={(e) => handleChange('numeroSeguridadSocial', e.target.value)}
+                  placeholder="Ej.: 12 1234567890"
+                />
+              </div>
+            </div>
+
+            {/* Datos del Tutor */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold border-b pb-2">Datos del Padre/Madre/Tutor</h3>
+              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="fechaNacimiento">Fecha de Nacimiento *</Label>
+                  <Label htmlFor="nombreTutor">Nombre del Tutor *</Label>
                   <Input
-                    id="fechaNacimiento"
-                    type="date"
+                    id="nombreTutor"
                     required
-                    value={formData.fechaNacimiento}
-                    onChange={(e) => handleChange('fechaNacimiento', e.target.value)}
+                    value={formData.nombreTutor}
+                    onChange={(e) => handleChange('nombreTutor', e.target.value)}
+                    placeholder="Nombre completo del tutor"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="dni">DNI *</Label>
+                  <Label htmlFor="dni">DNI del Tutor *</Label>
                   <Input
                     id="dni"
                     required
@@ -235,26 +324,10 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                   />
                 </div>
               </div>
-            </div>
-
-            {/* Datos del Tutor */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Datos del Padre/Madre/Tutor</h3>
-              
-              <div>
-                <Label htmlFor="nombreTutor">Nombre del Tutor *</Label>
-                <Input
-                  id="nombreTutor"
-                  required
-                  value={formData.nombreTutor}
-                  onChange={(e) => handleChange('nombreTutor', e.target.value)}
-                  placeholder="Nombre completo del tutor"
-                />
-              </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="telefono1">Teléfono 1 *</Label>
+                  <Label htmlFor="telefono1">Teléfono Madre/Tutor *</Label>
                   <Input
                     id="telefono1"
                     type="tel"
@@ -265,7 +338,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="telefono2">Teléfono 2 (opcional)</Label>
+                  <Label htmlFor="telefono2">Teléfono Padre/Tutor</Label>
                   <Input
                     id="telefono2"
                     type="tel"
@@ -275,63 +348,71 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Información Médica */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold border-b pb-2">Información Médica</h3>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="enfermedad">¿Padece alguna enfermedad?</Label>
+                  <Input
+                    id="enfermedad"
+                    value={formData.enfermedad}
+                    onChange={(e) => handleChange('enfermedad', e.target.value)}
+                    placeholder="Indique la enfermedad o escriba 'No'"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="medicacion">¿Necesita medicación?</Label>
+                  <Input
+                    id="medicacion"
+                    value={formData.medicacion}
+                    onChange={(e) => handleChange('medicacion', e.target.value)}
+                    placeholder="Detalle la medicación, si procede"
+                  />
+                </div>
+              </div>
 
               <div>
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="alergico">Alérgico / Intolerante a</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  placeholder="email@ejemplo.com"
+                  id="alergico"
+                  value={formData.alergico}
+                  onChange={(e) => handleChange('alergico', e.target.value)}
+                  placeholder="Sustancias, alimentos o intolerancias"
                 />
               </div>
             </div>
 
-            {/* Información Adicional */}
+            {/* Firma */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Información Adicional</h3>
-              
-              <div>
-                <Label htmlFor="tieneHermanos">¿Tiene hermanos en el campus? *</Label>
-                <Select
-                  value={formData.tieneHermanos}
-                  onValueChange={(value) => handleChange('tieneHermanos', value)}
-                >
-                  <SelectTrigger id="tieneHermanos">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no">No</SelectItem>
-                    <SelectItem value="si">Sí</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <h3 className="text-lg font-semibold border-b pb-2">Firma del Tutor</h3>
 
-              <div>
-                <Label htmlFor="alergias">Alergias o Enfermedades</Label>
-                <Textarea
-                  id="alergias"
-                  value={formData.alergias}
-                  onChange={(e) => handleChange('alergias', e.target.value)}
-                  placeholder="Indique si el jugador tiene alguna alergia o enfermedad relevante"
-                  rows={3}
-                />
+              <div className="space-y-3">
+                <p className="font-semibold text-red-600">Firma padre/madre o tutor *</p>
+                <div className="rounded-xl border border-red-200 bg-white p-4 shadow-sm">
+                  <canvas
+                    ref={signatureCanvasRef}
+                    className="w-full h-40 touch-none"
+                  />
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
+                    <span>Dibuja tu firma con el ratón o el dedo.</span>
+                    <Button type="button" variant="outline" size="sm" className="border-red-200 text-red-600 hover:bg-red-50"
+                      onClick={clearSignature}
+                    >
+                      Limpiar firma
+                    </Button>
+                  </div>
+                </div>
               </div>
+            </div>
 
-              <div>
-                <Label htmlFor="observaciones">Observaciones</Label>
-                <Textarea
-                  id="observaciones"
-                  value={formData.observaciones}
-                  onChange={(e) => handleChange('observaciones', e.target.value)}
-                  placeholder="Cualquier información adicional que considere relevante"
-                  rows={3}
-                />
-              </div>
+            {/* Justificante de Pago */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold border-b pb-2">Justificante de Pago</h3>
 
-              {/* Justificante de Pago */}
               <div>
                 <Label htmlFor="justificantePago" className="flex items-center gap-2">
                   Justificante de Pago * 

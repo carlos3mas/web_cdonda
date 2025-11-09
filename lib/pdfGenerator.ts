@@ -6,20 +6,31 @@ import { join } from 'path'
 import { existsSync } from 'fs'
 
 // Mapeo de nombres de campos que deben usarse en los PDFs
-const FIELD_NAMES = {
-  nombreJugador: 'nombreJugador',
-  apellidos: 'apellidos',
-  fechaNacimiento: 'fechaNacimiento',
-  dni: 'dni',
-  nombreTutor: 'nombreTutor',
-  telefono1: 'telefono1',
-  telefono2: 'telefono2',
-  email: 'email',
-  tieneHermanos: 'tieneHermanos',
-  alergias: 'alergias',
-  observaciones: 'observaciones',
-  fechaInscripcion: 'fechaInscripcion',
-  idInscripcion: 'idInscripcion'
+const FIELD_ALIASES: Record<string, string[]> = {
+  nombreJugador: ['Nombre', 'nombreJugador', 'nombreJugador1'],
+  apellidos: ['Apellidos', 'apellidos', 'mas iserte'],
+  fechaNacimiento: ['Fecha Nacimiento', 'fechaNacimiento', 'fechaNacimiento1'],
+  dni: ['DNI', 'dni'],
+  nombreTutor: ['tutor del jugador', 'nombreTutor', 'madrePadreTutor', 'juan mas pradas'],
+  telefono1: ['teléfono padre/tutor', 'telefono madre/tutora', 'telefono1', 'telMadre', 'telefonoMadre'],
+  telefono2: ['telefonos madre/tutora', 'telefono padre/tutor', 'telefono2', 'telPadre', 'telefonoPadre'],
+  enfermedad: ['Padece alguna enfermedad', 'enfermedad'],
+  medicacion: ['Necesita medicación', 'medicacion', 'Necesita  medicación no'],
+  alergico: ['Alérgico  Intolerante a', 'Alérgico / Intolerante a', 'Alergico  Intolerante a', 'alergico', 'Alergico'],
+  numeroSeguridadSocial: [
+    'Nº seguridad social del niñ@',
+    'N° seguridad social del niñ@',
+    'numeroSeguridadSocial',
+    'Numero seguridad social del niñ@',
+    'numSeguridadSocial',
+    'nSeguridadSocial',
+    'seguridadSocial',
+    'sip',
+    'SIP'
+  ],
+  fechaInscripcion: ['fechaInscripcion'],
+  idInscripcion: ['idInscripcion'],
+  firma: ['firma', 'Firma']
 }
 
 // Función para rellenar un PDF con plantilla
@@ -35,29 +46,64 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
     console.log(`Plantilla cargada. Campos disponibles: ${fields.length}`)
 
     // Función auxiliar para rellenar campo de texto de forma segura
-    const fillTextField = (fieldName: string, value: string) => {
-      try {
-        const field = form.getTextField(fieldName)
-        field.setText(value)
-      } catch (error) {
-        console.warn(`Campo '${fieldName}' no encontrado en la plantilla`)
+    const fillTextField = (aliasKey: keyof typeof FIELD_ALIASES, value: string) => {
+      if (!value) return
+      const candidates = FIELD_ALIASES[aliasKey] ?? [aliasKey]
+      for (const candidate of candidates) {
+        try {
+          const field = form.getTextField(candidate)
+          field.setText(value)
+          return
+        } catch (error) {
+          continue
+        }
       }
+      console.warn(`Campo '${aliasKey}' no encontrado en la plantilla (probados: ${candidates.join(', ')})`)
     }
 
     // Rellenar campos básicos
-    fillTextField(FIELD_NAMES.nombreJugador, inscripcion.nombreJugador)
-    fillTextField(FIELD_NAMES.apellidos, inscripcion.apellidos)
-    fillTextField(FIELD_NAMES.fechaNacimiento, formatDate(inscripcion.fechaNacimiento))
-    fillTextField(FIELD_NAMES.dni, inscripcion.dni)
-    fillTextField(FIELD_NAMES.nombreTutor, inscripcion.nombreTutor)
-    fillTextField(FIELD_NAMES.telefono1, inscripcion.telefono1)
-    fillTextField(FIELD_NAMES.telefono2, inscripcion.telefono2 || '')
-    fillTextField(FIELD_NAMES.email, inscripcion.email)
-    fillTextField(FIELD_NAMES.tieneHermanos, inscripcion.tieneHermanos ? 'Sí' : 'No')
-    fillTextField(FIELD_NAMES.alergias, inscripcion.alergias || '')
-    fillTextField(FIELD_NAMES.observaciones, inscripcion.observaciones || '')
-    fillTextField(FIELD_NAMES.fechaInscripcion, formatDate(inscripcion.createdAt))
-    fillTextField(FIELD_NAMES.idInscripcion, inscripcion.id.substring(0, 8).toUpperCase())
+    fillTextField('nombreJugador', inscripcion.nombreJugador)
+    fillTextField('apellidos', inscripcion.apellidos)
+    fillTextField('fechaNacimiento', formatDate(inscripcion.fechaNacimiento))
+    fillTextField('numeroSeguridadSocial', inscripcion.numeroSeguridadSocial || '')
+    fillTextField('telefono1', inscripcion.telefono1)
+    fillTextField('telefono2', inscripcion.telefono2 || '')
+    fillTextField('enfermedad', inscripcion.enfermedad || '')
+    fillTextField('medicacion', inscripcion.medicacion || '')
+    fillTextField('alergico', inscripcion.alergico || '')
+    fillTextField('nombreTutor', inscripcion.nombreTutor)
+    fillTextField('dni', inscripcion.dni)
+
+    // Intentar incrustar la firma si existe
+    if (inscripcion.firma) {
+      try {
+        const firmaPath = join(process.cwd(), 'storage', 'firmas', inscripcion.firma)
+        if (existsSync(firmaPath)) {
+          const firmaBytes = await readFile(firmaPath)
+          const firmaImage = await pdfDoc.embedPng(firmaBytes)
+          
+          // Buscar el campo de firma en el PDF
+          const pages = pdfDoc.getPages()
+          const firstPage = pages[0]
+          
+          // Dimensiones de la imagen de firma
+          const firmaDims = firmaImage.scale(0.15) // Escala para que quepa en el espacio
+          
+          // Posición aproximada donde debería ir la firma (ajustar según el PDF)
+          // En el PDF que veo, la firma está cerca de la parte inferior
+          firstPage.drawImage(firmaImage, {
+            x: 50,
+            y: 130,
+            width: firmaDims.width,
+            height: firmaDims.height,
+          })
+          
+          console.log('Firma incrustada en el PDF')
+        }
+      } catch (error) {
+        console.error('Error al incrustar la firma:', error)
+      }
+    }
 
     // Aplanar el formulario para que los campos no sean editables
     form.flatten()
@@ -150,7 +196,6 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
     { label: 'Nombre:', value: inscripcion.nombreJugador },
     { label: 'Apellidos:', value: inscripcion.apellidos },
     { label: 'Fecha de Nacimiento:', value: formatDate(inscripcion.fechaNacimiento) },
-    { label: 'DNI:', value: inscripcion.dni },
   ]
 
   for (const field of fields) {
@@ -188,9 +233,9 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
 
   const tutorFields = [
     { label: 'Nombre del Tutor:', value: inscripcion.nombreTutor },
+    { label: 'DNI del Tutor:', value: inscripcion.dni },
     { label: 'Teléfono 1:', value: inscripcion.telefono1 },
     { label: 'Teléfono 2:', value: inscripcion.telefono2 || 'No especificado' },
-    { label: 'Email:', value: inscripcion.email },
   ]
 
   for (const field of tutorFields) {
@@ -215,8 +260,8 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
 
   yPosition -= 20
 
-  // Sección: Información Adicional
-  page.drawText('INFORMACIÓN ADICIONAL', {
+  // Sección: Información Médica
+  page.drawText('INFORMACIÓN MÉDICA', {
     x: 50,
     y: yPosition,
     size: 14,
@@ -226,26 +271,17 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
 
   yPosition -= 25
 
-  page.drawText('¿Tiene hermanos en el campus?:', {
-    x: 50,
-    y: yPosition,
-    size: 11,
-    font: fontBold,
-    color: blackColor,
-  })
+  const infoMedica = [
+    { label: 'Padece alguna enfermedad:', value: inscripcion.enfermedad },
+    { label: 'Necesita medicación:', value: inscripcion.medicacion },
+    { label: 'Alérgico / Intolerante a:', value: inscripcion.alergico },
+    { label: 'SIP:', value: inscripcion.numeroSeguridadSocial },
+  ]
 
-  page.drawText(inscripcion.tieneHermanos ? 'Sí' : 'No', {
-    x: 250,
-    y: yPosition,
-    size: 11,
-    font: font,
-    color: blackColor,
-  })
+  for (const field of infoMedica) {
+    if (!field.value) continue
 
-  yPosition -= 25
-
-  if (inscripcion.alergias) {
-    page.drawText('Alergias o Enfermedades:', {
+    page.drawText(field.label, {
       x: 50,
       y: yPosition,
       size: 11,
@@ -255,8 +291,8 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
 
     yPosition -= 18
 
-    const alergiasLines = wrapText(inscripcion.alergias, 70)
-    for (const line of alergiasLines) {
+    const lines = wrapText(field.value, 70)
+    for (const line of lines) {
       page.drawText(line, {
         x: 70,
         y: yPosition,
@@ -270,30 +306,50 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
     yPosition -= 10
   }
 
-  if (inscripcion.observaciones) {
-    page.drawText('Observaciones:', {
+  // Recuadro o imagen de firma
+  page.drawText('Firma padre/madre o tutor:', {
+    x: 50,
+    y: yPosition,
+    size: 11,
+    font: fontBold,
+    color: blackColor,
+  })
+
+  yPosition -= 70
+
+  if (inscripcion.firma) {
+    try {
+      const firmaPath = join(process.cwd(), 'storage', 'firmas', inscripcion.firma)
+      const firmaBytes = await readFile(firmaPath)
+      const firmaImage = await pdfDoc.embedPng(firmaBytes)
+      const firmaDims = firmaImage.scale(0.5)
+
+      page.drawImage(firmaImage, {
+        x: 50,
+        y: yPosition,
+        width: Math.min(firmaDims.width, width - 100),
+        height: Math.min(firmaDims.height, 60),
+      })
+    } catch (error) {
+      console.error('No se pudo incrustar la firma, se dibuja un recuadro vacío:', error)
+      page.drawRectangle({
+        x: 50,
+        y: yPosition,
+        width: width - 100,
+        height: 60,
+        borderWidth: 1,
+        borderColor: grayColor,
+      })
+    }
+  } else {
+    page.drawRectangle({
       x: 50,
       y: yPosition,
-      size: 11,
-      font: fontBold,
-      color: blackColor,
+      width: width - 100,
+      height: 60,
+      borderWidth: 1,
+      borderColor: grayColor,
     })
-
-    yPosition -= 18
-
-    const obsLines = wrapText(inscripcion.observaciones, 70)
-    for (const line of obsLines) {
-      page.drawText(line, {
-        x: 70,
-        y: yPosition,
-        size: 10,
-        font: font,
-        color: grayColor,
-      })
-      yPosition -= 15
-    }
-
-    yPosition -= 10
   }
 
   // Fecha de emisión
@@ -339,7 +395,7 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
     color: grayColor,
   })
 
-  page.drawText('www.cdonda.com | info@cdonda.com', {
+  page.drawText('www.cdonda.com | escolafut@gmail.com', {
     x: width / 2 - 95,
     y: 30,
     size: 8,

@@ -10,13 +10,15 @@ export interface Inscripcion {
   nombreTutor: string;
   telefono1: string;
   telefono2?: string | null;
-  email: string;
-  tieneHermanos: boolean;
-  alergias?: string | null;
-  observaciones?: string | null;
+  enfermedad?: string | null;
+  medicacion?: string | null;
+  alergico?: string | null;
+  numeroSeguridadSocial?: string | null;
   pagada: boolean;
   justificantePago?: string | null;
   nombreArchivoJustificante?: string | null;
+  firma?: string | null;
+  nombreArchivoFirma?: string | null;
   derechosImagen: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -31,11 +33,12 @@ export interface InscripcionFormData {
   nombreTutor: string;
   telefono1: string;
   telefono2?: string;
-  email: string;
-  tieneHermanos: string; // "si" | "no"
-  alergias?: string;
-  observaciones?: string;
+  enfermedad?: string;
+  medicacion?: string;
+  alergico?: string;
+  numeroSeguridadSocial?: string;
   justificantePago?: File;
+  firmaTutor?: File;
   derechosImagen: boolean;
 }
 

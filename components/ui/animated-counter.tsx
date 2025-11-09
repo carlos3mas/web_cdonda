@@ -7,9 +7,10 @@ interface AnimatedCounterProps {
   end: number
   duration?: number
   suffix?: string
+  className?: string
 }
 
-export function AnimatedCounter({ end, duration = 2000, suffix = '' }: AnimatedCounterProps) {
+export function AnimatedCounter({ end, duration = 2000, suffix = '', className }: AnimatedCounterProps) {
   const [count, setCount] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true })
@@ -33,7 +34,7 @@ export function AnimatedCounter({ end, duration = 2000, suffix = '' }: AnimatedC
   }, [isInView, end, duration])
 
   return (
-    <div ref={ref} className="text-4xl font-bold text-red-600">
+    <div ref={ref} className={`text-4xl font-bold ${className ?? 'text-red-600'}`}>
       {count}{suffix}
     </div>
   )

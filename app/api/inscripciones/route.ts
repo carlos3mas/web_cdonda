@@ -70,16 +70,17 @@ export async function POST(request: NextRequest) {
     const nombreTutor = formData.get('nombreTutor') as string
     const telefono1 = formData.get('telefono1') as string
     const telefono2 = formData.get('telefono2') as string
-    const email = formData.get('email') as string
-    const tieneHermanos = formData.get('tieneHermanos') as string
-    const alergias = formData.get('alergias') as string
-    const observaciones = formData.get('observaciones') as string
+    const enfermedad = formData.get('enfermedad') as string
+    const medicacion = formData.get('medicacion') as string
+    const alergico = formData.get('alergico') as string
+    const numeroSeguridadSocial = formData.get('numeroSeguridadSocial') as string
     const derechosImagen = formData.get('derechosImagen') as string
     const justificanteFile = formData.get('justificantePago') as File | null
+    const firmaFile = formData.get('firmaTutor') as File | null
 
     // Validar campos requeridos
     if (!nombreJugador || !apellidos || !fechaNacimiento || 
-        !dni || !nombreTutor || !telefono1 || !email) {
+        !dni || !nombreTutor || !telefono1) {
       return NextResponse.json(
         { error: 'Faltan campos obligatorios' },
         { status: 400 }
@@ -105,6 +106,8 @@ export async function POST(request: NextRequest) {
 
     let justificantePath: string | null = null
     let nombreArchivoJustificante: string | null = null
+    let firmaPath: string | null = null
+    let nombreArchivoFirma: string | null = null
 
     // Guardar el archivo del justificante en carpeta PRIVADA
     if (justificanteFile && justificanteFile.size > 0) {
@@ -129,6 +132,25 @@ export async function POST(request: NextRequest) {
       await writeFile(filePath, buffer)
     }
 
+    if (firmaFile && firmaFile.size > 0) {
+      const firmasDir = join(process.cwd(), 'storage', 'firmas')
+      if (!existsSync(firmasDir)) {
+        await mkdir(firmasDir, { recursive: true })
+      }
+
+      const timestamp = Date.now()
+      const randomStr = Math.random().toString(36).substring(7)
+      const extension = 'png'
+      const fileName = `firma-${timestamp}-${randomStr}.${extension}`
+      const filePath = join(firmasDir, fileName)
+      firmaPath = fileName
+      nombreArchivoFirma = firmaFile.name || 'firma.png'
+
+      const bytes = await firmaFile.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      await writeFile(filePath, buffer)
+    }
+
     // Crear inscripción en la base de datos
     const inscripcion = await prisma.inscripcion.create({
       data: {
@@ -140,13 +162,15 @@ export async function POST(request: NextRequest) {
         nombreTutor,
         telefono1,
         telefono2: telefono2 || null,
-        email,
-        tieneHermanos: tieneHermanos === 'si',
-        alergias: alergias || null,
-        observaciones: observaciones || null,
+        enfermedad: enfermedad || null,
+        medicacion: medicacion || null,
+        alergico: alergico || null,
+        numeroSeguridadSocial: numeroSeguridadSocial || null,
         pagada: false,
         justificantePago: justificantePath,
         nombreArchivoJustificante,
+        firma: firmaPath,
+        nombreArchivoFirma,
         derechosImagen: derechosImagen === 'true'
       }
     })
@@ -158,8 +182,10 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error al crear inscripción:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+    console.error('Detalles del error:', errorMessage)
     return NextResponse.json(
-      { error: 'Error al procesar la inscripción' },
+      { error: 'Error al procesar la inscripción', details: errorMessage },
       { status: 500 }
     )
   }

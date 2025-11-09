@@ -91,7 +91,7 @@ export function Header() {
       <nav className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 font-bold text-xl text-red-600 group z-50">
+          <Link href="/" className="flex items-center gap-3 group z-50">
             <div className="relative w-10 h-10 transition-transform group-hover:scale-110">
               <Image
                 src="/images/logo/cd-onda-logo.png"
@@ -101,7 +101,9 @@ export function Header() {
                 priority
               />
             </div>
-            <span className="hidden sm:inline">CD ONDA</span>
+            <span className="hidden sm:inline text-lg font-black uppercase tracking-[0.08em] text-red-600">
+              CD ONDA
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

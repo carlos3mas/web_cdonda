@@ -118,6 +118,41 @@ export function ClubHistorySection() {
           ))}
         </div>
 
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#b10c0c] via-[#d02121] to-[#8f0909] text-white px-6 py-12 md:px-12 mb-20 shadow-[0_18px_45px_rgba(139,0,0,0.35)]"
+        >
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute -top-24 -right-12 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -bottom-24 -left-12 h-56 w-56 rounded-full bg-blue-500/10 blur-3xl" />
+          </div>
+
+          <div className="relative z-10 max-w-4xl mx-auto text-center space-y-5">
+            <p className="uppercase tracking-[0.35em] text-blue-100 text-xs">
+              Compromiso con Onda
+            </p>
+            <h3 className="text-3xl md:text-4xl font-bold">
+              El corazón del club late con su pueblo, con las futuras generaciones y con el deporte que nos une.
+            </h3>
+            <p className="text-white/85 text-base md:text-lg max-w-3xl mx-auto">
+              Cada entrenamiento, cada partido y cada proyecto social reafirma nuestra promesa de seguir construyendo oportunidades para la juventud, fortalecer la identidad de Onda y mantener vivo el espíritu deportivo.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
+              {['Orgullo Rojo y Blanco', 'Formación para el Futuro', 'Deporte como Comunidad'].map((pill) => (
+                <span
+                  key={pill}
+                  className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-white/90 backdrop-blur-sm"
+                >
+                  {pill}
+                </span>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
         {/* Valores */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

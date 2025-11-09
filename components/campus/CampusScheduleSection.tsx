@@ -5,11 +5,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Clock } from 'lucide-react'
 
 const schedule = [
-  { time: '9:00 - 9:30', activity: 'Recepción y Calentamiento', description: 'Llegada de participantes y preparación física' },
-  { time: '9:30 - 11:00', activity: 'Entrenamiento Técnico', description: 'Fundamentos, control, pase y regate' },
-  { time: '11:00 - 11:30', activity: 'Descanso y Almuerzo', description: 'Bocadillo y hidratación' },
-  { time: '11:30 - 13:00', activity: 'Partidos y Juegos', description: 'Aplicación práctica en situaciones reales' },
-  { time: '13:00 - 14:00', activity: 'Actividades Recreativas', description: 'Juegos, dinámicas y estiramientos' },
+  { time: '9:00 - 9:30', activity: 'Recepción y Bienvenida', description: 'Llegada, control de asistencia y activación ligera' },
+  { time: '9:30 - 10:45', activity: 'Entrenamiento Técnico', description: 'Fundamentos, control, pase y finalización por grupos' },
+  { time: '10:45 - 11:15', activity: 'Almuerzo', description: 'Descanso, hidratación y bocadillo' },
+  { time: '11:15 - 12:30', activity: 'Partidos y Juegos', description: 'Competencias adaptadas por edades y dinámicas colectivas' },
+  { time: '12:30 - 13:00', activity: 'Actividades Recreativas', description: 'Retos, juegos cooperativos y vuelta a la calma' },
 ]
 
 export function CampusScheduleSection() {
@@ -24,7 +24,7 @@ export function CampusScheduleSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Horario <span className="text-gradient">Diario</span>
+            <span className="text-blue-600">Horario</span> <span className="text-red-600">Diario</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             Un día típico en el Campus de Navidad
@@ -40,17 +40,17 @@ export function CampusScheduleSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              <Card className="hover:shadow-lg transition-shadow">
+y              <Card className="border border-red-100 bg-white/95 hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-6">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center">
-                        <Clock className="h-6 w-6 text-red-600" />
+                      <div className="flex h-12 w-12 items-center justify-center">
+                        <Clock className="h-8 w-8 text-blue-600" />
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold text-lg">{item.activity}</h3>
+                        <h3 className="font-bold text-lg text-red-600">{item.activity}</h3>
                         <span className="text-sm font-semibold text-red-600 bg-red-50 px-3 py-1 rounded-full">
                           {item.time}
                         </span>
@@ -69,11 +69,13 @@ export function CampusScheduleSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mt-12 text-center"
+          className="mt-16"
         >
-          <p className="text-gray-600">
-            <strong>Nota:</strong> El horario puede sufrir ligeras modificaciones según las condiciones meteorológicas
-          </p>
+          <div className="mx-auto max-w-4xl rounded-3xl bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] px-10 py-6 text-center text-white shadow-[0_18px_45px_rgba(139,0,0,0.35)]">
+            <p className="text-sm text-white/90">
+              <strong>Nota:</strong> El horario puede verse ajustado por condiciones meteorológicas o actividades especiales.
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>

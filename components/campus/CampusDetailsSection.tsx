@@ -49,7 +49,7 @@ export function CampusDetailsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Información <span className="text-gradient">Práctica</span>
+            <span className="text-blue-600">Información</span> <span className="text-red-600">Práctica</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             Todo lo que necesitas saber antes de inscribirte
@@ -67,20 +67,20 @@ export function CampusDetailsSection() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="h-full text-center hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-                      <Icon className="h-7 w-7 text-red-600" />
+                <Card className="h-full text-center border border-red-100 bg-white/95 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6 space-y-3">
+                    <div className="flex justify-center">
+                      <Icon className="h-8 w-8 text-blue-600" />
                     </div>
-                    <h3 className="font-bold text-lg mb-3">{detail.title}</h3>
-                    <div className="space-y-1 mb-3">
+                    <h3 className="font-bold text-lg text-red-600">{detail.title}</h3>
+                    <div className="space-y-1">
                       {detail.info.map((line, i) => (
                         <p key={i} className="text-sm text-gray-600">{line}</p>
                       ))}
                     </div>
-                    <div className="pt-3 border-t border-gray-100">
-                      <p className="text-xs font-semibold text-red-600">{detail.highlight}</p>
-                    </div>
+                    <span className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 uppercase tracking-wide">
+                      {detail.highlight}
+                    </span>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -93,11 +93,14 @@ export function CampusDetailsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6 text-center"
+          className="mt-16"
         >
-          <p className="text-blue-800">
-            <strong>💡 Descuento Hermanos:</strong> 10% de descuento para el segundo hermano y siguientes
-          </p>
+          <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] px-12 py-10 text-center text-white shadow-[0_18px_45px_rgba(139,0,0,0.35)]">
+            <p className="text-xs uppercase tracking-[0.45em] text-white/70">Descuento especial</p>
+            <p className="mt-3 text-sm text-white/90">
+              <span className="font-semibold">Hermanos:</span> 10% en la segunda inscripción y siguientes. Consulta opciones personalizadas para clubes y grupos.
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>

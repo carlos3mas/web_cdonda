@@ -7,13 +7,13 @@ import Image from 'next/image'
 // Equipajes del club - el usuario añadirá las fotos
 const kits = [
   {
-    name: 'Equipaje Local',
+    name: 'Primera Equipación',
     description: 'Equipación para partidos en casa',
     image: '/images/kits/local.jpg', // El usuario añadirá esta imagen
     alt: 'Equipaje local CD Onda'
   },
   {
-    name: 'Equipaje Visitante',
+    name: 'Segunda Equipación',
     description: 'Equipación para partidos fuera',
     image: '/images/kits/visitante.jpg', // El usuario añadirá esta imagen
     alt: 'Equipaje visitante CD Onda'
@@ -31,11 +31,8 @@ export function ClubKitsSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
-            <Shirt className="h-8 w-8 text-red-600" />
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Nuestros <span className="text-gradient">Equipajes</span>
+           <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="text-blue-600">Nuestros</span> <span className="text-gradient">Equipajes</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             Descubre las equipaciones oficiales del Club Deportivo Onda. 
@@ -76,7 +73,7 @@ export function ClubKitsSection() {
                   */}
                 </div>
                 <div className="p-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{kit.name}</h3>
+                  <h3 className="text-2xl font-bold text-red-600 mb-2">{kit.name}</h3>
                   <p className="text-gray-600">{kit.description}</p>
                 </div>
               </div>

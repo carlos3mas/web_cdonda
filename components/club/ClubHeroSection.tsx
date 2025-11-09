@@ -1,124 +1,189 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 export function ClubHeroSection() {
-  const floatingBadges = [
-    {
-      label: 'Pasión',
-      className: 'top-[-20px] left-[-20px]',
-      color: 'bg-red-600/90 text-white border border-white/40 shadow-[0_18px_40px_rgba(220,38,38,0.5)]'
-    },
-    {
-      label: 'Valores',
-      className: 'top-[-50px] right-[-50px]',
-      color: 'bg-white/90 text-red-700 border border-red-500/60 shadow-[0_18px_40px_rgba(255,255,255,0.35)]'
-    },
-    {
-      label: 'Cantera',
-      className: 'bottom-[8%] left-[-55px]',
-      color: 'bg-white/90 text-red-700 border border-red-500/60 shadow-[0_18px_40px_rgba(220,38,38,0.35)]'
-    },
-    {
-      label: '+ de 100 años',
-      className: 'bottom-[-60px] right-[-10px]',
-      color: 'bg-red-500/90 text-white border border-white/40 shadow-[0_18px_40px_rgba(220,38,38,0.5)]'
-    }
-  ]
-
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#fffbfb]">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#8b0000] via-[#d53030] to-white" />
-      <div className="absolute -top-32 -left-20 h-[420px] w-[420px] bg-red-500/40 blur-[150px]" />
-      <div className="absolute -bottom-36 right-[-12%] h-[420px] w-[420px] bg-white/70 blur-[160px]" />
-
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-white">
+      {/* Fondo dividido diagonalmente en blanco y rojo */}
+      <div className="absolute inset-0 bg-white" />
+      <div className="absolute inset-0">
+        <div
+          className="absolute inset-0 bg-red-600"
+          style={{ clipPath: 'polygon(45% 0%, 100% 0%, 100% 100%, 20% 100%)' }}
+        />
+      </div>
+      {/* Textura sutil azul para cohesión cromática */}
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 10px 10px, rgba(30,64,175,0.16) 1.4px, transparent 0)',
+          backgroundSize: '40px 40px'
+        }}
+      />
+      {/* Halos de luz para volumen */}
+      <div className="absolute -top-40 left-[12%] h-[360px] w-[360px] rounded-full bg-red-500/35 blur-[120px]" />
+      <div className="absolute -bottom-48 right-[8%] h-[300px] w-[300px] rounded-full bg-blue-500/24 blur-[120px]" />
+ 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center text-white">
-          <div className="relative flex flex-col items-center">
-            {floatingBadges.map((badge, index) => (
-              <motion.div
-                key={badge.label}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: [0, 1, 0.35, 1], y: [0, -12, 0] }}
-                transition={{ delay: 0.4 + index * 0.2, duration: 6.5, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
-                className={`hidden md:flex absolute ${badge.className}`}
-                style={{ transform: `rotate(${index % 2 === 0 ? -8 : 6}deg)` }}
-              >
-                <span className={`px-5 py-2 text-xs font-semibold uppercase tracking-[0.22em] rounded-full backdrop-blur-sm ${badge.color}`}>
-                  {badge.label}
+        <div className="grid gap-8 md:gap-10 lg:grid-cols-[0.7fr,1.9fr] lg:gap-6 items-center max-w-7xl mx-auto py-14 lg:py-18">
+          
+          {/* Columna izquierda - Imágenes apiladas */}
+          <motion.div
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="relative flex flex-col items-center gap-5 order-2 lg:order-1 w-full"
+          >
+            {/* Escudo principal */}
+            <motion.div
+              animate={{ 
+                y: [0, -10, 0],
+              }}
+              transition={{ 
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="relative w-full max-w-[140px] sm:max-w-[170px] md:max-w-[200px]"
+            >
+              <div className="relative w-full aspect-[4/5]">
+                <Image
+                  src="/images/logos/escudo-cd-onda.png"
+                  alt="Escudo CD Onda"
+                  fill
+                  className="object-contain drop-shadow-[0_10px_40px_rgba(220,38,38,0.4)]"
+                  priority
+                />
+              </div>
+            </motion.div>
+
+            {/* Logo Escola de Futbol */}
+            <motion.div
+              animate={{ 
+                scale: [1, 1.02, 1],
+              }}
+              transition={{ 
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.5
+              }}
+              className="relative w-full max-w-[200px] sm:max-w-[230px] md:max-w-[260px]"
+            >
+              <Image
+                src="/images/logos/escola-futbol.png"
+                alt="Escola de Futbol CD Onda"
+                width={260}
+                height={130}
+                className="w-full h-auto drop-shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
+                priority
+              />
+            </motion.div>
+          </motion.div>
+
+          {/* Columna derecha - Contenido */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="order-1 lg:order-2 flex flex-col items-center text-center text-gray-900 w-full max-w-4xl mx-auto px-2 md:px-6"
+          >
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-sm md:text-base uppercase tracking-[0.4em] text-gray-900 font-bold mb-5"
+            >
+              Desde 1921 · Orgullo rojo y blanco
+            </motion.p>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-[2rem] sm:text-[3rem] lg:text-[3rem] xl:text-[4rem] font-black leading-[1.05] uppercase mb-5 drop-shadow-[0_25px_70px_rgba(0,0,0,0.28)]"
+            >
+              <span className="block text-black">
+                El futuro del fútbol empieza aquí
                 </span>
-              </motion.div>
-            ))}
+            </motion.h1>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="mb-8 flex justify-center"
+            >
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex items-center gap-4 md:gap-6">
+                  <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-[0.05em] text-white drop-shadow-[0_20px_55px_rgba(0,0,0,0.45)]">
+                    CD ONDA
+                  </span>
+                </div>
+                <span className="block h-[2px] w-20 rounded-full bg-white/80" aria-hidden />
+              </div>
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.8 }}
+              className="text-base md:text-lg text-gray-800 font-semibold max-w-2xl mb-10 drop-shadow-[0_12px_40px_rgba(0,0,0,0.14)]"
+            >
+              Un club centenario que transforma talento en fútbol de élite, impulsando la cantera, la afición y los valores de toda una ciudad.
+            </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex flex-col items-center"
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="flex justify-center"
             >
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-sm md:text-base uppercase tracking-[0.4em] text-red-100 mb-5"
-              >
-                Desde 1921 · Orgullo rojo y blanco
-              </motion.p>
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] uppercase"
-              >
-                <span className="block text-white drop-shadow-[0_15px_50px_rgba(0,0,0,0.45)]">
-                  El futuro del fútbol
-                </span>
-                <span className="block text-white drop-shadow-[0_15px_50px_rgba(0,0,0,0.45)]">
-                  empieza aquí.
-                </span>
-              </motion.h1>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                className="mt-8 mb-10 flex justify-center"
-              >
-                <span className="relative inline-flex">
-                  <span className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-[0.12em] text-transparent bg-clip-text bg-gradient-to-r from-white via-red-200 to-red-500 drop-shadow-[0_18px_45px_rgba(220,38,38,0.45)]">
-                    CD ONDA
-                  </span>
-                  <span className="absolute left-0 right-0 -bottom-4 h-1 rounded-full bg-gradient-to-r from-white via-red-300 to-red-600 opacity-80" aria-hidden />
-                </span>
-              </motion.div>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.8 }}
-                className="text-base md:text-lg text-white/90 max-w-2xl"
-              >
-                Un club centenario que transforma talento en fútbol de élite, impulsando la cantera, la afición y los valores de toda una ciudad.
-              </motion.p>
+              <Link href="#contacto">
+                <Button
+                  size="lg"
+                  className="group bg-white text-red-600 hover:bg-red-50 text-lg px-10 py-6 font-semibold tracking-wide shadow-[0_18px_45px_rgba(255,255,255,0.35)] border border-red-200 transition-colors"
+                >
+                  Contacta con el club
+                  <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
             </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="mt-12 flex justify-center"
-          >
-            <Link href="#contacto">
-              <Button size="lg" className="group bg-red-500 text-white hover:bg-red-400 text-lg px-10 py-6 font-semibold tracking-wide shadow-[0_18px_45px_rgba(220,38,38,0.45)]">
-                Contacta con el club
-                <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
           </motion.div>
         </div>
       </div>
+
+      {/* Líneas decorativas animadas */}
+      <motion.div
+        animate={{ 
+          scaleX: [0, 1],
+          opacity: [0, 0.2, 0]
+        }}
+        transition={{ 
+          duration: 2,
+          repeat: Infinity,
+          repeatDelay: 1
+        }}
+        className="absolute top-1/4 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-red-400 to-transparent"
+      />
+      <motion.div
+        animate={{ 
+          scaleX: [0, 1],
+          opacity: [0, 0.2, 0]
+        }}
+        transition={{ 
+          duration: 2,
+          repeat: Infinity,
+          repeatDelay: 1,
+          delay: 1
+        }}
+        className="absolute bottom-1/4 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-red-400 to-transparent"
+      />
     </section>
   )
 }

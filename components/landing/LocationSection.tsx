@@ -16,7 +16,7 @@ export function LocationSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-4xl md:text-5xl text-blue-600 font-bold mb-4">
             Nuestras <span className="text-gradient">Instalaciones</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -46,7 +46,7 @@ export function LocationSection() {
                 <h3 className="text-xl font-bold mb-3 text-red-600">Campo Municipal Enrique Saura Gil</h3>
                 <div className="space-y-2 mb-4">
                   <p className="text-sm text-gray-600">
-                    <strong className="text-gray-800">Dirección:</strong>{' '}
+                    <strong className="text-blue-600">Dirección:</strong>{' '}
                     <a
                       href="https://www.google.com/maps?q=Calle+Torrechiva+2,+12200+Onda,+Castellón"
                       target="_blank"
@@ -57,12 +57,14 @@ export function LocationSection() {
                     </a>
                   </p>
                   <p className="text-sm text-gray-600">
-                    <strong className="text-gray-800">Terreno:</strong> Césped artificial
+                    <strong className="text-blue-600">Terreno:</strong> Césped artificial
                   </p>
                   <p className="text-sm text-gray-600">
-                    <strong className="text-gray-800">Capacidad:</strong> Aproximadamente 5.000 espectadores
+                    <strong className="text-blue-600">Capacidad:</strong> Más de 5.000 espectadores
                   </p>
-                  
+                  <p className="text-sm text-gray-600">
+                    <strong className="text-blue-600">Medidas:</strong> 105 m x 69 m
+                  </p>
                 </div>
                 <p className="text-sm text-gray-600 mb-3">
                   Campo principal, vestuarios equipados y apto para competiciones federadas. 
@@ -83,7 +85,7 @@ export function LocationSection() {
               <div className="aspect-video relative bg-gradient-to-br from-gray-600 to-gray-800 overflow-hidden">
                                                        
                 <Image
-                  src="/images/campos/la-cossa.webp"
+                  src="/images/campos/la-cossa.jpg"
                   alt="Campo Municipal La Cossa"
                   fill
                   className="object-cover"
@@ -95,7 +97,7 @@ export function LocationSection() {
                 <h3 className="text-xl font-bold mb-3 text-red-600">Campo Municipal La Cossa</h3>
                 <div className="space-y-2 mb-4">
                   <p className="text-sm text-gray-600">
-                    <strong className="text-gray-800">Dirección:</strong>{' '}
+                    <strong className="text-blue-600">Dirección:</strong>{' '}
                     <a
                       href="https://www.google.com/maps?q=Calle+San+Fermín+s/n,+12200+Onda,+Castellón"
                       target="_blank"
@@ -106,10 +108,13 @@ export function LocationSection() {
                     </a>
                   </p>
                   <p className="text-sm text-gray-600">
-                    <strong className="text-gray-800">Terreno:</strong> Césped artificial
+                    <strong className="text-blue-600">Terreno:</strong> Césped artificial
                   </p>
                   <p className="text-sm text-gray-600">
-                    <strong className="text-gray-800">Horario oficinas del club:</strong> 17:00-20:00h
+                    <strong className="text-blue-600">Capacidad:</strong> Aproximadamente 1.500 espectadores
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong className="text-blue-600">Medidas:</strong> 94 m x 54 m
                   </p>
                 </div>
                 <p className="text-sm text-gray-600 mb-3">
@@ -127,56 +132,55 @@ export function LocationSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="bg-gray-900 text-white rounded-2xl p-8 md:p-12"
+          className="rounded-2xl bg-gradient-to-b from-[#b10c0c] via-[#d02121] to-[#8f0909] text-white p-8 md:p-12 shadow-[0_18px_45px_rgba(139,0,0,0.35)]"
         >
-          <h3 className="text-3xl font-bold mb-8 text-center">Información de Contacto</h3>
+          <h3 className="text-3xl font-bold mb-8 text-center">
+           Información de Contacto
+          </h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center mb-4">
-                <MapPin className="h-6 w-6" />
+              <div className="flex items-center justify-center mb-4">
+                <MapPin className="h-9 w-9 text-blue-600" />
               </div>
               <h4 className="font-semibold mb-2">Dirección</h4>
-              <p className="text-gray-300 text-sm">
-              Campo Municipal La Cossa<br />
+              <p className="text-white/80 text-sm">
+                Campo Municipal La Cossa<br />
                 <a
                   href="https://www.google.com/maps?q=Calle+San+Fermín+s/n,+12200+Onda,+Castellón"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-red-400 hover:text-red-300 hover:underline transition-colors"
+                  className="text-blue-200 hover:text-blue-100 hover:underline transition-colors"
                 >
                   Calle San Fermín s/n, 12200 Onda (Castellón)
                 </a>
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center mb-4">
-                <Clock className="h-6 w-6" />
+              <div className="flex items-center justify-center mb-4">
+                <Clock className="h-9 w-9 text-blue-600" />
               </div>
               <h4 className="font-semibold mb-2">Horario</h4>
-              <p className="text-gray-300 text-sm">
+              <p className="text-white/80 text-sm">
                 Lunes a Viernes<br />
                 17:00 - 20:00h
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center mb-4">
-                <Phone className="h-6 w-6" />
+              <div className="flex items-center justify-center mb-4">
+                <Phone className="h-9 w-9 text-blue-600" />
               </div>
               <h4 className="font-semibold mb-2">Teléfono</h4>
-              <p className="text-gray-300 text-sm">
-                Municipal: 964 600 050<br />
-                Club: 964 77 00 00
+              <p className="text-white/80 text-sm">
+                <br />
+                Club: 608 337 444
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center mb-4">
-                <Mail className="h-6 w-6" />
+              <div className="flex items-center justify-center mb-4">
+                <Mail className="h-9 w-9 text-blue-600" />
               </div>
               <h4 className="font-semibold mb-2">Email</h4>
-              <p className="text-gray-300 text-sm">
-                info@cdonda.com<br />
-                campus@cdonda.com
-              </p>
+              <p className="text-white/80 text-sm">escolafut@gmail.com</p>
             </div>
           </div>
         </motion.div>

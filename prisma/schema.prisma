@@ -19,13 +19,15 @@ model Inscripcion {
   nombreTutor            String
   telefono1              String
   telefono2              String?
-  email                  String
-  tieneHermanos          Boolean  @default(false)
-  alergias               String?
-  observaciones          String?
+  enfermedad             String?
+  medicacion             String?
+  alergico               String?
+  numeroSeguridadSocial  String?
   pagada                 Boolean  @default(false)
   justificantePago       String?  // Ruta al archivo del justificante
   nombreArchivoJustificante String?  // Nombre original del archivo
+  firma                  String?
+  nombreArchivoFirma     String?
   derechosImagen         Boolean  @default(false) // Autorización para usar imágenes en redes sociales
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt

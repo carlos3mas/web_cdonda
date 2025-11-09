@@ -1,37 +1,36 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
-import Image from 'next/image'
-import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
-import Link from 'next/link'
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export function ClubHeroSection() {
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-white">
-      {/* Fondo dividido diagonalmente en blanco y rojo */}
-      <div className="absolute inset-0 bg-white" />
-      <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-red-600"
-          style={{ clipPath: 'polygon(45% 0%, 100% 0%, 100% 100%, 20% 100%)' }}
-        />
-      </div>
-      {/* Textura sutil azul para cohesión cromática */}
+      {/* Fondo dividido diagonalmente en blanco y rojo optimizado */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-white" />
+        <div className="absolute inset-0 bg-white" />
+        <div className="absolute inset-y-[-35%] left-[39%] w-[140%] origin-top-left -skew-x-[14deg] bg-[#d61b1b]" />
+        
+      </div>  
+      {/* Textura sutil en resoluciones grandes */}
       <div
-        className="absolute inset-0 opacity-10"
+        className="absolute inset-0 hidden lg:block opacity-10"
         style={{
-          backgroundImage: 'radial-gradient(circle at 10px 10px, rgba(30,64,175,0.16) 1.4px, transparent 0)',
-          backgroundSize: '40px 40px'
+          backgroundImage:
+            "radial-gradient(circle at 12px 12px, rgba(30,64,175,0.14) 1.4px, transparent 0)",
+          backgroundSize: "46px 46px",
         }}
       />
-      {/* Halos de luz para volumen */}
-      <div className="absolute -top-40 left-[12%] h-[360px] w-[360px] rounded-full bg-red-500/35 blur-[120px]" />
-      <div className="absolute -bottom-48 right-[8%] h-[300px] w-[300px] rounded-full bg-blue-500/24 blur-[120px]" />
- 
+      {/* Halos de luz suavizados */}
+      <div className="absolute -top-40 left-[10%] h-[320px] w-[320px] rounded-full bg-red-500/25 blur-[80px]" />
+      <div className="absolute -bottom-48 right-[12%] h-[280px] w-[280px] rounded-full bg-blue-500/18 blur-[80px]" />
+
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid gap-8 md:gap-10 lg:grid-cols-[0.7fr,1.9fr] lg:gap-6 items-center max-w-7xl mx-auto py-14 lg:py-18">
-          
           {/* Columna izquierda - Imágenes apiladas */}
           <motion.div
             initial={{ opacity: 0, x: -100 }}
@@ -41,13 +40,13 @@ export function ClubHeroSection() {
           >
             {/* Escudo principal */}
             <motion.div
-              animate={{ 
+              animate={{
                 y: [0, -10, 0],
               }}
-              transition={{ 
+              transition={{
                 duration: 4,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
               }}
               className="relative w-full max-w-[140px] sm:max-w-[170px] md:max-w-[200px]"
             >
@@ -56,22 +55,23 @@ export function ClubHeroSection() {
                   src="/images/logos/escudo-cd-onda.png"
                   alt="Escudo CD Onda"
                   fill
-                  className="object-contain drop-shadow-[0_10px_40px_rgba(220,38,38,0.4)]"
                   priority
+                  sizes="(min-width: 1024px) 220px, (min-width: 640px) 32vw, 45vw"
+                  className="object-contain drop-shadow-[0_12px_36px_rgba(220,38,38,0.32)]"
                 />
               </div>
             </motion.div>
 
             {/* Logo Escola de Futbol */}
             <motion.div
-              animate={{ 
+              animate={{
                 scale: [1, 1.02, 1],
               }}
-              transition={{ 
+              transition={{
                 duration: 3,
                 repeat: Infinity,
                 ease: "easeInOut",
-                delay: 0.5
+                delay: 0.5,
               }}
               className="relative w-full max-w-[200px] sm:max-w-[230px] md:max-w-[260px]"
             >
@@ -80,8 +80,9 @@ export function ClubHeroSection() {
                 alt="Escola de Futbol CD Onda"
                 width={260}
                 height={130}
-                className="w-full h-auto drop-shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
-                priority
+                loading="lazy"
+                sizes="(min-width: 1024px) 240px, (min-width: 640px) 36vw, 55vw"
+                className="w-full h-auto drop-shadow-[0_10px_28px_rgba(0,0,0,0.2)]"
               />
             </motion.div>
           </motion.div>
@@ -106,11 +107,11 @@ export function ClubHeroSection() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-[2rem] sm:text-[3rem] lg:text-[3rem] xl:text-[4rem] font-black leading-[1.05] uppercase mb-5 drop-shadow-[0_25px_70px_rgba(0,0,0,0.28)]"
+              className="text-[2.25rem] sm:text-[3.1rem] lg:text-[3.6rem] xl:text-[4rem] font-black leading-tight uppercase mb-5 drop-shadow-[0_18px_55px_rgba(0,0,0,0.24)]"
             >
               <span className="block text-black">
                 El futuro del fútbol empieza aquí
-                </span>
+              </span>
             </motion.h1>
 
             <motion.div
@@ -121,11 +122,14 @@ export function ClubHeroSection() {
             >
               <div className="flex flex-col items-center gap-3">
                 <div className="flex items-center gap-4 md:gap-6">
-                  <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-[0.05em] text-white drop-shadow-[0_20px_55px_rgba(0,0,0,0.45)]">
+                  <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-[0.05em] text-white drop-shadow-[0_16px_45px_rgba(0,0,0,0.35)]">
                     CD ONDA
                   </span>
                 </div>
-                <span className="block h-[2px] w-20 rounded-full bg-white/80" aria-hidden />
+                <span
+                  className="block h-[2px] w-20 rounded-full bg-white/80"
+                  aria-hidden
+                />
               </div>
             </motion.div>
 
@@ -133,9 +137,11 @@ export function ClubHeroSection() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8, duration: 0.8 }}
-              className="text-base md:text-lg text-gray-800 font-semibold max-w-2xl mb-10 drop-shadow-[0_12px_40px_rgba(0,0,0,0.14)]"
+              className="text-base md:text-lg text-gray-800 font-semibold max-w-2xl mb-10 drop-shadow-[0_10px_32px_rgba(0,0,0,0.18)]"
             >
-              Un club centenario que transforma talento en fútbol de élite, impulsando la cantera, la afición y los valores de toda una ciudad.
+              Un club centenario que transforma talento en fútbol de élite,
+              impulsando la cantera, la afición y los valores de toda una
+              ciudad.
             </motion.p>
 
             <motion.div
@@ -158,33 +164,7 @@ export function ClubHeroSection() {
         </div>
       </div>
 
-      {/* Líneas decorativas animadas */}
-      <motion.div
-        animate={{ 
-          scaleX: [0, 1],
-          opacity: [0, 0.2, 0]
-        }}
-        transition={{ 
-          duration: 2,
-          repeat: Infinity,
-          repeatDelay: 1
-        }}
-        className="absolute top-1/4 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-red-400 to-transparent"
-      />
-      <motion.div
-        animate={{ 
-          scaleX: [0, 1],
-          opacity: [0, 0.2, 0]
-        }}
-        transition={{ 
-          duration: 2,
-          repeat: Infinity,
-          repeatDelay: 1,
-          delay: 1
-        }}
-        className="absolute bottom-1/4 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-red-400 to-transparent"
-      />
+      {/* Líneas decorativas eliminadas para evitar interferencias visuales */}
     </section>
-  )
+  );
 }
-

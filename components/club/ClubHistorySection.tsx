@@ -8,32 +8,44 @@ const achievements = [
   {
     year: '1921',
     title: 'Fundación del Club',
-    description: 'Nace el Club Deportivo Onda. Hasta 1950 el club pasó por diversas denominaciones y nunca sobrepasó las divisiones regionales.'
+    description: 'Nace el Club Deportivo Onda. Hasta 1950 el club pasó por diversas denominaciones y nunca sobrepasó las divisiones regionales.',
+    image:
+      'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1000&q=60'
   },
   {
     year: '1955-56',
     title: 'Primer Ascenso a Tercera División',
-    description: 'El club consigue su primer gran hito al ascender a Tercera División, permaneciendo en esta categoría durante 14 temporadas consecutivas hasta 1969/70.'
+    description: 'El club consigue su primer gran hito al ascender a Tercera División, permaneciendo en esta categoría durante 14 temporadas consecutivas hasta 1969/70.',
+    image:
+      'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&w=1000&q=60'
   },
   {
     year: '1988-89',
     title: 'Regreso a Tercera División',
-    description: 'Tras casi 20 años en regionales, el CD Onda vuelve a Tercera División. Desde entonces se ha mantenido en esta categoría salvo breves descensos.'
+    description: 'Tras casi 20 años en regionales, el CD Onda vuelve a Tercera División. Desde entonces se ha mantenido en esta categoría salvo breves descensos.',
+    image:
+      'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1000&q=60'
   },
   {
     year: '2001-02',
     title: 'Ascenso a Segunda División B',
-    description: 'El mayor hito de la historia del club: ascenso a la categoría de bronce del fútbol español tras proclamarse campeón de su liguilla.'
+    description: 'El mayor hito de la historia del club: ascenso a la categoría de bronce del fútbol español tras proclamarse campeón de su liguilla.',
+    image:
+      'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1000&q=60'
   },
   {
     year: '2008',
     title: 'Estreno del Himno del Club',
-    description: 'Bajo la presidencia de Juan Carlos Ten, se estrena el himno del club con música y letra de Joan Castells Badenes.'
+    description: 'Bajo la presidencia de Juan Carlos Ten, se estrena el himno del club con música y letra de Joan Castells Badenes.',
+    image:
+      'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1000&q=60'
   },
   {
     year: 'Actualidad',
     title: 'Formación, Valores y Modernización',
-    description: 'El CD Onda continúa su legado formando jugadores y personas, con modernas instalaciones y una sólida cantera.'
+    description: 'El CD Onda continúa su legado formando jugadores y personas, con modernas instalaciones y una sólida cantera.',
+    image:
+      'https://images.unsplash.com/photo-1587387119725-852ea70f0043?auto=format&fit=crop&w=1000&q=60'
   }
 ]
 
@@ -95,7 +107,13 @@ export function ClubHistorySection() {
         </motion.div>
 
         {/* Timeline */}
-        <div className="max-w-4xl mx-auto mb-20">
+        <div className="relative max-w-4xl mx-auto mb-20">
+          <div className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute left-[-20%] top-[5%] h-40 w-64 bg-[radial-gradient(circle_at_center,rgba(214,27,27,0.12)_0%,rgba(214,27,27,0)_70%)] blur-3xl" />
+            <div className="absolute right-[-18%] top-[38%] h-48 w-72 bg-[radial-gradient(circle_at_center,rgba(30,64,175,0.12)_0%,rgba(30,64,175,0)_70%)] blur-3xl" />
+            <div className="absolute left-[-15%] bottom-[12%] h-44 w-64 bg-[radial-gradient(circle_at_center,rgba(14,116,144,0.1)_0%,rgba(14,116,144,0)_70%)] blur-3xl" />
+          </div>
+
           {achievements.map((achievement, index) => (
             <motion.div
               key={achievement.year}
@@ -103,12 +121,30 @@ export function ClubHistorySection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="flex gap-6 mb-8 items-start"
+              className="relative flex gap-6 mb-8 items-start"
             >
+              {achievement.image && (
+                <div
+                  aria-hidden="true"
+                  className={`pointer-events-none absolute z-0 overflow-hidden rounded-[24px] border border-white/50 opacity-70 drop-shadow-[0_22px_32px_rgba(0,0,0,0.18)] transition-transform duration-700 ease-out ${
+                    index % 2 === 0
+                      ? 'left-[-170px] top-[-12px] h-32 w-48 rotate-[-3deg] md:left-[-240px] md:h-44 md:w-72'
+                      : 'right-[-170px] top-[-18px] h-32 w-48 rotate-[4deg] md:right-[-240px] md:h-44 md:w-72'
+                  }`}
+                >
+                  <img
+                    src={achievement.image}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-white/20" />
+                </div>
+              )}
               <div className="flex-shrink-0 w-32">
-                <div className="text-2xl font-bold text-red-600">{achievement.year}</div>
+                <div className="relative z-10 text-2xl font-bold text-red-600">{achievement.year}</div>
               </div>
-              <Card className="flex-1">
+              <Card className="relative z-10 flex-1">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-blue-600 mb-2">{achievement.title}</h3>
                   <p className="text-gray-600">{achievement.description}</p>

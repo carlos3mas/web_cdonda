@@ -137,7 +137,7 @@ export function ClubHeroSection() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8, duration: 0.8 }}
-              className="text-base md:text-lg text-gray-800 font-semibold max-w-2xl mb-10 drop-shadow-[0_10px_32px_rgba(0,0,0,0.18)]"
+              className="text-base md:text-lg text-black font-semibold max-w-2xl mb-10 drop-shadow-[0_10px_32px_rgba(0,0,0,0.18)]"
             >
               Un club centenario que transforma talento en fútbol de élite,
               impulsando la cantera, la afición y los valores de toda una

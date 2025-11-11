@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // Añade aquí dominios remotos autorizados si en el futuro sirves imágenes externas
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
   },
   experimental: {
     scrollRestoration: true,

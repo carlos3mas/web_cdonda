@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { SponsorsBanner } from '@/components/layout/SponsorsBanner'
+import { Providers } from '@/components/providers/I18nProvider'
 import '@/lib/env-validation' // Validar variables de entorno al inicio
 
 const inter = Inter({ subsets: ['latin'] })
@@ -46,8 +47,10 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
-        <SponsorsBanner />
-        {children}
+        <Providers>
+          <SponsorsBanner />
+          {children}
+        </Providers>
       </body>
     </html>
   )

@@ -12,12 +12,14 @@ import { InscripcionFormData } from '@/types'
 import { Download, Loader2, CheckCircle, AlertCircle, Upload, FileText } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import SignaturePad from 'signature_pad'
+import { useI18n } from '@/lib/i18n/context'
 
 interface InscripcionFormProps {
   tipoInscripcion?: string
 }
 
 export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
+  const { t } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
   const tipoFromUrl = searchParams?.get('tipo') || tipoInscripcion || 'campus-navidad'
@@ -94,7 +96,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     // Validar que se haya adjuntado el justificante
     if (!justificanteFile) {
       setSubmitStatus('error')
-      setErrorMessage('Debes adjuntar el justificante de pago')
+      setErrorMessage(t('form.errorJustificante'))
       setIsSubmitting(false)
       return
     }
@@ -102,7 +104,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     try {
       if (signaturePadRef.current && signaturePadRef.current.isEmpty()) {
         setSubmitStatus('error')
-        setErrorMessage('Debes firmar en el recuadro antes de enviar la inscripción')
+        setErrorMessage(t('form.errorFirma'))
         setIsSubmitting(false)
         return
       }
@@ -134,7 +136,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Error al procesar la inscripción')
+        throw new Error(error.error || t('form.errorJustificante'))
       }
 
       const data = await response.json()
@@ -178,13 +180,13 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     if (file) {
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
       if (!validTypes.includes(file.type)) {
-        setErrorMessage('El archivo debe ser una imagen (JPG, PNG, WEBP) o PDF')
+        setErrorMessage(t('form.errorArchivo'))
         setSubmitStatus('error')
         return
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        setErrorMessage('El archivo no debe superar los 5MB')
+        setErrorMessage(t('form.errorTamano'))
         setSubmitStatus('error')
         return
       }
@@ -205,17 +207,17 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-center py-12"
+        className="text-center py-8 sm:py-10 md:py-12"
       >
         <Card>
-          <CardContent className="pt-12 pb-12">
-            <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold mb-4">¡Inscripción Completada!</h2>
-            <p className="text-gray-600 mb-4">
-              Tu inscripción se ha procesado correctamente. El PDF con los datos se ha descargado automáticamente.
+          <CardContent className="pt-8 pb-8 sm:pt-10 sm:pb-10 md:pt-12 md:pb-12 px-4 sm:px-6">
+            <CheckCircle className="h-16 w-16 sm:h-20 sm:w-20 text-green-500 mx-auto mb-4 sm:mb-6" />
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 px-2">{t('form.inscripcionCompletada')}</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 px-3 leading-relaxed">
+              {t('form.inscripcionProcesada')}
             </p>
-            <p className="text-sm text-gray-500">
-              Serás redirigido a la página principal en unos segundos...
+            <p className="text-xs sm:text-sm text-gray-500 px-3">
+              {t('form.redireccionando')}
             </p>
           </CardContent>
         </Card>
@@ -230,179 +232,188 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       transition={{ duration: 0.6 }}
     >
       <Card className="border border-red-100">
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold">
-            <span className="text-red-600">Formulario de</span>{' '}
-            <span className="text-red-600">Inscripción</span>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-xl sm:text-2xl font-semibold">
+            <span className="text-red-600">{t('form.formularioInscripcion')}</span>
           </CardTitle>
-          <CardDescription>
-            Completa los datos del jugador. Todas las posiciones marcadas con * son obligatorias.
+          <CardDescription className="text-sm sm:text-base mt-2">
+            {t('form.completarDatos')}
           </CardDescription>
-          <div className="mt-4 rounded-xl bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] px-5 py-4 text-sm text-white shadow">
-            <p className="font-semibold">Información importante</p>
-            <p className="mt-1 text-white/85">
-              El campus incluye entrenamientos, actividades y comidas. El seguro deportivo se aplica únicamente a jugadores federados.
-              No se entrega camiseta ni diploma; el justificante de pago es obligatorio para completar la inscripción.
+          <div className="mt-3 sm:mt-4 rounded-xl bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] px-4 py-3 sm:px-5 sm:py-4 text-xs sm:text-sm text-white shadow">
+            <p className="font-semibold">{t('form.informacionImportante')}</p>
+            <p className="mt-1 text-white/85 leading-relaxed">
+              {t('form.informacionCampus')}
             </p>
           </div>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="p-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
             {/* Datos del Jugador */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Datos del Jugador</h3>
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold border-b pb-2">{t('form.datosJugador')}</h3>
               
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="nombreJugador">Nombre *</Label>
+                  <Label htmlFor="nombreJugador" className="text-sm">{t('form.nombre')} *</Label>
                   <Input
                     id="nombreJugador"
                     required
                     value={formData.nombreJugador}
                     onChange={(e) => handleChange('nombreJugador', e.target.value)}
-                    placeholder="Nombre del jugador"
+                    placeholder={t('form.nombrePlaceholder')}
+                    className="text-sm sm:text-base"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="apellidos">Apellidos *</Label>
+                  <Label htmlFor="apellidos" className="text-sm">{t('form.apellidos')} *</Label>
                   <Input
                     id="apellidos"
                     required
                     value={formData.apellidos}
                     onChange={(e) => handleChange('apellidos', e.target.value)}
-                    placeholder="Apellidos del jugador"
+                    placeholder={t('form.apellidosPlaceholder')}
+                    className="text-sm sm:text-base"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="fechaNacimiento">Fecha de Nacimiento *</Label>
+                <Label htmlFor="fechaNacimiento" className="text-sm">{t('form.fechaNacimiento')} *</Label>
                 <Input
                   id="fechaNacimiento"
                   type="date"
                   required
                   value={formData.fechaNacimiento}
                   onChange={(e) => handleChange('fechaNacimiento', e.target.value)}
+                  className="text-sm sm:text-base"
                 />
               </div>
 
               <div>
-                <Label htmlFor="numeroSeguridadSocial">SIP del Jugador *</Label>
+                <Label htmlFor="numeroSeguridadSocial" className="text-sm">{t('form.sipJugador')} *</Label>
                 <Input
                   id="numeroSeguridadSocial"
                   required
                   value={formData.numeroSeguridadSocial}
                   onChange={(e) => handleChange('numeroSeguridadSocial', e.target.value)}
-                  placeholder="Ej.: 12 1234567890"
+                  placeholder={t('form.sipPlaceholder')}
+                  className="text-sm sm:text-base"
                 />
               </div>
             </div>
 
             {/* Datos del Tutor */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Datos del Padre/Madre/Tutor</h3>
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold border-b pb-2">{t('form.datosTutor')}</h3>
               
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="nombreTutor">Nombre del Tutor *</Label>
+                  <Label htmlFor="nombreTutor" className="text-sm">{t('form.nombreTutor')} *</Label>
                   <Input
                     id="nombreTutor"
                     required
                     value={formData.nombreTutor}
                     onChange={(e) => handleChange('nombreTutor', e.target.value)}
-                    placeholder="Nombre completo del tutor"
+                    placeholder={t('form.nombreTutorPlaceholder')}
+                    className="text-sm sm:text-base"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="dni">DNI del Tutor *</Label>
+                  <Label htmlFor="dni" className="text-sm">{t('form.dniTutor')} *</Label>
                   <Input
                     id="dni"
                     required
                     value={formData.dni}
                     onChange={(e) => handleChange('dni', e.target.value)}
-                    placeholder="12345678A"
+                    placeholder={t('form.dniPlaceholder')}
+                    className="text-sm sm:text-base"
                   />
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="telefono1">Teléfono Madre/Tutor *</Label>
+                  <Label htmlFor="telefono1" className="text-sm">{t('form.telefonoMadre')} *</Label>
                   <Input
                     id="telefono1"
                     type="tel"
                     required
                     value={formData.telefono1}
                     onChange={(e) => handleChange('telefono1', e.target.value)}
-                    placeholder="600 000 000"
+                    placeholder={t('form.telefonoPlaceholder')}
+                    className="text-sm sm:text-base"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="telefono2">Teléfono Padre/Tutor</Label>
+                  <Label htmlFor="telefono2" className="text-sm">{t('form.telefonoPadre')}</Label>
                   <Input
                     id="telefono2"
                     type="tel"
                     value={formData.telefono2}
                     onChange={(e) => handleChange('telefono2', e.target.value)}
-                    placeholder="600 000 000"
+                    placeholder={t('form.telefonoPlaceholder')}
+                    className="text-sm sm:text-base"
                   />
                 </div>
               </div>
             </div>
 
             {/* Información Médica */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Información Médica</h3>
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold border-b pb-2">{t('form.informacionMedica')}</h3>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="enfermedad">¿Padece alguna enfermedad?</Label>
+                  <Label htmlFor="enfermedad" className="text-sm">{t('form.enfermedad')}</Label>
                   <Input
                     id="enfermedad"
                     value={formData.enfermedad}
                     onChange={(e) => handleChange('enfermedad', e.target.value)}
-                    placeholder="Indique la enfermedad o escriba 'No'"
+                    placeholder={t('form.enfermedadPlaceholder')}
+                    className="text-sm sm:text-base"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="medicacion">¿Necesita medicación?</Label>
+                  <Label htmlFor="medicacion" className="text-sm">{t('form.medicacion')}</Label>
                   <Input
                     id="medicacion"
                     value={formData.medicacion}
                     onChange={(e) => handleChange('medicacion', e.target.value)}
-                    placeholder="Detalle la medicación, si procede"
+                    placeholder={t('form.medicacionPlaceholder')}
+                    className="text-sm sm:text-base"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="alergico">Alérgico / Intolerante a</Label>
+                <Label htmlFor="alergico" className="text-sm">{t('form.alergico')}</Label>
                 <Input
                   id="alergico"
                   value={formData.alergico}
                   onChange={(e) => handleChange('alergico', e.target.value)}
-                  placeholder="Sustancias, alimentos o intolerancias"
+                  placeholder={t('form.alergicoPlaceholder')}
+                  className="text-sm sm:text-base"
                 />
               </div>
             </div>
 
             {/* Firma */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Firma del Tutor</h3>
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold border-b pb-2">{t('form.firmaTutor')}</h3>
 
-              <div className="space-y-3">
-                <p className="font-semibold text-red-600">Firma padre/madre o tutor *</p>
-                <div className="rounded-xl border border-red-200 bg-white p-4 shadow-sm">
+              <div className="space-y-2 sm:space-y-3">
+                <p className="font-semibold text-sm sm:text-base text-red-600">{t('form.firmaPadre')} *</p>
+                <div className="rounded-xl border border-red-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm">
                   <canvas
                     ref={signatureCanvasRef}
-                    className="w-full h-40 touch-none"
+                    className="w-full h-28 sm:h-32 md:h-40 touch-none border border-gray-200 rounded"
                   />
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
-                    <span>Dibuja tu firma con el ratón o el dedo.</span>
-                    <Button type="button" variant="outline" size="sm" className="border-red-200 text-red-600 hover:bg-red-50"
+                  <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[10px] xs:text-xs text-gray-500">
+                    <span className="text-center sm:text-left">{t('form.dibujaFirma')}</span>
+                    <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-50 text-xs"
                       onClick={clearSignature}
                     >
-                      Limpiar firma
+                      {t('form.limpiarFirma')}
                     </Button>
                   </div>
                 </div>
@@ -410,18 +421,18 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
             </div>
 
             {/* Justificante de Pago */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Justificante de Pago</h3>
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold border-b pb-2">{t('form.justificantePago')}</h3>
 
               <div>
-                <Label htmlFor="justificantePago" className="flex items-center gap-2">
-                  Justificante de Pago * 
-                  <span className="text-xs text-gray-500 font-normal">(Imagen o PDF, máx. 5MB)</span>
+                <Label htmlFor="justificantePago" className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                  <span>{t('form.justificantePagoLabel')} *</span>
+                  <span className="text-xs text-gray-500 font-normal">{t('form.justificantePagoSub')}</span>
                 </Label>
                 <div className="mt-2">
                   <label 
                     htmlFor="justificantePago" 
-                    className={`flex items-center justify-center gap-3 p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                    className={`flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 md:p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
                       justificanteFile 
                         ? 'border-green-400 bg-green-50' 
                         : 'border-gray-300 hover:border-red-400 hover:bg-red-50'
@@ -429,24 +440,24 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                   >
                     {justificanteFile ? (
                       <>
-                        <FileText className="h-8 w-8 text-green-600" />
-                        <div className="text-left">
-                          <p className="font-medium text-green-700">{justificanteFile.name}</p>
-                          <p className="text-sm text-green-600">
+                        <FileText className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-green-600 flex-shrink-0" />
+                        <div className="text-center sm:text-left flex-1 min-w-0 px-2">
+                          <p className="font-medium text-green-700 text-xs sm:text-sm md:text-base break-words">{justificanteFile.name}</p>
+                          <p className="text-xs sm:text-sm text-green-600 mt-0.5">
                             {(justificanteFile.size / 1024 / 1024).toFixed(2)} MB
                           </p>
                         </div>
-                        <CheckCircle className="h-6 w-6 text-green-600 ml-auto" />
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-green-600 flex-shrink-0 sm:ml-auto" />
                       </>
                     ) : (
                       <>
-                        <Upload className="h-8 w-8 text-gray-400" />
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-gray-700">
-                            Haz clic para seleccionar el justificante de pago
+                        <Upload className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-gray-400 flex-shrink-0" />
+                        <div className="text-center px-2">
+                          <p className="text-xs sm:text-sm font-medium text-gray-700 leading-relaxed">
+                            {t('form.seleccionarJustificante')}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            JPG, PNG, WEBP o PDF (máx. 5MB)
+                          <p className="text-[10px] xs:text-xs text-gray-500 mt-1 leading-relaxed">
+                            {t('form.formatosAceptados')}
                           </p>
                         </div>
                       </>
@@ -473,35 +484,33 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                       if (input) input.value = ''
                     }}
                   >
-                    Eliminar archivo
+                    {t('form.eliminarArchivo')}
                   </Button>
                 )}
               </div>
             </div>
 
             {/* Autorización de Derechos de Imagen */}
-            <div className="border-t pt-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <div className="flex items-start gap-4">
+            <div className="border-t pt-4 sm:pt-5 md:pt-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 md:p-6">
+                <div className="flex items-start gap-3 sm:gap-4">
                   <input
                     type="checkbox"
                     id="derechosImagen"
                     checked={formData.derechosImagen}
                     onChange={(e) => handleChange('derechosImagen', e.target.checked)}
-                    className="mt-1 h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                    className="mt-1 h-4 w-4 sm:h-5 sm:w-5 text-red-600 border-gray-300 rounded focus:ring-red-500 flex-shrink-0"
                     required
                   />
-                  <label htmlFor="derechosImagen" className="flex-1 cursor-pointer">
-                    <span className="font-semibold text-gray-900">
-                      Autorización de Derechos de Imagen *
+                  <label htmlFor="derechosImagen" className="flex-1 cursor-pointer min-w-0">
+                    <span className="font-semibold text-sm sm:text-base text-gray-900 block">
+                      {t('form.derechosImagen')} *
                     </span>
-                    <p className="text-sm text-gray-700 mt-2">
-                      Autorizo al Club Deportivo Onda a realizar fotografías y/o vídeos del menor durante las actividades 
-                      del campus y a su publicación en redes sociales, página web y medios de comunicación del club con 
-                      fines informativos y promocionales.
+                    <p className="text-xs sm:text-sm text-gray-700 mt-1 sm:mt-2 leading-relaxed">
+                      {t('form.derechosImagenTexto')}
                     </p>
-                    <p className="text-xs text-gray-600 mt-2 italic">
-                      Esta autorización es obligatoria para participar en las actividades del club.
+                    <p className="text-[10px] xs:text-xs text-gray-600 mt-1 sm:mt-2 italic leading-relaxed">
+                      {t('form.derechosImagenObligatorio')}
                     </p>
                   </label>
                 </div>
@@ -512,28 +521,28 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
+                className="flex items-start sm:items-center gap-2 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
               >
-                <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                <p className="text-sm">{errorMessage}</p>
+                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5 sm:mt-0" />
+                <p className="text-xs sm:text-sm leading-relaxed">{errorMessage}</p>
               </motion.div>
             )}
 
             <Button 
               type="submit" 
               size="lg" 
-              className="w-full"
+              className="w-full text-sm sm:text-base py-5 sm:py-6"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Procesando...
+                  <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                  {t('form.procesando')}
                 </>
               ) : (
                 <>
-                  <Download className="mr-2 h-5 w-5" />
-                  Inscribirse y Descargar PDF
+                  <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  {t('form.inscribirseDescargar')}
                 </>
               )}
             </Button>

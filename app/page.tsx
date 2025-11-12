@@ -13,7 +13,7 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen pt-24">
+      <main className="min-h-screen pt-16 md:pt-24">
         <ClubHeroSection />
         <ClubHistorySection />
         <ClubStatsSection />

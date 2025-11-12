@@ -3,60 +3,64 @@
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Calendar, Clock, Users, MapPin, Euro } from 'lucide-react'
-
-const details = [
-  {
-    icon: Calendar,
-    title: 'Fechas',
-    info: ['Del 23 al 30 de Diciembre', '2025'],
-    highlight: '8 días de campus'
-  },
-  {
-    icon: Clock,
-    title: 'Horario',
-    info: ['Lunes a Viernes', '9:00h - 14:00h'],
-    highlight: '5 horas diarias'
-  },
-  {
-    icon: Users,
-    title: 'Edades',
-    info: ['De 6 a 14 años', 'Grupos por edades'],
-    highlight: 'Máx. 20 por grupo'
-  },
-  {
-    icon: MapPin,
-    title: 'Lugar',
-    info: ['Campo Municipal', 'Onda, Castellón'],
-    highlight: 'Instalaciones de primer nivel'
-  },
-  {
-    icon: Euro,
-    title: 'Precio',
-    info: ['120€ por participante', 'Descuentos para hermanos'],
-    highlight: 'Todo incluido'
-  }
-]
+import { useI18n } from '@/lib/i18n/context'
 
 export function CampusDetailsSection() {
+  const { t } = useI18n()
+  
+  const details = [
+    {
+      icon: Calendar,
+      title: t('campusDetails.fechas'),
+      info: [t('campusDetails.fechasInfo1'), t('campusDetails.fechasInfo2')],
+      highlight: t('campusDetails.fechasHighlight')
+    },
+    {
+      icon: Clock,
+      title: t('campusDetails.horario'),
+      info: [t('campusDetails.horarioInfo1'), t('campusDetails.horarioInfo2')],
+      highlight: t('campusDetails.horarioHighlight')
+    },
+    {
+      icon: Users,
+      title: t('campusDetails.edades'),
+      info: [t('campusDetails.edadesInfo1'), t('campusDetails.edadesInfo2')],
+      highlight: t('campusDetails.edadesHighlight')
+    },
+    {
+      icon: MapPin,
+      title: t('campusDetails.lugar'),
+      info: [t('campusDetails.lugarInfo1'), t('campusDetails.lugarInfo2')],
+      highlight: t('campusDetails.lugarHighlight')
+    },
+    {
+      icon: Euro,
+      title: t('campusDetails.precio'),
+      info: [t('campusDetails.precioInfo1'), t('campusDetails.precioInfo2')],
+      highlight: t('campusDetails.precioHighlight')
+    }
+  ]
+
   return (
-    <section id="campus-info" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section id="campus-info" className="py-12 sm:py-16 md:py-20 bg-white">
+      <div className="container mx-auto px-3 sm:px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10 sm:mb-12 md:mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-blue-600">Información</span> <span className="text-red-600">Práctica</span>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 md:mb-4 px-2">
+            <span className="text-blue-600">{t('campusDetails.informacionPracticaTitle')}</span>{' '}
+            <span className="text-red-600">{t('campusDetails.informacionPracticaSubtitle')}</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Todo lo que necesitas saber antes de inscribirte
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-3xl mx-auto px-3">
+            {t('campusDetails.todoNecesitas')}
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5 md:gap-6">
           {details.map((detail, index) => {
             const Icon = detail.icon
             return (
@@ -68,17 +72,17 @@ export function CampusDetailsSection() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
                 <Card className="h-full text-center border border-red-100 bg-white/95 hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6 space-y-3">
+                  <CardContent className="p-4 sm:p-5 md:p-6 space-y-2 sm:space-y-3">
                     <div className="flex justify-center">
-                      <Icon className="h-8 w-8 text-blue-600" />
+                      <Icon className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
                     </div>
-                    <h3 className="font-bold text-lg text-red-600">{detail.title}</h3>
+                    <h3 className="font-bold text-base sm:text-lg text-red-600">{detail.title}</h3>
                     <div className="space-y-1">
                       {detail.info.map((line, i) => (
-                        <p key={i} className="text-sm text-gray-600">{line}</p>
+                        <p key={i} className="text-xs sm:text-sm text-gray-600 leading-relaxed">{line}</p>
                       ))}
                     </div>
-                    <span className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 uppercase tracking-wide">
+                    <span className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-2.5 py-1 sm:px-3 sm:py-1 text-[10px] xs:text-xs font-semibold text-red-600 uppercase tracking-wide">
                       {detail.highlight}
                     </span>
                   </CardContent>
@@ -95,10 +99,10 @@ export function CampusDetailsSection() {
           transition={{ duration: 0.6 }}
           className="mt-16"
         >
-          <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] px-12 py-10 text-center text-white shadow-[0_18px_45px_rgba(139,0,0,0.35)]">
-            <p className="text-xs uppercase tracking-[0.45em] text-white/70">Descuento especial</p>
-            <p className="mt-3 text-sm text-white/90">
-              <span className="font-semibold">Hermanos:</span> 10% en la segunda inscripción y siguientes. Consulta opciones personalizadas para clubes y grupos.
+          <div className="mx-auto max-w-5xl rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] px-6 py-8 sm:px-10 sm:py-9 md:px-12 md:py-10 text-center text-white shadow-[0_18px_45px_rgba(139,0,0,0.35)]">
+            <p className="text-[10px] xs:text-xs uppercase tracking-[0.35em] sm:tracking-[0.45em] text-white/70 px-2">{t('campusDetails.descuentoEspecial')}</p>
+            <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-white/90 px-3 leading-relaxed">
+              {t('campusDetails.descuentoHermanos')}
             </p>
           </div>
         </motion.div>

@@ -446,3 +446,347 @@ function wrapText(text: string, maxCharsPerLine: number): string[] {
   return lines
 }
 
+// Función auxiliar para truncar texto según ancho aproximado
+function truncateText(text: string, maxWidth: number): string {
+  // Aproximación: 1 punto ≈ 0.6 caracteres con fuente de 8pt
+  const maxChars = Math.floor(maxWidth * 0.6)
+  if (text.length <= maxChars) return text
+  return text.substring(0, maxChars - 3) + '...'
+}
+
+// Función para generar PDF con lista completa de inscripciones en formato tabla
+export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create()
+  const page = pdfDoc.addPage([595, 842]) // A4 size
+  const { width, height } = page.getSize()
+
+  // Cargar fuentes
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+
+  // Colores
+  const redColor = rgb(0.86, 0.15, 0.15) // #dc2626
+  const blackColor = rgb(0, 0, 0)
+  const grayColor = rgb(0.4, 0.4, 0.4)
+  const lightGrayColor = rgb(0.9, 0.9, 0.9)
+
+  let yPosition = height - 50
+  const margin = 40
+  const tableWidth = width - (margin * 2) // 595 - 80 = 515 puntos disponibles
+  const rowHeight = 20
+  const headerHeight = 30
+
+  // Cargar logo del equipo
+  let logoImage = null
+  try {
+    const logoPath = join(process.cwd(), 'public', 'images', 'logos', 'escudo-cd-onda.png')
+    if (existsSync(logoPath)) {
+      const logoBytes = await readFile(logoPath)
+      logoImage = await pdfDoc.embedPng(logoBytes)
+    }
+  } catch (error) {
+    console.warn('No se pudo cargar el logo:', error)
+  }
+
+  // Encabezado - fondo rojo más alto para que no corte el texto
+  const headerHeightTotal = 85
+  page.drawRectangle({
+    x: 0,
+    y: yPosition - 20,
+    width: width,
+    height: headerHeightTotal,
+    color: redColor,
+  })
+
+  // Dibujar logo si existe - ajustado para mejor visualización
+  let textStartX = margin
+  if (logoImage) {
+    const logoSize = 45
+    const logoX = margin + 5
+    const logoY = yPosition - 15
+    page.drawImage(logoImage, {
+      x: logoX,
+      y: logoY,
+      width: logoSize,
+      height: logoSize,
+    })
+    textStartX = logoX + logoSize + 12 // Espacio después del logo
+  }
+
+  page.drawText('CLUB DEPORTIVO ONDA', {
+    x: textStartX,
+    y: yPosition + 18,
+    size: 20,
+    font: fontBold,
+    color: rgb(1, 1, 1),
+  })
+
+  page.drawText('Lista de Inscripciones', {
+    x: textStartX,
+    y: yPosition - 2,
+    size: 14,
+    font: font,
+    color: rgb(1, 1, 1),
+  })
+
+  page.drawText(`Total: ${inscripciones.length} inscripciones`, {
+    x: textStartX,
+    y: yPosition - 18,
+    size: 10,
+    font: font,
+    color: rgb(1, 1, 1),
+  })
+
+  yPosition -= (headerHeightTotal + 10)
+
+  // Definir columnas de la tabla - ajustadas para que quepan en el ancho disponible
+  // Ancho total disponible: 515 puntos
+  const columns = [
+    { label: 'Nº', width: 25 },
+    { label: 'Jugador', width: 95 },
+    { label: 'DNI', width: 70 },
+    { label: 'Tutor', width: 95 },
+    { label: 'Teléfono', width: 80 },
+    { label: 'Fecha Nac.', width: 75 },
+    { label: 'Estado', width: 65 },
+  ]
+
+  // Verificar que las columnas quepan
+  const totalColumnWidth = columns.reduce((sum, col) => sum + col.width, 0)
+  if (totalColumnWidth > tableWidth) {
+    // Ajustar proporcionalmente si excede
+    const scale = tableWidth / totalColumnWidth
+    columns.forEach(col => {
+      col.width = Math.floor(col.width * scale)
+    })
+  }
+
+  const columnPositions: number[] = []
+  let currentX = margin
+  columns.forEach((col, index) => {
+    columnPositions.push(currentX)
+    if (index < columns.length - 1) {
+      currentX += col.width
+    } else {
+      // La última columna se ajusta al ancho disponible
+      columnPositions.push(currentX)
+    }
+  })
+
+  // Dibujar encabezado de la tabla
+  page.drawRectangle({
+    x: margin,
+    y: yPosition - headerHeight,
+    width: tableWidth,
+    height: headerHeight,
+    color: redColor,
+  })
+
+  columns.forEach((col, index) => {
+    const label = truncateText(col.label, col.width - 6)
+    page.drawText(label, {
+      x: columnPositions[index] + 3,
+      y: yPosition - 20,
+      size: 9,
+      font: fontBold,
+      color: rgb(1, 1, 1),
+    })
+  })
+
+  yPosition -= headerHeight + 5
+
+  // Dibujar filas de datos
+  inscripciones.forEach((inscripcion, index) => {
+    // Si no hay espacio, crear nueva página
+    if (yPosition < 100) {
+      const newPage = pdfDoc.addPage([595, 842])
+      yPosition = height - 50
+      
+      // Repetir encabezado completo en nueva página
+      const headerHeightTotal = 85
+      newPage.drawRectangle({
+        x: 0,
+        y: yPosition - 20,
+        width: width,
+        height: headerHeightTotal,
+        color: redColor,
+      })
+
+      // Dibujar logo en nueva página si existe
+      let textStartXNew = margin
+      if (logoImage) {
+        const logoSize = 45
+        const logoX = margin + 5
+        const logoY = yPosition - 15
+        newPage.drawImage(logoImage, {
+          x: logoX,
+          y: logoY,
+          width: logoSize,
+          height: logoSize,
+        })
+        textStartXNew = logoX + logoSize + 12
+      }
+
+      newPage.drawText('CLUB DEPORTIVO ONDA', {
+        x: textStartXNew,
+        y: yPosition + 18,
+        size: 20,
+        font: fontBold,
+        color: rgb(1, 1, 1),
+      })
+
+      newPage.drawText('Lista de Inscripciones', {
+        x: textStartXNew,
+        y: yPosition - 2,
+        size: 14,
+        font: font,
+        color: rgb(1, 1, 1),
+      })
+
+      newPage.drawText(`Total: ${inscripciones.length} inscripciones`, {
+        x: textStartXNew,
+        y: yPosition - 18,
+        size: 10,
+        font: font,
+        color: rgb(1, 1, 1),
+      })
+
+      yPosition -= (headerHeightTotal + 10)
+      
+      // Repetir encabezado de tabla en nueva página
+      newPage.drawRectangle({
+        x: margin,
+        y: yPosition - headerHeight,
+        width: tableWidth,
+        height: headerHeight,
+        color: redColor,
+      })
+
+      columns.forEach((col, colIndex) => {
+        const label = truncateText(col.label, col.width - 6)
+        newPage.drawText(label, {
+          x: columnPositions[colIndex] + 3,
+          y: yPosition - 20,
+          size: 9,
+          font: fontBold,
+          color: rgb(1, 1, 1),
+        })
+      })
+
+      yPosition -= headerHeight + 5
+    }
+
+    const currentPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1)
+    const isEven = index % 2 === 0
+
+    // Fondo alternado para filas
+    if (isEven) {
+      currentPage.drawRectangle({
+        x: margin,
+        y: yPosition - rowHeight,
+        width: tableWidth,
+        height: rowHeight,
+        color: lightGrayColor,
+      })
+    }
+
+    // Línea divisoria
+    currentPage.drawLine({
+      start: { x: margin, y: yPosition },
+      end: { x: width - margin, y: yPosition },
+      thickness: 0.5,
+      color: grayColor,
+    })
+
+    // Datos de la fila - truncar según el ancho de cada columna
+    const numero = (index + 1).toString()
+    const jugador = truncateText(`${inscripcion.nombreJugador} ${inscripcion.apellidos}`, columns[1].width - 10)
+    const dni = truncateText(inscripcion.dni, columns[2].width - 10)
+    const tutor = truncateText(inscripcion.nombreTutor, columns[3].width - 10)
+    const telefono = truncateText(inscripcion.telefono1, columns[4].width - 10)
+    const fechaNac = formatDate(inscripcion.fechaNacimiento).substring(0, 10)
+    const estado = inscripcion.pagada ? 'Paga' : 'Pendi'
+
+    currentPage.drawText(numero, {
+      x: columnPositions[0] + 3,
+      y: yPosition - 15,
+      size: 8,
+      font: font,
+      color: blackColor,
+    })
+
+    currentPage.drawText(jugador, {
+      x: columnPositions[1] + 3,
+      y: yPosition - 15,
+      size: 8,
+      font: font,
+      color: blackColor,
+    })
+
+    currentPage.drawText(dni, {
+      x: columnPositions[2] + 3,
+      y: yPosition - 15,
+      size: 8,
+      font: font,
+      color: blackColor,
+    })
+
+    currentPage.drawText(tutor, {
+      x: columnPositions[3] + 3,
+      y: yPosition - 15,
+      size: 8,
+      font: font,
+      color: blackColor,
+    })
+
+    currentPage.drawText(telefono, {
+      x: columnPositions[4] + 3,
+      y: yPosition - 15,
+      size: 8,
+      font: font,
+      color: blackColor,
+    })
+
+    currentPage.drawText(fechaNac, {
+      x: columnPositions[5] + 3,
+      y: yPosition - 15,
+      size: 8,
+      font: font,
+      color: blackColor,
+    })
+
+    currentPage.drawText(estado, {
+      x: columnPositions[6] + 3,
+      y: yPosition - 15,
+      size: 8,
+      font: font,
+      color: inscripcion.pagada ? rgb(0, 0.6, 0) : rgb(0.8, 0.4, 0),
+    })
+
+    yPosition -= rowHeight
+  })
+
+  // Pie de página en todas las páginas
+  const totalPages = pdfDoc.getPageCount()
+  for (let i = 0; i < totalPages; i++) {
+    const page = pdfDoc.getPage(i)
+    page.drawText(`Página ${i + 1} de ${totalPages}`, {
+      x: width / 2 - 30,
+      y: 30,
+      size: 8,
+      font: font,
+      color: grayColor,
+    })
+    page.drawText(`Generado el ${formatDate(new Date())}`, {
+      x: margin,
+      y: 30,
+      size: 8,
+      font: font,
+      color: grayColor,
+    })
+  }
+
+  const pdfBytes = await pdfDoc.save()
+  return pdfBytes
+}
+

@@ -29,6 +29,7 @@ model Inscripcion {
   firma                  String?
   nombreArchivoFirma     String?
   derechosImagen         Boolean  @default(false) // Autorización para usar imágenes en redes sociales
+  comentarios            String?  // Comentarios adicionales del tutor
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAuth } from '@/lib/auth-middleware'
+import { apiRateLimit } from '@/lib/rate-limit'
 import bcrypt from 'bcryptjs'
 
 // GET - Obtener todos los admins

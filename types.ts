@@ -20,6 +20,7 @@ export interface Inscripcion {
   firma?: string | null;
   nombreArchivoFirma?: string | null;
   derechosImagen: boolean;
+  comentarios?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +41,7 @@ export interface InscripcionFormData {
   justificantePago?: File;
   firmaTutor?: File;
   derechosImagen: boolean;
+  comentarios?: string;
 }
 
 export interface Admin {

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Inscripcion } from '@/types'
 import { formatDate } from '@/lib/utils'
-import { Download, Eye, Trash2, CheckCircle, XCircle, Search, X, Filter } from 'lucide-react'
+import { Download, Eye, Trash2, CheckCircle, XCircle, Search, X, Filter, ArrowUpDown, Calendar, User, FileDown } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { InscripcionDialog } from './InscripcionDialog'
 import { DeleteConfirmDialog } from './DeleteConfirmDialog'
@@ -17,15 +17,18 @@ interface InscripcionesTableProps {
   inscripciones: Inscripcion[]
   onUpdate: () => void
   showTipoFilter?: boolean
+  tipoInscripcion?: string
 }
 
-export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = false }: InscripcionesTableProps) {
+export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = false, tipoInscripcion = 'todos' }: InscripcionesTableProps) {
   const [selectedInscripcion, setSelectedInscripcion] = useState<Inscripcion | null>(null)
   const [deleteInscripcionId, setDeleteInscripcionId] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [tipoFilter, setTipoFilter] = useState<string>('todos')
+  const [sortBy, setSortBy] = useState<'alfabetico' | 'fechaNacimiento' | 'fechaInscripcion'>('fechaInscripcion')
+  const [estadoFilter, setEstadoFilter] = useState<'todos' | 'pagados' | 'pendientes'>('todos')
 
   // Obtener tipos únicos de inscripciones
   const tiposInscripcion = useMemo(() => {
@@ -34,14 +37,21 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
     return Array.from(tipos).sort()
   }, [inscripciones])
 
-  // Filtrar inscripciones basado en la búsqueda y el tipo
+  // Filtrar y ordenar inscripciones
   const filteredInscripciones = useMemo(() => {
     if (!Array.isArray(inscripciones)) return []
-    let filtered = inscripciones
+    let filtered = [...inscripciones]
 
     // Filtrar por tipo solo si showTipoFilter está activado
     if (showTipoFilter && tipoFilter !== 'todos') {
       filtered = filtered.filter(inscripcion => inscripcion.tipoInscripcion === tipoFilter)
+    }
+
+    // Filtrar por estado de pago
+    if (estadoFilter === 'pagados') {
+      filtered = filtered.filter(inscripcion => inscripcion.pagada)
+    } else if (estadoFilter === 'pendientes') {
+      filtered = filtered.filter(inscripcion => !inscripcion.pagada)
     }
 
     // Filtrar por búsqueda
@@ -54,14 +64,28 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
           inscripcion.dni.toLowerCase().includes(query) ||
           inscripcion.nombreTutor.toLowerCase().includes(query) ||
           inscripcion.telefono1.toLowerCase().includes(query) ||
-          (inscripcion.telefono2 && inscripcion.telefono2.toLowerCase().includes(query)) ||
-          inscripcion.email.toLowerCase().includes(query)
+          (inscripcion.telefono2 && inscripcion.telefono2.toLowerCase().includes(query))
         )
       })
     }
 
+    // Ordenar
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'alfabetico':
+          const nombreA = `${a.nombreJugador} ${a.apellidos}`.toLowerCase()
+          const nombreB = `${b.nombreJugador} ${b.apellidos}`.toLowerCase()
+          return nombreA.localeCompare(nombreB)
+        case 'fechaNacimiento':
+          return new Date(b.fechaNacimiento).getTime() - new Date(a.fechaNacimiento).getTime()
+        case 'fechaInscripcion':
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      }
+    })
+
     return filtered
-  }, [inscripciones, searchQuery, tipoFilter, showTipoFilter])
+  }, [inscripciones, searchQuery, tipoFilter, showTipoFilter, estadoFilter, sortBy])
 
   const handleTogglePagada = async (inscripcion: Inscripcion) => {
     try {
@@ -118,6 +142,59 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
     setDeleteDialogOpen(true)
   }
 
+  const handleDownloadListaPDF = async () => {
+    try {
+      // Construir URL con todos los filtros aplicados
+      const params = new URLSearchParams()
+      params.append('tipo', tipoInscripcion)
+      
+      // Añadir filtro de estado si no es "todos"
+      if (estadoFilter !== 'todos') {
+        params.append('estado', estadoFilter)
+      }
+      
+      // Añadir filtro de tipo específico si showTipoFilter está activado
+      if (showTipoFilter && tipoFilter !== 'todos') {
+        params.append('tipoFiltro', tipoFilter)
+      }
+      
+      // Añadir búsqueda si existe
+      if (searchQuery.trim()) {
+        params.append('busqueda', searchQuery.trim())
+      }
+      
+      const url = `/api/inscripciones/lista-pdf?${params.toString()}`
+      const response = await fetch(url)
+      
+      if (!response.ok) {
+        throw new Error('Error al generar PDF')
+      }
+
+      const blob = await response.blob()
+      const urlBlob = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = urlBlob
+      
+      // Nombre del archivo con información de filtros
+      let tipoLabel = tipoInscripcion !== 'todos' ? tipoInscripcion.replace('-', '_') : 'todas'
+      if (estadoFilter !== 'todos') {
+        tipoLabel += `_${estadoFilter}`
+      }
+      if (showTipoFilter && tipoFilter !== 'todos') {
+        tipoLabel += `_${tipoFilter.replace('-', '_')}`
+      }
+      a.download = `lista_inscripciones_${tipoLabel}_${new Date().toISOString().split('T')[0]}.pdf`
+      
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(urlBlob)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Error al descargar PDF de lista:', error)
+      alert('Error al descargar la lista de inscripciones')
+    }
+  }
+
   return (
     <>
       <Card>
@@ -129,13 +206,25 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                 Gestiona todas las inscripciones del Campus de Navidad 2025
               </CardDescription>
             </div>
-            {Array.isArray(inscripciones) && filteredInscripciones.length !== inscripciones.length && (
-              <Badge variant="secondary" className="ml-4">
-                {filteredInscripciones.length} de {inscripciones.length}
-              </Badge>
-            )}
+            <div className="flex items-center gap-3">
+              {Array.isArray(inscripciones) && filteredInscripciones.length !== inscripciones.length && (
+                <Badge variant="secondary">
+                  {filteredInscripciones.length} de {inscripciones.length}
+                </Badge>
+              )}
+              <Button
+                onClick={handleDownloadListaPDF}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <FileDown className="h-4 w-4" />
+                <span className="hidden sm:inline">Descargar Lista PDF</span>
+                <span className="sm:hidden">PDF</span>
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -154,27 +243,71 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                 </button>
               )}
             </div>
-            {showTipoFilter && (
+            <div className="flex flex-col sm:flex-row gap-3">
+              {showTipoFilter && (
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-gray-400" />
+                  <Select value={tipoFilter} onValueChange={setTipoFilter}>
+                    <SelectTrigger className="w-[180px] sm:w-[200px]">
+                      <SelectValue placeholder="Filtrar por tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos los tipos</SelectItem>
+                      {tiposInscripcion.map((tipo) => (
+                        <SelectItem key={tipo} value={tipo}>
+                          {tipo === 'campus-navidad' ? 'Campus de Navidad' :
+                           tipo === 'campus-pascua' ? 'Campus de Pascua' :
+                           tipo === 'campus-verano' ? 'Campus de Verano' :
+                           tipo === 'anual' ? 'Inscripción Anual' :
+                           tipo}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-gray-400" />
-                <Select value={tipoFilter} onValueChange={setTipoFilter}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Filtrar por tipo" />
+                <Select value={estadoFilter} onValueChange={(v) => setEstadoFilter(v as 'todos' | 'pagados' | 'pendientes')}>
+                  <SelectTrigger className="w-[160px] sm:w-[180px]">
+                    <SelectValue placeholder="Estado de pago" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todos">Todos los tipos</SelectItem>
-                    {tiposInscripcion.map((tipo) => (
-                      <SelectItem key={tipo} value={tipo}>
-                        {tipo === 'campus-navidad' ? 'Campus de Navidad' :
-                         tipo === 'campus-verano' ? 'Campus de Verano' :
-                         tipo === 'anual' ? 'Inscripción Anual' :
-                         tipo}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="pagados">Pagados</SelectItem>
+                    <SelectItem value="pendientes">Pendientes</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="h-4 w-4 text-gray-400" />
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'alfabetico' | 'fechaNacimiento' | 'fechaInscripcion')}>
+                  <SelectTrigger className="w-[180px] sm:w-[200px]">
+                    <SelectValue placeholder="Ordenar por" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fechaInscripcion">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Fecha de inscripción</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="alfabetico">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        <span>Alfabético</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="fechaNacimiento">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Fecha de nacimiento</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -216,6 +349,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                         <td className="py-3 px-4">
                           <Badge variant="outline" className="text-xs">
                             {inscripcion.tipoInscripcion === 'campus-navidad' ? 'Campus Navidad' :
+                             inscripcion.tipoInscripcion === 'campus-pascua' ? 'Campus Pascua' :
                              inscripcion.tipoInscripcion === 'campus-verano' ? 'Campus Verano' :
                              inscripcion.tipoInscripcion === 'anual' ? 'Anual' :
                              inscripcion.tipoInscripcion}

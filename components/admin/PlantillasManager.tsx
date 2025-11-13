@@ -11,6 +11,7 @@ import { Upload, Download, Trash2, FileText, CheckCircle, XCircle, AlertCircle }
 // Tipos de inscripción disponibles
 const tiposInscripcion = [
   { value: 'campus-navidad', label: 'Campus de Navidad', icon: '🎄' },
+  { value: 'campus-pascua', label: 'Campus de Pascua', icon: '🐣' },
   { value: 'campus-verano', label: 'Campus de Verano', icon: '☀️' },
   { value: 'anual', label: 'Inscripción Anual', icon: '📅' }
 ]

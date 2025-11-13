@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
     const alergico = formData.get('alergico') as string
     const numeroSeguridadSocial = formData.get('numeroSeguridadSocial') as string
     const derechosImagen = formData.get('derechosImagen') as string
+    const comentarios = formData.get('comentarios') as string
     const justificanteFile = formData.get('justificantePago') as File | null
     const firmaFile = formData.get('firmaTutor') as File | null
 
@@ -171,7 +172,8 @@ export async function POST(request: NextRequest) {
         nombreArchivoJustificante,
         firma: firmaPath,
         nombreArchivoFirma,
-        derechosImagen: derechosImagen === 'true'
+        derechosImagen: derechosImagen === 'true',
+        comentarios: comentarios || null
       }
     })
 

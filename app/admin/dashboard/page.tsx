@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 const tiposInscripcion = [
   { value: 'todos', label: 'Todas', icon: '📊' },
   { value: 'campus-navidad', label: 'Campus Navidad', icon: '🎄' },
+  { value: 'campus-pascua', label: 'Campus Pascua', icon: '🐣' },
   { value: 'campus-verano', label: 'Campus Verano', icon: '☀️' },
   { value: 'anual', label: 'Inscripción Anual', icon: '📅' },
   { value: 'plantillas', label: 'Plantillas PDF', icon: '📄' }
@@ -51,7 +52,7 @@ export default function AdminDashboardPage() {
   const loadAllData = async () => {
     try {
       // Cargar datos para todos los tipos
-      const tipos = ['todos', 'campus-navidad', 'campus-verano', 'anual']
+      const tipos = ['todos', 'campus-navidad', 'campus-pascua', 'campus-verano', 'anual']
       const promises = tipos.map(async (tipo) => {
         const [statsRes, inscripcionesRes] = await Promise.all([
           fetch(`/api/inscripciones/stats?tipo=${tipo}`),
@@ -141,7 +142,7 @@ export default function AdminDashboardPage() {
 
             <TabsContent value="inscripciones">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
                   {tiposInscripcion.filter(t => t.value !== 'plantillas').map((tipo) => (
                     <TabsTrigger 
                       key={tipo.value} 
@@ -167,6 +168,7 @@ export default function AdminDashboardPage() {
                       inscripciones={inscripciones[tipo.value] || []} 
                       onUpdate={handleUpdate}
                       showTipoFilter={tipo.value === 'todos'}
+                      tipoInscripcion={tipo.value}
                     />
                   </TabsContent>
                 ))}

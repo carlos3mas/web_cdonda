@@ -5,59 +5,76 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, Users, GraduationCap, ArrowRight, Check } from 'lucide-react'
-
-// Tipos de inscripción disponibles
-const inscripciones = [
-  {
-    id: 'campus-navidad',
-    title: 'Campus de Navidad',
-    description: 'Campus de fútbol durante las vacaciones de Navidad',
-    icon: Calendar,
-    available: true,
-    href: '/campus-navidad/inscripcion?tipo=campus-navidad',
-    features: [
-      'Entrenamientos especializados',
-      'Comidas diarias incluidas',
-      'Seguro para jugadores federados',
-      'Actividades lúdicas y partidos adaptados',
-      'Reportaje fotográfico del campus'
-    ],
-    badge: 'Disponible'
-  },
-  {
-    id: 'campus-verano',
-    title: 'Campus de Verano',
-    description: 'Campus de fútbol durante las vacaciones de verano',
-    icon: Calendar,
-    available: false,
-    href: '#',
-    features: [
-      'Próximamente disponible',
-      'Entrenamientos intensivos',
-      'Actividades recreativas',
-      'Instalaciones de primer nivel'
-    ],
-    badge: 'Próximamente'
-  },
-  {
-    id: 'anual',
-    title: 'Inscripción Anual',
-    description: 'Inscríbete para toda la temporada del club',
-    icon: GraduationCap,
-    available: false,
-    href: '#',
-    features: [
-      'Próximamente disponible',
-      'Participación en liga',
-      'Entrenamientos regulares',
-      'Equipación oficial',
-      'Seguro deportivo'
-    ],
-    badge: 'Próximamente'
-  }
-]
+import { useI18n } from '@/lib/i18n/context'
 
 export function InscripcionSelection() {
+  const { t } = useI18n()
+
+  // Tipos de inscripción disponibles
+  const inscripciones = [
+    {
+      id: 'campus-navidad',
+      title: t('inscripcionSelection.campusNavidad'),
+      description: t('inscripcionSelection.campusNavidadDesc'),
+      icon: Calendar,
+      available: true,
+      href: '/campus-navidad/inscripcion?tipo=campus-navidad',
+      features: [
+        t('inscripcionSelection.campusNavidadFeature1'),
+        t('inscripcionSelection.campusNavidadFeature2'),
+        t('inscripcionSelection.campusNavidadFeature3'),
+        t('inscripcionSelection.campusNavidadFeature4')
+      ],
+      badge: t('inscripcionSelection.disponible')
+    },
+    {
+      id: 'campus-pascua',
+      title: t('inscripcionSelection.campusPascua'),
+      description: t('inscripcionSelection.campusPascuaDesc'),
+      icon: Calendar,
+      available: false,
+      href: '#',
+      features: [
+        t('inscripcionSelection.proximamente'),
+        t('inscripcionSelection.campusPascuaFeature1'),
+        t('inscripcionSelection.campusPascuaFeature2'),
+        t('inscripcionSelection.campusPascuaFeature3')
+      ],
+      badge: t('inscripcionSelection.proximamente')
+    },
+    {
+      id: 'campus-verano',
+      title: t('inscripcionSelection.campusVerano'),
+      description: t('inscripcionSelection.campusVeranoDesc'),
+      icon: Calendar,
+      available: false,
+      href: '#',
+      features: [
+        t('inscripcionSelection.proximamente'),
+        t('inscripcionSelection.campusVeranoFeature1'),
+        t('inscripcionSelection.campusVeranoFeature2'),
+        t('inscripcionSelection.campusVeranoFeature3')
+      ],
+      badge: t('inscripcionSelection.proximamente')
+    },
+    {
+      id: 'anual',
+      title: t('inscripcionSelection.anual'),
+      description: t('inscripcionSelection.anualDesc'),
+      icon: GraduationCap,
+      available: false,
+      href: '#',
+      features: [
+        t('inscripcionSelection.proximamente'),
+        t('inscripcionSelection.anualFeature1'),
+        t('inscripcionSelection.anualFeature2'),
+        t('inscripcionSelection.anualFeature3'),
+        t('inscripcionSelection.anualFeature4')
+      ],
+      badge: t('inscripcionSelection.proximamente')
+    }
+  ]
+
   return (
     <div className="container mx-auto px-4">
       <motion.div
@@ -67,15 +84,14 @@ export function InscripcionSelection() {
         className="text-center mb-12"
       >
         <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          <span className="text-blue-600">Elige tu</span> <span className="text-red-600">Inscripción</span>
+          <span className="text-blue-600">{t('inscripcionSelection.eligeTu')}</span> <span className="text-red-600">{t('inscripcionSelection.inscripcion')}</span>
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Selecciona el tipo de inscripción que mejor se adapte a tus necesidades. 
-          Forma parte de la gran familia del CD Onda.
+          {t('inscripcionSelection.descripcion')}
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12">
         {inscripciones.map((inscripcion, index) => {
           const Icon = inscripcion.icon
           return (
@@ -135,7 +151,7 @@ export function InscripcionSelection() {
                         className="w-full bg-red-600 hover:bg-red-700"
                         size="lg"
                       >
-                        Inscribirse
+                        {t('inscripcionSelection.inscribirse')}
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
                     </Link>
@@ -145,7 +161,7 @@ export function InscripcionSelection() {
                       size="lg"
                       disabled
                     >
-                      Próximamente
+                      {t('inscripcionSelection.proximamente')}
                     </Button>
                   )}
                 </CardContent>
@@ -163,18 +179,18 @@ export function InscripcionSelection() {
       >
         <div className="flex items-center justify-center gap-3 text-sm uppercase tracking-[0.35em] text-white/70 mb-4">
           <Users className="h-9 w-9 text-blue-600" />
-          <span>Atención personalizada</span>
+          <span>{t('inscripcionSelection.atencionPersonalizada')}</span>
         </div>
         <h3 className="text-2xl font-bold text-white mb-2">
-          ¿Necesitas más información?
+          {t('inscripcionSelection.necesitasInfo')}
         </h3>
         <p className="text-white/85 mb-6">
-          Si tienes dudas sobre algún tipo de inscripción o necesitas ayuda, no dudes en contactarnos.
+          {t('inscripcionSelection.contactoDesc')}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a href="/#contacto">
             <Button variant="outline" className="border-white text-red-600 hover:bg-red-600 hover:text-white">
-              Ver Información de Contacto
+              {t('inscripcionSelection.verContacto')}
             </Button>
           </a>
         </div>

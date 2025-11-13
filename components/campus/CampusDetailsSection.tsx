@@ -100,9 +100,9 @@ export function CampusDetailsSection() {
           className="mt-16"
         >
           <div className="mx-auto max-w-5xl rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] px-6 py-8 sm:px-10 sm:py-9 md:px-12 md:py-10 text-center text-white shadow-[0_18px_45px_rgba(139,0,0,0.35)]">
-            <p className="text-[10px] xs:text-xs uppercase tracking-[0.35em] sm:tracking-[0.45em] text-white/70 px-2">{t('campusDetails.descuentoEspecial')}</p>
+            <p className="text-[10px] xs:text-xs uppercase tracking-[0.35em] sm:tracking-[0.45em] text-white/70 px-2">{t('campusDetails.informacionAdicional')}</p>
             <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-white/90 px-3 leading-relaxed">
-              {t('campusDetails.descuentoHermanos')}
+              {t('campusDetails.informacionAdicionalTexto')}
             </p>
           </div>
         </motion.div>

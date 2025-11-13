@@ -87,10 +87,6 @@ export function ClubKitsSection() {
           src: '/images/kits/primera-chico.jpg',
           alt: t('kits.primeraEquipacionAlt') + ' - Chico'
         },
-        {
-          src: '/images/kits/primera-chica.jpg',
-          alt: t('kits.primeraEquipacionAlt') + ' - Chica'
-        }
       ]
     },
     {
@@ -101,10 +97,7 @@ export function ClubKitsSection() {
           src: '/images/kits/segunda-chica.jpg',
           alt: t('kits.segundaEquipacionAlt') + ' - Chica'
         },
-        {
-          src: '/images/kits/segunda-chico.jpg',
-          alt: t('kits.segundaEquipacionAlt') + ' - Chico'
-        }
+       
       ]
     }
   ]

@@ -34,6 +34,7 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
             </Badge>
             <Badge variant="outline">
               {inscripcion.tipoInscripcion === 'campus-navidad' ? 'Campus de Navidad' :
+               inscripcion.tipoInscripcion === 'campus-pascua' ? 'Campus de Pascua' :
                inscripcion.tipoInscripcion === 'campus-verano' ? 'Campus de Verano' :
                inscripcion.tipoInscripcion === 'anual' ? 'Inscripción Anual' :
                inscripcion.tipoInscripcion}
@@ -72,8 +73,8 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
                 <p className="font-medium">{inscripcion.nombreTutor}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="font-medium">{inscripcion.email}</p>
+                <p className="text-sm text-gray-500">DNI</p>
+                <p className="font-medium">{inscripcion.dni}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Teléfono 1</p>
@@ -91,10 +92,6 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
             <h3 className="text-lg font-semibold mb-3 text-red-600">Información Adicional</h3>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-500">¿Tiene hermanos en el campus?</p>
-                <p className="font-medium">{inscripcion.tieneHermanos ? 'Sí' : 'No'}</p>
-              </div>
-              <div>
                 <p className="text-sm text-gray-500">Derechos de Imagen</p>
                 <div className="flex items-center gap-2">
                   <Badge variant={inscripcion.derechosImagen ? "default" : "secondary"}>
@@ -102,16 +99,36 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
                   </Badge>
                 </div>
               </div>
-              {inscripcion.alergias && (
+              {inscripcion.enfermedad && (
                 <div>
-                  <p className="text-sm text-gray-500">Alergias o Enfermedades</p>
-                  <p className="font-medium">{inscripcion.alergias}</p>
+                  <p className="text-sm text-gray-500">Enfermedad</p>
+                  <p className="font-medium">{inscripcion.enfermedad}</p>
                 </div>
               )}
-              {inscripcion.observaciones && (
+              {inscripcion.medicacion && (
                 <div>
-                  <p className="text-sm text-gray-500">Observaciones</p>
-                  <p className="font-medium">{inscripcion.observaciones}</p>
+                  <p className="text-sm text-gray-500">Medicación</p>
+                  <p className="font-medium">{inscripcion.medicacion}</p>
+                </div>
+              )}
+              {inscripcion.alergico && (
+                <div>
+                  <p className="text-sm text-gray-500">Alérgico / Intolerante a</p>
+                  <p className="font-medium">{inscripcion.alergico}</p>
+                </div>
+              )}
+              {inscripcion.numeroSeguridadSocial && (
+                <div>
+                  <p className="text-sm text-gray-500">Nº Seguridad Social</p>
+                  <p className="font-medium">{inscripcion.numeroSeguridadSocial}</p>
+                </div>
+              )}
+              {inscripcion.comentarios && (
+                <div>
+                  <p className="text-sm text-gray-500">Comentarios</p>
+                  <div className="bg-gray-50 border rounded-lg p-3 mt-1">
+                    <p className="font-medium text-gray-800 whitespace-pre-wrap">{inscripcion.comentarios}</p>
+                  </div>
                 </div>
               )}
             </div>

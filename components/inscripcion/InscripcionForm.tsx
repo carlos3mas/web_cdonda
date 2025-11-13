@@ -45,7 +45,8 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     medicacion: '',
     alergico: '',
     numeroSeguridadSocial: '',
-    derechosImagen: false
+    derechosImagen: false,
+    comentarios: ''
   })
 
   // Actualizar tipoInscripcion cuando cambie la URL
@@ -487,6 +488,24 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                     {t('form.eliminarArchivo')}
                   </Button>
                 )}
+              </div>
+            </div>
+
+            {/* Comentarios */}
+            <div className="border-t pt-4 sm:pt-5 md:pt-6">
+              <div>
+                <Label htmlFor="comentarios" className="text-sm">{t('form.comentarios')}</Label>
+                <Textarea
+                  id="comentarios"
+                  value={formData.comentarios}
+                  onChange={(e) => handleChange('comentarios', e.target.value)}
+                  placeholder={t('form.comentariosPlaceholder')}
+                  className="text-sm sm:text-base min-h-[100px]"
+                  rows={4}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('form.comentariosDesc')}
+                </p>
               </div>
             </div>
 

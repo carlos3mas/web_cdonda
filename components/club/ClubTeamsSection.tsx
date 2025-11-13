@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { AnimatedCounter } from '@/components/ui/animated-counter'
 import { useI18n } from '@/lib/i18n/context'
+import { AutoCarousel } from '@/components/ui/auto-carousel'
 
 export function ClubTeamsSection() {
   const { t } = useI18n()
@@ -28,84 +29,125 @@ export function ClubTeamsSection() {
       title: t('teams.chupetines'),
       age: t('teams.anos3_4'),
       description: t('teams.chupetinesDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: [
+        '/images/club/chupetines-1.jpg',
+        '/images/club/chupetines-2.jpg',
+        '/images/club/chupetines-3.jpg',
+        '/images/club/chupetines-4.jpg'
+      ]
     },
     {
       icon: Sparkles,
       title: t('teams.querubines'),
       age: t('teams.anos4_5'),
       description: t('teams.querubinesDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: [
+        '/images/club/querubines-1.jpg',
+        '/images/club/querubines-2.jpg'
+      ]
     },
     {
       icon: Flag,
       title: t('teams.prebenjamin'),
       age: t('teams.anos6_7'),
       description: t('teams.prebenjaminDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: [
+        '/images/club/prebenjamin-1.jpg',
+        '/images/club/prebenjamin-2.jpg'
+      ]
     },
     {
       icon: School,
       title: t('teams.benjamin'),
       age: t('teams.anos8_9'),
       description: t('teams.benjaminDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: [
+        '/images/club/benjamin-1.jpg',
+        '/images/club/benjamin-2.jpg',
+        '/images/club/benjamin-3.jpg'
+      ]
     },
     {
       icon: Shield,
       title: t('teams.alevin'),
       age: t('teams.anos10_11'),
       description: t('teams.alevinDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: [
+        '/images/club/alevin-1.jpg',
+        '/images/club/alevin-2.jpg'
+      ]
     },
     {
       icon: Rocket,
       title: t('teams.infantil'),
       age: t('teams.anos12_13'),
       description: t('teams.infantilDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: [
+        '/images/club/infantil-1.jpg',
+        '/images/club/infantil-2.jpg',
+        '/images/club/infantil-3.jpg'
+      ]
     },
     {
       icon: GraduationCap,
       title: t('teams.cadete'),
       age: t('teams.anos14_15'),
       description: t('teams.cadeteDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: [
+        '/images/club/cadete-1.jpg',
+        '/images/club/cadete-2.jpg'
+      ]
     },
     {
       icon: Award,
       title: t('teams.juvenil'),
       age: t('teams.anos16_18'),
       description: t('teams.juvenilDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: [
+        '/images/club/juvenil-1.jpg',
+        '/images/club/juvenil-2.jpg',
+        '/images/club/juvenil-3.jpg'
+      ]
     },
     {
       icon: Users,
       title: t('teams.amateur'),
       age: t('teams.anos18Plus'),
       description: t('teams.amateurDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: ['/images/club/amater.jpg'] 
     },
     {
       icon: Heart,
       title: t('teams.veteranos'),
       age: t('teams.anos35Plus'),
       description: t('teams.veteranosDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: ['/images/club/veteranos.jpg'] 
     },
     {
       icon: Stars,
       title: t('teams.edi'),
       age: t('teams.todasLasEdades'),
       description: t('teams.ediDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: ['/images/club/edi.jpg'] 
     },
     {
       icon: Crown,
       title: t('teams.primerEquipo'),
       age: t('teams.senior'),
       description: t('teams.primerEquipoDesc'),
-      iconSize: 'h-9 w-9'
+      iconSize: 'h-9 w-9',
+      images: ['/images/club/primer-equipo.jpg'] 
     }
   ]
 
@@ -139,9 +181,18 @@ export function ClubTeamsSection() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="h-full border border-red-100 bg-white/95 hover:shadow-xl transition-all duration-300">
+                <Card className="h-full border border-red-100 bg-white/95 hover:shadow-xl transition-all duration-300 overflow-hidden">
+                  {/* Imagen o carrusel */}
+                  <div className="relative w-full h-48 sm:h-56 md:h-64 bg-gray-100">
+                    <AutoCarousel
+                      images={category.images || []}
+                      alt={category.title}
+                      interval={4000}
+                      className="w-full h-full"
+                    />
+                  </div>
                   <CardContent className="p-4 sm:p-5 md:p-6 flex flex-col items-center text-center gap-3 sm:gap-4">
-                    <span className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center rounded-full bg-blue-50">
+                    <span className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center rounded-full bg-blue-50 -mt-6 sm:-mt-8 relative z-10">
                       <Icon className={`text-blue-600 h-6 w-6 sm:h-7 sm:w-7 md:h-9 md:w-9`} />
                     </span>
                     <div className="space-y-2 sm:space-y-3">

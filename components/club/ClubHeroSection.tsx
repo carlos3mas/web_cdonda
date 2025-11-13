@@ -12,25 +12,20 @@ export function ClubHeroSection() {
   
   return (
     <section className="relative min-h-[70vh] md:min-h-[80vh] lg:min-h-[90vh] flex items-center justify-center overflow-hidden bg-white">
-      {/* Fondo dividido diagonalmente en blanco y rojo optimizado */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-white" />
-        <div className="absolute inset-0 bg-white" />
-        <div className="absolute inset-y-[-35%] left-[39%] w-[140%] origin-top-left -skew-x-[14deg] bg-[#d61b1b]" />
-        
+      {/* Imagen de fondo con blur */}
+      <div className="absolute inset-0">
+        <Image
+          src="/images/club/hero.jpg"
+          alt="CD Onda"
+          fill
+          className="object-cover object-center blur-[8px] sm:blur-[6px] md:blur-[4px]"
+          priority
+          quality={90}
+          sizes="100vw"
+        />
+        {/* Overlay sutil para mejorar legibilidad del texto */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-transparent" />
       </div>  
-      {/* Textura sutil en resoluciones grandes */}
-      <div
-        className="absolute inset-0 hidden lg:block opacity-10"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 12px 12px, rgba(30,64,175,0.14) 1.4px, transparent 0)",
-          backgroundSize: "46px 46px",
-        }}
-      />
-      {/* Halos de luz suavizados */}
-      <div className="absolute -top-40 left-[10%] h-[320px] w-[320px] rounded-full bg-red-500/25 blur-[80px]" />
-      <div className="absolute -bottom-48 right-[12%] h-[280px] w-[280px] rounded-full bg-blue-500/18 blur-[80px]" />
 
       <div className="container mx-auto px-3 sm:px-4 relative z-10">
         <div className="grid grid-cols-1 gap-6 sm:gap-8 md:gap-10 lg:grid-cols-[0.7fr,1.9fr] lg:gap-6 items-center max-w-7xl mx-auto py-8 sm:py-12 md:py-14 lg:py-18">
@@ -95,13 +90,13 @@ export function ClubHeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="order-1 lg:order-2 flex flex-col items-center text-center lg:text-left text-gray-900 w-full max-w-4xl mx-auto px-1 sm:px-2 md:px-6"
+            className="order-1 lg:order-2 flex flex-col items-center text-center lg:text-left text-white w-full max-w-4xl mx-auto px-1 sm:px-2 md:px-6"
           >
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-[10px] xs:text-xs sm:text-sm md:text-base uppercase tracking-[0.25em] sm:tracking-[0.3em] md:tracking-[0.4em] text-gray-900 font-bold mb-2 sm:mb-3 md:mb-5"
+              className="text-[10px] xs:text-xs sm:text-sm md:text-base uppercase tracking-[0.25em] sm:tracking-[0.3em] md:tracking-[0.4em] text-white font-bold mb-2 sm:mb-3 md:mb-5 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
             >
               {t('hero.desde1921')}
             </motion.p>
@@ -110,9 +105,9 @@ export function ClubHeroSection() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-xl xs:text-2xl sm:text-[2rem] md:text-[3.1rem] lg:text-[3.6rem] xl:text-[4rem] font-black leading-[1.1] sm:leading-tight uppercase mb-3 sm:mb-4 md:mb-5 drop-shadow-[0_18px_55px_rgba(0,0,0,0.24)]"
+              className="text-xl xs:text-2xl sm:text-[2rem] md:text-[3.1rem] lg:text-[3.6rem] xl:text-[4rem] font-black leading-[1.1] sm:leading-tight uppercase mb-3 sm:mb-4 md:mb-5 drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)] sm:drop-shadow-[0_18px_55px_rgba(0,0,0,0.6)] text-center"
             >
-              <span className="block text-black px-1">
+              <span className="block text-white px-1">
                 {t('hero.futuroFutbol')}
               </span>
             </motion.h1>
@@ -125,7 +120,7 @@ export function ClubHeroSection() {
             >
               <div className="flex flex-col items-center gap-2 sm:gap-3">
                 <div className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-                  <span className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-[0.05em] text-white drop-shadow-[0_16px_45px_rgba(0,0,0,0.35)]">
+                  <span className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-[0.05em] text-white drop-shadow-[0_8px_24px_rgba(0,0,0,0.6)] sm:drop-shadow-[0_16px_45px_rgba(0,0,0,0.35)] px-1">
                     CD ONDA
                   </span>
                 </div>
@@ -137,10 +132,19 @@ export function ClubHeroSection() {
             </motion.div>
 
             <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+              className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold italic text-white drop-shadow-[0_8px_24px_rgba(0,0,0,0.5)] sm:drop-shadow-[0_12px_40px_rgba(0,0,0,0.3)] mb-4 sm:mb-6 md:mb-8 text-center px-2"
+            >
+              Units per un sentiment
+            </motion.p>
+
+            <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8, duration: 0.8 }}
-              className="text-xs sm:text-sm md:text-base lg:text-lg text-black font-semibold max-w-2xl mb-4 sm:mb-6 md:mb-10 drop-shadow-[0_10px_32px_rgba(0,0,0,0.18)] px-2 sm:px-3"
+              className="text-xs sm:text-sm md:text-base lg:text-lg text-white font-semibold max-w-2xl mb-4 sm:mb-6 md:mb-10 drop-shadow-[0_6px_20px_rgba(0,0,0,0.6)] sm:drop-shadow-[0_10px_32px_rgba(0,0,0,0.5)] px-2 sm:px-3"
             >
               {t('hero.clubCentenario')}
             </motion.p>

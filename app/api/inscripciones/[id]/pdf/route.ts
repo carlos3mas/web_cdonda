@@ -21,8 +21,8 @@ export async function GET(
     // Generar el PDF (usa plantilla si existe, sino genera desde cero)
     const pdfBytes = await generatePDFForInscripcion(inscripcion)
 
-    // Devolver el PDF
-    return new NextResponse(pdfBytes, {
+    // Devolver el PDF (convertir Uint8Array a Buffer)
+    return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

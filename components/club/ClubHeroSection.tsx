@@ -15,12 +15,12 @@ export function ClubHeroSection() {
       {/* Imagen de fondo con blur */}
       <div className="absolute inset-0">
         <Image
-          src="/images/club/hero.jpg"
+          src="/images/club/hero.webp"
           alt="CD Onda"
           fill
           className="object-cover object-center blur-[8px] sm:blur-[6px] md:blur-[4px]"
           priority
-          quality={90}
+          quality={80}
           sizes="100vw"
         />
         {/* Overlay sutil para mejorar legibilidad del texto */}

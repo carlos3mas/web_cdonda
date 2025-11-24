@@ -2,17 +2,33 @@
 
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 
-// Sponsors del club (versión compacta para banner global)
+// Todos los patrocinadores (excluyendo escudo y escola-futbol)
 const sponsors = [
-  { name: 'Sponsor 1', logo: '🏢' },
-  { name: 'Sponsor 2', logo: '🏪' },
-  { name: 'Sponsor 3', logo: '🏭' },
-  { name: 'Sponsor 4', logo: '🏛️' },
-  { name: 'Sponsor 5', logo: '🏦' },
-  { name: 'Sponsor 6', logo: '🏨' },
-  { name: 'Sponsor 7', logo: '🏬' },
-  { name: 'Sponsor 8', logo: '🏢' },
+  'caja-rural.webp',
+  'ayuntamiento-onda.webp',
+  'Diputacion-Castellon.jpg',
+  '3D-CREATIVE.tif',
+  'AITAPI.webp',
+  'angeli.webp',
+  'BESTILE.webp',
+  'Curto.webp',
+  'ELITE-PARFUM.webp',
+  'Esmaltile.webp',
+  'ESPORTS-LIZONDO.webp',
+  'GALAXY-TILES.jpg',
+  'Globeenergy.webp',
+  'J.P.E.jpg',
+  'LOGILOP.webp',
+  'Marplac.webp',
+  'MOZ-TILES.webp',
+  'PURA-MAGIA.webp',
+  'rotulos.webp',
+  'Sara-Blazquez.jpg',
+  'SERCAS.webp',
+  'termocontrol.webp',
+  'vipecons.webp',
 ]
 
 export function SponsorsBanner() {
@@ -48,13 +64,23 @@ export function SponsorsBanner() {
             },
           }}
         >
-          {duplicatedSponsors.map((sponsor, index) => (
+          {duplicatedSponsors.map((logo, index) => (
             <div
-              key={index}
-              className="flex-shrink-0 flex items-center gap-1.5 text-gray-500 opacity-70 hover:opacity-100 transition-opacity"
+              key={`${logo}-${index}`}
+              className="flex-shrink-0 flex items-center h-8 sm:h-10 opacity-70 hover:opacity-100 transition-opacity px-2"
             >
-              <span className="text-lg">{sponsor.logo}</span>
-              <span className="text-xs font-medium whitespace-nowrap">{sponsor.name}</span>
+              <div className="relative w-auto h-full" style={{ aspectRatio: 'auto' }}>
+                <Image
+                  src={`/images/logos/${logo}`}
+                  alt={logo.replace(/\.(jpg|png|jpeg|tif|webp)$/i, '').replace(/-/g, ' ')}
+                  width={80}
+                  height={32}
+                  className="h-full w-auto object-contain"
+                  loading="lazy"
+                  sizes="80px"
+                  quality={75}
+                />
+              </div>
             </div>
           ))}
         </motion.div>

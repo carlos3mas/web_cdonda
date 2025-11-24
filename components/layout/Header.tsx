@@ -19,6 +19,43 @@ export function Header() {
   // Cerrar menú cuando cambia la ruta
   useEffect(() => {
     setIsMenuOpen(false)
+    
+    // Manejar scroll a hash guardado después de navegar
+    const scrollToHash = sessionStorage.getItem('scrollToHash')
+    if (scrollToHash) {
+      sessionStorage.removeItem('scrollToHash')
+      setTimeout(() => {
+        const element = document.getElementById(scrollToHash)
+        if (element) {
+          const headerOffset = 80
+          const elementPosition = element.getBoundingClientRect().top
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          })
+        }
+      }, 300)
+    }
+    
+    // Manejar hash en la URL actual
+    if (pathname === '/' && window.location.hash) {
+      const hash = window.location.hash.substring(1)
+      setTimeout(() => {
+        const element = document.getElementById(hash)
+        if (element) {
+          const headerOffset = 80
+          const elementPosition = element.getBoundingClientRect().top
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          })
+        }
+      }, 300)
+    }
   }, [pathname])
 
   // Subsecciones del campus
@@ -34,13 +71,46 @@ export function Header() {
     if (href.includes('#')) {
       e.preventDefault()
       const [path, hash] = href.split('#')
+      const normalizedPath = path || '/'
+      const currentPath = pathname || '/'
       
       // Si el hash es para la página del campus y estamos en ella
-      if (hash && isCampusPage && path === '/campus-navidad') {
+      if (hash && isCampusPage && normalizedPath === '/campus-navidad') {
+        setIsMenuOpen(false)
+        setTimeout(() => {
+          const element = document.getElementById(hash)
+          if (element) {
+            // Header (64px) + Sub-navbar (48px) = 112px
+            const headerOffset = 112
+            const elementPosition = element.getBoundingClientRect().top
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            })
+          }
+        }, 100)
+        return
+      }
+      
+      // Si estamos en otra página, navegar primero y luego hacer scroll
+      if (currentPath !== normalizedPath) {
+        setIsMenuOpen(false)
+        // Guardar el hash para hacer scroll después de navegar
+        if (hash) {
+          sessionStorage.setItem('scrollToHash', hash)
+        }
+        window.location.href = href
+        return
+      }
+      
+      // Si estamos en la página correcta, hacer scroll suave
+      setIsMenuOpen(false)
+      setTimeout(() => {
         const element = document.getElementById(hash)
         if (element) {
-          // Header (64px) + Sub-navbar (48px) = 112px
-          const headerOffset = 112
+          const headerOffset = 80
           const elementPosition = element.getBoundingClientRect().top
           const offsetPosition = elementPosition + window.pageYOffset - headerOffset
 
@@ -49,29 +119,7 @@ export function Header() {
             behavior: 'smooth'
           })
         }
-        setIsMenuOpen(false)
-        return
-      }
-      
-      // Si estamos en otra página, navegar primero
-      if (pathname !== path) {
-        window.location.href = href
-        return
-      }
-      
-      // Si estamos en la página correcta, hacer scroll suave
-      const element = document.getElementById(hash)
-      if (element) {
-        const headerOffset = 80
-        const elementPosition = element.getBoundingClientRect().top
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        })
-      }
-      setIsMenuOpen(false)
+      }, 100)
     } else {
       setIsMenuOpen(false)
     }
@@ -84,6 +132,7 @@ export function Header() {
     { href: '/#instalaciones', label: t('header.instalaciones') },
     { href: '/#equipajes', label: t('header.equipajes') },
     { href: '/#equipos', label: t('header.equipos') },
+    { href: '/#promociones', label: t('header.promociones') },
     { href: '/#patrocinadores', label: t('header.patrocinadores') },
     { href: '/#contacto', label: t('header.contacto') },
     { href: '/campus-navidad', label: t('header.campusNavidad'), highlight: true },

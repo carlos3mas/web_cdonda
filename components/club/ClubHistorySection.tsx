@@ -202,8 +202,9 @@ export function ClubHistorySection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8 sm:mb-10 md:mb-12"
         >
-          <h3 className="text-2xl sm:text-3xl md:text-4xl text-blue-600 font-bold mb-2 sm:mb-3 md:mb-4 px-2">
-            {t('history.nuestrosValores')}
+          <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3 md:mb-4 px-2">
+            <span className="text-blue-600">{t('history.nuestrosValoresPrimera')} </span>
+            <span className="text-red-600">{t('history.nuestrosValoresSegunda')}</span>
           </h3>
           <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-3">
             {t('history.valoresDesc')}

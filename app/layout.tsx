@@ -22,6 +22,11 @@ export const metadata: Metadata = {
     'campus navidad cd onda',
     'escuela de fútbol castellón',
   ],
+  icons: {
+    icon: '/images/logos/escudo-cd-onda.webp',
+    shortcut: '/images/logos/escudo-cd-onda.webp',
+    apple: '/images/logos/escudo-cd-onda.webp',
+  },
   openGraph: {
     title: 'CD Onda | Club y Campus Oficial',
     description:

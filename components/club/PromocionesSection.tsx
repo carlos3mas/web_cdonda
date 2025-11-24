@@ -11,14 +11,9 @@ export function PromocionesSection() {
 
   const decimos = [
     {
-      id: 'decimo-navidad-club',
-      image: '/images/promociones/decimo-navidad-club.jpg',
-      alt: t('promociones.decimoNavidadClubAlt')
-    },
-    {
-      id: 'decimo-nino',
-      image: '/images/promociones/decimo-nino.jpg',
-      alt: t('promociones.decimoNinoAlt')
+      id: 'decimo-navidad',
+      image: '/images/promociones/decimo-navidad.jpg',
+      alt: t('promociones.decimoNavidadAlt')
     }
   ]
 
@@ -46,30 +41,29 @@ export function PromocionesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-5xl mx-auto mb-10 sm:mb-12 md:mb-16"
+          className="max-w-2xl mx-auto mb-10 sm:mb-12 md:mb-16"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-            {decimos.map((decimo, index) => (
-              <motion.div
-                key={decimo.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.15 }}
-                className="relative group"
-              >
-                <div className="relative aspect-[21/9] sm:aspect-[5/3] rounded-xl sm:rounded-2xl overflow-hidden border-2 border-red-100 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <Image
-                    src={decimo.image}
-                    alt={decimo.alt}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {decimos.map((decimo, index) => (
+            <motion.div
+              key={decimo.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.15 }}
+              className="relative w-full flex justify-center"
+            >
+              <div className="relative w-full max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
+                <Image
+                  src={decimo.image}
+                  alt={decimo.alt}
+                  width={800}
+                  height={600}
+                  className="w-full h-auto object-contain"
+                  sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, 70vw"
+                />
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
 
         <motion.div

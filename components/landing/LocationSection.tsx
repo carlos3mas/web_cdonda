@@ -41,7 +41,9 @@ export function LocationSection() {
                   alt="Campo Municipal Enrique Saura Gil - Vista aérea del complejo deportivo con campo de fútbol y velódromo"
                   fill
                   className="object-cover"
-                  priority
+                  loading="lazy"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  quality={75}
                 />
                 
               </div>
@@ -89,8 +91,9 @@ export function LocationSection() {
                   alt="Campo Municipal La Cossa"
                   fill
                   className="object-cover"
-                  priority
+                  loading="lazy"
                   sizes="(max-width: 768px) 100vw, 50vw"
+                  quality={75}
                 />
               </div>
               <CardContent className="p-4 sm:p-5 md:p-6">

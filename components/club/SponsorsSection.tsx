@@ -4,20 +4,33 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useI18n } from '@/lib/i18n/context'
 
-const sponsors = [
-  { name: 'Sponsor 1', logo: '🏢' },
-  { name: 'Sponsor 2', logo: '🏪' },
-  { name: 'Sponsor 3', logo: '🏭' },
-  { name: 'Sponsor 4', logo: '🏛️' },
-  { name: 'Sponsor 5', logo: '🏦' },
-  { name: 'Sponsor 6', logo: '🏨' },
-  { name: 'Sponsor 7', logo: '🏬' },
-  { name: 'Sponsor 8', logo: '🏢' },
+// Otros patrocinadores (excluyendo principales, escudo y escola-futbol)
+const otherSponsors = [
+  '3D-CREATIVE.tif',
+  'AITAPI.webp',
+  'angeli.webp',
+  'BESTILE.webp',
+  'Curto.webp',
+  'ELITE-PARFUM.webp',
+  'Esmaltile.webp',
+  'ESPORTS-LIZONDO.webp',
+  'GALAXY-TILES.jpg',
+  'Globeenergy.webp',
+  'J.P.E.jpg',
+  'LOGILOP.webp',
+  'Marplac.webp',
+  'MOZ-TILES.webp',
+  'PURA-MAGIA.webp',
+  'rotulos.webp',
+  'Sara-Blazquez.jpg',
+  'SERCAS.webp',
+  'termocontrol.webp',
+  'vipecons.webp',
 ]
 
 export function SponsorsSection() {
   const { t } = useI18n()
-  const duplicatedSponsors = [...sponsors, ...sponsors]
+  const duplicatedSponsors = [...otherSponsors, ...otherSponsors]
 
   return (
     <section id="patrocinadores" className="py-12 sm:py-16 bg-white">
@@ -48,15 +61,47 @@ export function SponsorsSection() {
           <h4 className="text-[10px] xs:text-xs sm:text-sm uppercase tracking-[0.25em] sm:tracking-[0.3em] md:tracking-[0.35em] text-blue-600 mb-3 sm:mb-4 md:mb-6 px-2">
             {t('sponsors.patrocinadoresPrincipales')}
           </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-end">
-            <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm sm:mt-4 md:mt-6">
-              <span className="text-[10px] xs:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] text-blue-600">Logo 1</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-center">
+            {/* Caja Rural - Izquierda */}
+            <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm sm:mt-4 md:mt-6 p-4">
+              <div className="relative w-full h-full">
+                <Image
+                  src="/images/logos/caja-rural.webp"
+                  alt="Caja Rural"
+                  fill
+                  className="object-contain"
+                  loading="lazy"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                />
+              </div>
             </div>
-            <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm">
-              <span className="text-[10px] xs:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] text-blue-600">Logo 2</span>
+            {/* Ayuntamiento - Centro */}
+            <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm p-4">
+              <div className="relative w-full h-full">
+                <Image
+                  src="/images/logos/ayuntamiento-onda.webp"
+                  alt="Ayuntamiento de Onda"
+                  fill
+                  className="object-contain"
+                  loading="lazy"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                />
+              </div>
             </div>
-            <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm sm:mt-4 md:mt-6">
-              <span className="text-[10px] xs:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] text-blue-600">Logo 3</span>
+            {/* Diputación - Derecha */}
+            <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm sm:mt-4 md:mt-6 p-4">
+              <div className="relative w-full h-full">
+                <Image
+                  src="/images/logos/Diputacion-Castellon.jpg"
+                  alt="Diputación de Castellón"
+                  fill
+                  className="object-contain"
+                  loading="lazy"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                  quality={60}
+                  unoptimized={false}
+                />
+              </div>
             </div>
           </div>
         </motion.div>
@@ -76,13 +121,21 @@ export function SponsorsSection() {
               }
             }}
           >
-            {duplicatedSponsors.map((sponsor, index) => (
+            {duplicatedSponsors.map((logo, index) => (
               <div
-                key={`${sponsor.name}-${index}`}
-                className="flex-shrink-0 w-36 sm:w-40 md:w-48 h-20 sm:h-24 md:h-28 flex flex-col items-center justify-center rounded-xl sm:rounded-2xl border border-red-100 bg-white text-center shadow-sm"
+                key={`${logo}-${index}`}
+                className="flex-shrink-0 w-36 sm:w-40 md:w-48 h-20 sm:h-24 md:h-28 flex flex-col items-center justify-center rounded-xl sm:rounded-2xl border border-red-100 bg-white p-3 shadow-sm"
               >
-                <span className="text-2xl sm:text-3xl mb-1 sm:mb-2">{sponsor.logo}</span>
-                <h5 className="text-xs sm:text-sm font-semibold text-red-600 px-2">{sponsor.name}</h5>
+                <div className="relative w-full h-full">
+                  <Image
+                    src={`/images/logos/${logo}`}
+                    alt={logo.replace(/\.(jpg|png|jpeg|tif|webp)$/i, '').replace(/-/g, ' ')}
+                    fill
+                    className="object-contain"
+                    loading="lazy"
+                    sizes="(max-width: 640px) 150px, 200px"
+                  />
+                </div>
               </div>
             ))}
           </motion.div>
@@ -116,10 +169,12 @@ export function SponsorsSection() {
             <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
               <div className="relative h-16 w-24 sm:h-20 sm:w-32 md:h-24 md:w-40">
                 <Image
-                  src="/images/logos/ayuntamiento-onda.png"
+                  src="/images/logos/ayuntamiento-onda.webp"
                   alt="Ayuntamiento de Onda"
                   fill
                   className="object-contain"
+                  loading="lazy"
+                  sizes="(max-width: 640px) 120px, 160px"
                 />
               </div>
               <p className="text-[10px] xs:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-white/70 px-2">{t('sponsors.agradecimientoEspecial')}</p>

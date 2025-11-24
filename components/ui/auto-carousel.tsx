@@ -42,7 +42,7 @@ export function AutoCarousel({ images, alt, interval = 4000, className = '' }: A
 
   return (
     <div className={`relative w-full h-full overflow-hidden ${className}`}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync" initial={false}>
         <motion.div
           key={currentIndex}
           initial={{ opacity: 0 }}
@@ -60,22 +60,6 @@ export function AutoCarousel({ images, alt, interval = 4000, className = '' }: A
           />
         </motion.div>
       </AnimatePresence>
-      
-      {/* Indicadores de posición */}
-      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5 z-10">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`h-1.5 rounded-full transition-all ${
-              index === currentIndex
-                ? 'w-6 bg-white'
-                : 'w-1.5 bg-white/50 hover:bg-white/75'
-            }`}
-            aria-label={`Ir a imagen ${index + 1}`}
-          />
-        ))}
-      </div>
     </div>
   )
 }

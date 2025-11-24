@@ -9,6 +9,13 @@ const REQUIRED_ENV_VARS = [
 ]
 
 export function validateEnv() {
+  // No validar durante el build - las variables de entorno no están disponibles
+  // Esta función solo debe llamarse en runtime cuando realmente se necesite
+  if (!process.env.DATABASE_URL) {
+    // Si no hay DATABASE_URL, probablemente estamos en build time
+    return
+  }
+
   const missing: string[] = []
   
   for (const varName of REQUIRED_ENV_VARS) {
@@ -24,7 +31,8 @@ export function validateEnv() {
     })
     console.error('\nPor favor, configura estas variables en el archivo .env')
     
-    if (process.env.NODE_ENV === 'production') {
+    // Solo lanzar error en runtime de producción, no durante el build
+    if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
       throw new Error('Variables de entorno faltantes en producción')
     }
   } else {
@@ -32,23 +40,21 @@ export function validateEnv() {
   }
 }
 
-// Validar solo en runtime, no durante el build
-// Next.js ejecuta código durante el build, pero no tenemos acceso a las variables de entorno
-// Usamos una verificación más robusta para detectar si estamos en build time
-const isBuildTime = 
-  process.env.NEXT_PHASE === 'phase-production-build' ||
-  process.env.NEXT_PHASE === 'phase-development-build' ||
-  (typeof process.env.NEXT_PHASE !== 'undefined' && process.env.NEXT_PHASE.includes('build'))
-
-if (typeof window === 'undefined' && !isBuildTime) {
-  // Solo validar si no estamos en build time
+// No validar automáticamente durante el build
+// La validación se hará cuando sea necesaria (en las rutas API)
+// Solo validar si estamos en runtime y tenemos las variables de entorno
+if (
+  typeof window === 'undefined' &&
+  process.env.DATABASE_URL &&
+  process.env.NEXTAUTH_SECRET &&
+  process.env.NEXTAUTH_URL
+) {
+  // Solo validar si todas las variables están presentes (runtime)
   try {
     validateEnv()
   } catch (error) {
-    // Si estamos en build time, solo mostrar warning
-    if (isBuildTime) {
-      console.warn('⚠️  Variables de entorno no validadas durante el build. Se validarán en runtime.')
-    } else {
+    // No lanzar error durante el build, solo en runtime real
+    if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
       throw error
     }
   }

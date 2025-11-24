@@ -5,11 +5,32 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+// Solo inicializar Prisma si DATABASE_URL está disponible
+// Esto evita errores durante el build cuando las variables de entorno no están configuradas
+function createPrismaClient() {
+  if (!process.env.DATABASE_URL) {
+    // Retornar un cliente "mock" que lanzará errores informativos si se intenta usar
+    return new Proxy({} as PrismaClient, {
+      get() {
+        throw new Error(
+          'Prisma Client no está inicializado. DATABASE_URL no está configurada.'
+        )
+      },
+    })
+  }
+  return new PrismaClient()
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 async function ensureDefaultAdmin() {
+  // No hacer nada si no hay DATABASE_URL
+  if (!process.env.DATABASE_URL) {
+    return
+  }
+
   try {
     const email = process.env.ADMIN_EMAIL || 'admin@cdonda.com'
     const password = process.env.ADMIN_PASSWORD || 'admin123'
@@ -28,18 +49,24 @@ async function ensureDefaultAdmin() {
     })
     console.log(`🔐 Admin por defecto creado (${email}). Cambia las credenciales en producción.`)
   } catch (error) {
-    console.error('No se pudo crear el admin por defecto:', error)
+    // Silenciar errores durante el build
+    if (process.env.DATABASE_URL) {
+      console.error('No se pudo crear el admin por defecto:', error)
+    }
   }
 }
 
 // Solo crear admin por defecto en runtime, no durante el build
 // Durante el build de Next.js no tenemos acceso a la base de datos
-const isBuildTime = 
-  process.env.NEXT_PHASE === 'phase-production-build' ||
-  process.env.NEXT_PHASE === 'phase-development-build' ||
-  (typeof process.env.NEXT_PHASE !== 'undefined' && process.env.NEXT_PHASE.includes('build'))
-
-if (process.env.NODE_ENV !== 'test' && !isBuildTime) {
-  ensureDefaultAdmin()
+// Verificamos si DATABASE_URL existe antes de intentar crear el admin
+if (
+  process.env.NODE_ENV !== 'test' &&
+  process.env.DATABASE_URL &&
+  typeof window === 'undefined'
+) {
+  // Ejecutar de forma asíncrona para no bloquear la importación del módulo
+  ensureDefaultAdmin().catch(() => {
+    // Silenciar errores durante el build o cuando la DB no está disponible
+  })
 }
 

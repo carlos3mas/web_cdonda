@@ -32,8 +32,25 @@ export function validateEnv() {
   }
 }
 
-// Validar inmediatamente al importar
-if (typeof window === 'undefined') { // Solo en servidor
-  validateEnv()
+// Validar solo en runtime, no durante el build
+// Next.js ejecuta código durante el build, pero no tenemos acceso a las variables de entorno
+// Usamos una verificación más robusta para detectar si estamos en build time
+const isBuildTime = 
+  process.env.NEXT_PHASE === 'phase-production-build' ||
+  process.env.NEXT_PHASE === 'phase-development-build' ||
+  (typeof process.env.NEXT_PHASE !== 'undefined' && process.env.NEXT_PHASE.includes('build'))
+
+if (typeof window === 'undefined' && !isBuildTime) {
+  // Solo validar si no estamos en build time
+  try {
+    validateEnv()
+  } catch (error) {
+    // Si estamos en build time, solo mostrar warning
+    if (isBuildTime) {
+      console.warn('⚠️  Variables de entorno no validadas durante el build. Se validarán en runtime.')
+    } else {
+      throw error
+    }
+  }
 }
 

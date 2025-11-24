@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { SponsorsBanner } from '@/components/layout/SponsorsBanner'
 import { Providers } from '@/components/providers/I18nProvider'
-import '@/lib/env-validation' // Validar variables de entorno al inicio
+// Nota: La validación de variables de entorno se hace en runtime en las rutas API
 
 const inter = Inter({ subsets: ['latin'] })
 

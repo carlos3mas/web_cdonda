@@ -32,7 +32,14 @@ async function ensureDefaultAdmin() {
   }
 }
 
-if (process.env.NODE_ENV !== 'test') {
+// Solo crear admin por defecto en runtime, no durante el build
+// Durante el build de Next.js no tenemos acceso a la base de datos
+const isBuildTime = 
+  process.env.NEXT_PHASE === 'phase-production-build' ||
+  process.env.NEXT_PHASE === 'phase-development-build' ||
+  (typeof process.env.NEXT_PHASE !== 'undefined' && process.env.NEXT_PHASE.includes('build'))
+
+if (process.env.NODE_ENV !== 'test' && !isBuildTime) {
   ensureDefaultAdmin()
 }
 

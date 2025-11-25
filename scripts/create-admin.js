@@ -21,9 +21,21 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function createAdmin() {
-  const email = process.env.ADMIN_EMAIL || 'admin@cdonda.com';
-  const password = process.env.ADMIN_PASSWORD || 'admin123';
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
   const nombre = process.env.ADMIN_NAME || 'Administrador CD Onda';
+
+  // Validar que las variables obligatorias estén presentes
+  if (!email || !password) {
+    console.error('❌ Error: Faltan variables de entorno obligatorias');
+    console.error('\nDebes proporcionar:');
+    console.error('  - ADMIN_EMAIL: Email del administrador');
+    console.error('  - ADMIN_PASSWORD: Contraseña del administrador');
+    console.error('  - ADMIN_NAME (opcional): Nombre del administrador\n');
+    console.error('Ejemplo de uso:');
+    console.error('  ADMIN_EMAIL="tu@email.com" ADMIN_PASSWORD="tuPassword" node scripts/create-admin.js\n');
+    process.exit(1);
+  }
 
   console.log('🔐 Creando administrador...\n');
   console.log(`Email: ${email}`);

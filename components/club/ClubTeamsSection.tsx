@@ -30,7 +30,9 @@ export function ClubTeamsSection() {
       age: t('teams.anos3_4'),
       description: t('teams.chupetinesDesc'),
       iconSize: 'h-9 w-9',
-      images: []
+      images: [
+        '/images/club/chupetines-1.webp'
+      ]
     },
     {
       icon: Sparkles,

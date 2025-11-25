@@ -50,7 +50,7 @@ export function ClubHeroSection() {
             >
               <div className="relative w-full aspect-[4/5]">
                 <Image
-                  src="/images/logos/escudo-cd-onda.png"
+                  src="/images/logos/escudo-cd-onda.webp"
                   alt="Escudo CD Onda"
                   fill
                   priority
@@ -74,7 +74,7 @@ export function ClubHeroSection() {
               className="relative w-full max-w-[180px] xs:max-w-[200px] sm:max-w-[230px] md:max-w-[260px]"
             >
               <Image
-                src="/images/logos/escola-futbol.png"
+                src="/images/logos/escola-futbol.webp"
                 alt="Escola de Futbol CD Onda"
                 width={260}
                 height={130}

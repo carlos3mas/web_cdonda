@@ -215,7 +215,7 @@ export function PromocionesModal() {
                   {/* Marco de la imagen */}
                   <div className="relative aspect-[3/2] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-white shadow-2xl">
                     <Image
-                      src="/images/promociones/decimo-navidad.jpg"
+                      src="/images/promociones/decimo-navidad.webp"
                       alt={t('promociones.decimoNavidadAlt')}
                       fill
                       className="object-cover"

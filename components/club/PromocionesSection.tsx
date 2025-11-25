@@ -12,7 +12,7 @@ export function PromocionesSection() {
   const decimos = [
     {
       id: 'decimo-navidad',
-      image: '/images/promociones/decimo-navidad.jpg',
+      image: '/images/promociones/decimo-navidad.webp',
       alt: t('promociones.decimoNavidadAlt')
     }
   ]

@@ -479,7 +479,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
   // Cargar logo del equipo
   let logoImage = null
   try {
-    const logoPath = join(process.cwd(), 'public', 'images', 'logos', 'escudo-cd-onda.png')
+    const logoPath = join(process.cwd(), 'public', 'images', 'logos', 'escudo-cd-onda.webp')
     if (existsSync(logoPath)) {
       const logoBytes = await readFile(logoPath)
       logoImage = await pdfDoc.embedPng(logoBytes)

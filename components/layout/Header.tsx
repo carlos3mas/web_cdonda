@@ -147,7 +147,7 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group z-50 min-w-0">
             <div className="relative w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 transition-transform group-hover:scale-110 flex-shrink-0">
               <Image
-                src="/images/logos/escudo-cd-onda.png"
+                src="/images/logos/escudo-cd-onda.webp"
                 alt="Escudo CD Onda"
                 fill
                 className="object-contain"

@@ -26,7 +26,7 @@ export function ClubHistorySection() {
       year: '1988-89',
       title: t('history.escuelaFutbol'),
       description: t('history.escuelaFutbolDesc'),
-      image: '/images/historia/escola-futbol.png'
+      image: '/images/historia/escola-futbol.webp'
     },
     {
       year: '2001-02',

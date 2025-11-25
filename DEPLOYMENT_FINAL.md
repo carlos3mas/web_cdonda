@@ -77,15 +77,15 @@ En Dokploy, ve a la sección **"Environment Variables"** y añade:
 ### Variables Requeridas (copia exactamente):
 
 ```
-DATABASE_URL=postgresql://neondb_owner:npg_vHUkKQV0JRa5@ep-damp-voice-ab7pe30b-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require
 
-NEXTAUTH_SECRET=352af6a96c19428145a0aeb16cfdb4fb
+NEXTAUTH_SECRET=your-secret-here-generate-with-openssl-rand-base64-32
 
 NEXTAUTH_URL=https://cdonda.es
 
 ADMIN_EMAIL=escolafut@gmail.com
 
-ADMIN_PASSWORD=Cdonda123
+ADMIN_PASSWORD=your-secure-password
 ```
 
 **⚠️ IMPORTANTE:**

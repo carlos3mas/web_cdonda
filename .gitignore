@@ -66,3 +66,8 @@ storage/justificantes/*
 .settings/
 *.sublime-workspace
 .cursor
+
+# Archivos con información sensible
+VARIABLES_ENTORNO.txt
+*.credentials
+*.secrets

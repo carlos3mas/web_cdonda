@@ -233,12 +233,12 @@ Una vez tengas todo, tus variables de entorno en Dokploy deberían ser:
 DATABASE_URL=postgresql://[tu-conexion-neon]
 
 # NextAuth
-NEXTAUTH_SECRET=352af6a96c19428145a0aeb16cfdb4fb
+NEXTAUTH_SECRET=your-secret-here-generate-with-openssl-rand-base64-32
 NEXTAUTH_URL=https://www.cdonda.com
 
 # Admin
 ADMIN_EMAIL=escolafut@gmail.com
-ADMIN_PASSWORD=Cdonda123
+ADMIN_PASSWORD=your-secure-password
 
 # Google Analytics (añadir cuando tengas el ID)
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX

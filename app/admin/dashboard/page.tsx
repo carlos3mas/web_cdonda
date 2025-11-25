@@ -7,7 +7,6 @@ import { motion } from 'framer-motion'
 import { DashboardHeader } from '@/components/admin/DashboardHeader'
 import { StatsCards } from '@/components/admin/StatsCards'
 import { InscripcionesTable } from '@/components/admin/InscripcionesTable'
-import { PlantillasManager } from '@/components/admin/PlantillasManager'
 import { DashboardStats, Inscripcion } from '@/types'
 import { Loader2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -18,8 +17,7 @@ const tiposInscripcion = [
   { value: 'campus-navidad', label: 'Campus Navidad', icon: '🎄' },
   { value: 'campus-pascua', label: 'Campus Pascua', icon: '🐣' },
   { value: 'campus-verano', label: 'Campus Verano', icon: '☀️' },
-  { value: 'anual', label: 'Inscripción Anual', icon: '📅' },
-  { value: 'plantillas', label: 'Plantillas PDF', icon: '📄' }
+  { value: 'anual', label: 'Inscripción Anual', icon: '📅' }
 ]
 
 export default function AdminDashboardPage() {
@@ -29,7 +27,6 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Record<string, DashboardStats>>({})
   const [inscripciones, setInscripciones] = useState<Record<string, Inscripcion[]>>({})
   const [isLoading, setIsLoading] = useState(true)
-  const [mainTab, setMainTab] = useState<'inscripciones' | 'plantillas'>('inscripciones')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -130,54 +127,37 @@ export default function AdminDashboardPage() {
         >
           <h1 className="text-3xl font-bold mb-8">Panel de Control</h1>
           
-          <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as 'inscripciones' | 'plantillas')} className="w-full">
-            <TabsList className="mb-6">
-              <TabsTrigger value="inscripciones">
-                📊 Inscripciones
-              </TabsTrigger>
-              <TabsTrigger value="plantillas">
-                📄 Plantillas PDF
-              </TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
+              {tiposInscripcion.map((tipo) => (
+                <TabsTrigger 
+                  key={tipo.value} 
+                  value={tipo.value}
+                  className="flex items-center gap-2"
+                >
+                  <span>{tipo.icon}</span>
+                  <span className="hidden sm:inline">{tipo.label}</span>
+                </TabsTrigger>
+              ))}
             </TabsList>
 
-            <TabsContent value="inscripciones">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
-                  {tiposInscripcion.filter(t => t.value !== 'plantillas').map((tipo) => (
-                    <TabsTrigger 
-                      key={tipo.value} 
-                      value={tipo.value}
-                      className="flex items-center gap-2"
-                    >
-                      <span>{tipo.icon}</span>
-                      <span className="hidden sm:inline">{tipo.label}</span>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-
-                {tiposInscripcion.filter(t => t.value !== 'plantillas').map((tipo) => (
-                  <TabsContent key={tipo.value} value={tipo.value} className="space-y-6">
-                    {stats[tipo.value] && (
-                      <StatsCards 
-                        stats={stats[tipo.value]} 
-                        tipoLabel={tipo.value === 'todos' ? undefined : tipo.label}
-                      />
-                    )}
-                    
-                    <InscripcionesTable 
-                      inscripciones={inscripciones[tipo.value] || []} 
-                      onUpdate={handleUpdate}
-                      showTipoFilter={tipo.value === 'todos'}
-                      tipoInscripcion={tipo.value}
-                    />
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </TabsContent>
-
-            <TabsContent value="plantillas">
-              <PlantillasManager />
-            </TabsContent>
+            {tiposInscripcion.map((tipo) => (
+              <TabsContent key={tipo.value} value={tipo.value} className="space-y-6">
+                {stats[tipo.value] && (
+                  <StatsCards 
+                    stats={stats[tipo.value]} 
+                    tipoLabel={tipo.value === 'todos' ? undefined : tipo.label}
+                  />
+                )}
+                
+                <InscripcionesTable 
+                  inscripciones={inscripciones[tipo.value] || []} 
+                  onUpdate={handleUpdate}
+                  showTipoFilter={tipo.value === 'todos'}
+                  tipoInscripcion={tipo.value}
+                />
+              </TabsContent>
+            ))}
           </Tabs>
         </motion.div>
       </main>

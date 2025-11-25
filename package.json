@@ -13,8 +13,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev",
-    "seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts",
-    "seed:inscripciones": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/seed-inscripciones.ts"
+    "seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.9.0",

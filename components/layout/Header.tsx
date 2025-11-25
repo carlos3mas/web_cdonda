@@ -14,6 +14,7 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
   const isCampusPage = pathname?.startsWith('/campus-navidad')
+  const isInscripcionPage = pathname === '/campus-navidad/inscripcion'
   const { t } = useI18n()
 
   // Cerrar menú cuando cambia la ruta
@@ -224,8 +225,8 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
-              {/* Subsecciones del campus en móvil */}
-              {isCampusPage && (
+              {/* Subsecciones del campus en móvil (solo si no estamos en la página de inscripción) */}
+              {isCampusPage && !isInscripcionPage && (
                 <>
                   <div className="px-3 sm:px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-t border-gray-200 mt-2 pt-3 sm:pt-4">
                     {t('header.campusNavidad')}
@@ -260,8 +261,8 @@ export function Header() {
         </AnimatePresence>
       </nav>
 
-      {/* Sub-navbar para el campus */}
-      {isCampusPage && (
+      {/* Sub-navbar para el campus (solo si no estamos en la página de inscripción) */}
+      {isCampusPage && !isInscripcionPage && (
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}

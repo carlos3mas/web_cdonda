@@ -3,12 +3,14 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { SponsorsBanner } from '@/components/layout/SponsorsBanner'
 import { Providers } from '@/components/providers/I18nProvider'
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
+import { GoogleTagManager, GoogleTagManagerNoScript } from '@/components/analytics/GoogleTagManager'
 // Nota: La validación de variables de entorno se hace en runtime en las rutas API
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.cdonda.com'),
+  metadataBase: new URL('https://cdonda.es'),
   title: {
     default: 'CD Onda | Club y Campus Oficial',
     template: '%s | CD Onda',
@@ -51,7 +53,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
+      <head>
+        <GoogleAnalytics />
+        <GoogleTagManager />
+      </head>
       <body className={inter.className}>
+        <GoogleTagManagerNoScript />
         <Providers>
           <SponsorsBanner />
           {children}

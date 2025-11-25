@@ -18,6 +18,7 @@ export function HeroSection() {
           loop
           muted
           playsInline
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover blur-[4px] sm:blur-[3px] md:blur-[2px]"
         >
           <source src="/images/campus/hero-video.mp4" type="video/mp4" />
@@ -36,7 +37,7 @@ export function HeroSection() {
             <div className="absolute -inset-4 sm:-inset-5 md:-inset-6 rounded-2xl sm:rounded-3xl bg-black/20 blur-2xl hidden lg:block" aria-hidden />
             <div className="relative rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] sm:shadow-[0_25px_60px_rgba(0,0,0,0.5)] md:shadow-[0_30px_70px_rgba(0,0,0,0.55)]">
               <Image
-                src="/images/campus/cartel-campus.jpg"
+                src="/images/campus/cartel-campus.webp"
                 alt="Cartel Campus de Navidad 2025"
                 width={800}
                 height={1067}
@@ -61,7 +62,7 @@ export function HeroSection() {
             
             <div>
               <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.2] sm:leading-[1.15] md:leading-[1.1] mb-4 sm:mb-5 md:mb-6 px-1">
-                Vive una experiencia única en el Campus <span className="whitespace-nowrap">CD ONDA</span>
+                {t('campusHero.tituloHero')} <span className="whitespace-nowrap">CD ONDA</span>
               </h1>
             </div>
             

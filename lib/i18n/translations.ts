@@ -28,7 +28,8 @@ export const translations = {
     // Campus Hero
     campusHero: {
       campusNavidad: 'Campus de Navidad · Diciembre 2025 - Enero 2026',
-      experienciaUnica: 'Vive una experiencia única en el Campus CD Onda',
+      experienciaUnica: 'Viu una experiència única al Campus de Nadal del CD Onda',
+      tituloHero: 'Vive una experiencia única en el Campus',
       descripcion: 'Entrenamientos de alto rendimiento, actividades lúdicas y convivencia en un entorno seguro. Entrenadores titulados, metodología CD Onda y grupos adaptados por edades.',
       inscrbeteAhora: 'Reserva tu plaza',
       masInformacion: 'Más Información',
@@ -436,6 +437,7 @@ export const translations = {
     campusHero: {
       campusNavidad: 'Campus de Nadal · Desembre 2025 - Gener 2026',
       experienciaUnica: 'Viu una experiència única al Campus CD Onda',
+      tituloHero: 'Viu una experiència única al Campus',
       descripcion: 'Entrenaments d\'alt rendiment, activitats lúdiques i convivència en un entorn segur. Entrenadors titulats, metodologia CD Onda i grups adaptats per edats.',
       inscrbeteAhora: 'Reserva la teua plaça',
       masInformacion: 'Més Informació',

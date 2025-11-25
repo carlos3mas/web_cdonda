@@ -69,5 +69,6 @@ storage/justificantes/*
 
 # Archivos con información sensible
 VARIABLES_ENTORNO.txt
+NUEVAS_CREDENCIALES.md
 *.credentials
 *.secrets

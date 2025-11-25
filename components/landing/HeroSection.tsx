@@ -18,7 +18,8 @@ export function HeroSection() {
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
+          poster="/images/campus/cartel-campus.webp"
           className="absolute inset-0 w-full h-full object-cover blur-[4px] sm:blur-[3px] md:blur-[2px]"
         >
           <source src="/images/campus/hero-video.mp4" type="video/mp4" />

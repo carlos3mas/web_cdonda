@@ -6,7 +6,6 @@ import { useI18n } from '@/lib/i18n/context'
 
 // Otros patrocinadores (excluyendo principales, escudo y escola-futbol)
 const otherSponsors = [
-  '3D-CREATIVE.tif',
   'AITAPI.webp',
   'angeli.webp',
   'BESTILE.webp',
@@ -14,15 +13,15 @@ const otherSponsors = [
   'ELITE-PARFUM.webp',
   'Esmaltile.webp',
   'ESPORTS-LIZONDO.webp',
-  'GALAXY-TILES.jpg',
+  'GALAXY-TILES.webp',
   'Globeenergy.webp',
-  'J.P.E.jpg',
+  'J.P.E.webp',
   'LOGILOP.webp',
   'Marplac.webp',
   'MOZ-TILES.webp',
   'PURA-MAGIA.webp',
   'rotulos.webp',
-  'Sara-Blazquez.jpg',
+  'sara-blazquez-placeholder.svg',
   'SERCAS.webp',
   'termocontrol.webp',
   'vipecons.webp',
@@ -92,14 +91,12 @@ export function SponsorsSection() {
             <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm sm:mt-4 md:mt-6 p-4">
               <div className="relative w-full h-full">
                 <Image
-                  src="/images/logos/Diputacion-Castellon.jpg"
+                  src="/images/logos/Diputacion-Castellon.webp"
                   alt="Diputación de Castellón"
                   fill
                   className="object-contain"
                   loading="lazy"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
-                  quality={60}
-                  unoptimized={false}
                 />
               </div>
             </div>

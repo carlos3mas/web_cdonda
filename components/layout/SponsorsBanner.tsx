@@ -8,8 +8,7 @@ import Image from 'next/image'
 const sponsors = [
   'caja-rural.webp',
   'ayuntamiento-onda.webp',
-  'Diputacion-Castellon.jpg',
-  '3D-CREATIVE.tif',
+  'Diputacion-Castellon.webp',
   'AITAPI.webp',
   'angeli.webp',
   'BESTILE.webp',
@@ -17,15 +16,15 @@ const sponsors = [
   'ELITE-PARFUM.webp',
   'Esmaltile.webp',
   'ESPORTS-LIZONDO.webp',
-  'GALAXY-TILES.jpg',
+  'GALAXY-TILES.webp',
   'Globeenergy.webp',
-  'J.P.E.jpg',
+  'J.P.E.webp',
   'LOGILOP.webp',
   'Marplac.webp',
   'MOZ-TILES.webp',
   'PURA-MAGIA.webp',
   'rotulos.webp',
-  'Sara-Blazquez.jpg',
+  'sara-blazquez-placeholder.svg',
   'SERCAS.webp',
   'termocontrol.webp',
   'vipecons.webp',
@@ -78,7 +77,8 @@ export function SponsorsBanner() {
                   className="h-full w-auto object-contain"
                   loading="lazy"
                   sizes="80px"
-                  quality={75}
+                  quality={60}
+                  unoptimized={logo.endsWith('.webp')}
                 />
               </div>
             </div>

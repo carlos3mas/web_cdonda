@@ -200,6 +200,7 @@ export function ClubTeamsSection() {
                       alt={category.title}
                       interval={4000}
                       className="rounded-none"
+                      priority={index < 3}
                     />
                   </div>
                   <CardContent className="p-4 sm:p-5 md:p-6 flex flex-col items-center text-center gap-3 sm:gap-4">

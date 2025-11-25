@@ -14,13 +14,13 @@ export function ClubHistorySection() {
       year: '1921',
       title: t('history.fundacion'),
       description: t('history.fundacionDesc'),
-      image: '/images/historia/fundacion.jpg'
+      image: '/images/historia/fundacion.webp'
     },
     {
       year: '1955-56',
       title: t('history.primerAscenso'),
       description: t('history.primerAscensoDesc'),
-      image: '/images/historia/primerascenso.jpg'
+      image: '/images/historia/primerascenso.webp'
     },
     {
       year: '1988-89',
@@ -38,13 +38,13 @@ export function ClubHistorySection() {
       year: '2023',
       title: t('history.medallaOro'),
       description: t('history.medallaOroDesc'),
-      image: '/images/historia/medalla-oro.jpg'
+      image: '/images/historia/medalla-oro.webp'
     },
     {
       year: t('history.actualidad'),
       title: t('history.actualidadTitle'),
       description: t('history.actualidadDesc'),
-      image: '/images/historia/actualidad.jpg'
+      image: '/images/historia/actualidad.webp'
     }
   ]
 

@@ -45,7 +45,7 @@ export function ClubKitsSection() {
       name: t('kits.primeraEquipacion'),
       description: t('kits.primeraEquipacionDesc'),
       image: {
-        src: '/images/kits/primera-chico.jpg',
+        src: '/images/kits/primera-chico.webp',
         alt: t('kits.primeraEquipacionAlt') + ' - Chico'
       }
     },
@@ -53,7 +53,7 @@ export function ClubKitsSection() {
       name: t('kits.segundaEquipacion'),
       description: t('kits.segundaEquipacionDesc'),
       image: {
-        src: '/images/kits/segunda-chica.jpg',
+        src: '/images/kits/segunda-chica.webp',
         alt: t('kits.segundaEquipacionAlt') + ' - Chica'
       }
     }

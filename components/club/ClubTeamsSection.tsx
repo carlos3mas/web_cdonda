@@ -31,7 +31,7 @@ export function ClubTeamsSection() {
       description: t('teams.chupetinesDesc'),
       iconSize: 'h-9 w-9',
       images: [
-        '/images/club/chupetines-1.jpg'
+        '/images/club/chupetines-1.webp'
       ]
     },
     {
@@ -41,8 +41,8 @@ export function ClubTeamsSection() {
       description: t('teams.querubinesDesc'),
       iconSize: 'h-9 w-9',
       images: [
-        '/images/club/querubines-1.jpg',
-        '/images/club/querubines-2.jpg'
+        '/images/club/querubines-1.webp',
+        '/images/club/querubines-2.webp'
       ]
     },
     {
@@ -52,9 +52,9 @@ export function ClubTeamsSection() {
       description: t('teams.prebenjaminDesc'),
       iconSize: 'h-9 w-9',
       images: [
-        '/images/club/prebenjamin-1.jpg',
-        '/images/club/prebenjamin-2.jpg',
-        '/images/club/prebenjamin-3.jpg'
+        '/images/club/prebenjamin-1.webp',
+        '/images/club/prebenjamin-2.webp',
+        '/images/club/prebenjamin-3.webp'
       ]
     },
     {
@@ -64,13 +64,13 @@ export function ClubTeamsSection() {
       description: t('teams.benjaminDesc'),
       iconSize: 'h-9 w-9',
       images: [
-        '/images/club/benjamin-1.jpg',
-        '/images/club/benjamin-2.jpg',
-        '/images/club/benjamin-3.jpg',
-        '/images/club/benjamin-4.jpg',
-        '/images/club/benjamin-5.jpg',
-        '/images/club/benjamin-6.jpg',
-        '/images/club/benjamin-7.jpg',
+        '/images/club/benjamin-1.webp',
+        '/images/club/benjamin-2.webp',
+        '/images/club/benjamin-3.webp',
+        '/images/club/benjamin-4.webp',
+        '/images/club/benjamin-5.webp',
+        '/images/club/benjamin-6.webp',
+        '/images/club/benjamin-7.webp',
       ]
     },
     {
@@ -80,12 +80,12 @@ export function ClubTeamsSection() {
       description: t('teams.alevinDesc'),
       iconSize: 'h-9 w-9',
       images: [
-        '/images/club/alevines-1.jpg',
-        '/images/club/alevines-2.jpg',
-        '/images/club/alevines-3.jpg',
-        '/images/club/alevines-4.jpg',
-        '/images/club/alevines-5.jpg',
-        '/images/club/alevines-6.jpg'
+        '/images/club/alevines-1.webp',
+        '/images/club/alevines-2.webp',
+        '/images/club/alevines-3.webp',
+        '/images/club/alevines-4.webp',
+        '/images/club/alevines-5.webp',
+        '/images/club/alevines-6.webp'
       ]
     },
     {
@@ -95,12 +95,12 @@ export function ClubTeamsSection() {
       description: t('teams.infantilDesc'),
       iconSize: 'h-9 w-9',
       images: [
-        '/images/club/infantiles-1.jpg',
-        '/images/club/infantiles-2.jpg',
-        '/images/club/infantiles-3.jpg',
-        '/images/club/infantiles-4.jpg',
-        '/images/club/infantiles-5.jpg',
-        '/images/club/infantiles-6.jpg'
+        '/images/club/infantiles-1.webp',
+        '/images/club/infantiles-2.webp',
+        '/images/club/infantiles-3.webp',
+        '/images/club/infantiles-4.webp',
+        '/images/club/infantiles-5.webp',
+        '/images/club/infantiles-6.webp'
       ]
     },
     {
@@ -110,9 +110,9 @@ export function ClubTeamsSection() {
       description: t('teams.cadeteDesc'),
       iconSize: 'h-9 w-9',
       images: [
-        '/images/club/cadetes-1.jpg',
-        '/images/club/cadetes-2.jpg',
-        '/images/club/cadetes-3.jpg',
+        '/images/club/cadetes-1.webp',
+        '/images/club/cadetes-2.webp',
+        '/images/club/cadetes-3.webp',
       ]
     },
     {
@@ -122,10 +122,10 @@ export function ClubTeamsSection() {
       description: t('teams.juvenilDesc'),
       iconSize: 'h-9 w-9',
       images: [
-        '/images/club/juveniles-1.jpg',
-        '/images/club/juveniles-2.jpg',
-        '/images/club/juveniles-3.jpg',
-        '/images/club/juveniles-4.jpg',
+        '/images/club/juveniles-1.webp',
+        '/images/club/juveniles-2.webp',
+        '/images/club/juveniles-3.webp',
+        '/images/club/juveniles-4.webp',
       ]
     },
     {
@@ -134,7 +134,7 @@ export function ClubTeamsSection() {
       age: t('teams.anos18Plus'),
       description: t('teams.amateurDesc'),
       iconSize: 'h-9 w-9',
-      images: ['/images/club/amater.jpg'] 
+      images: ['/images/club/amater.webp'] 
     },
     {
       icon: Heart,
@@ -142,7 +142,7 @@ export function ClubTeamsSection() {
       age: t('teams.anos35Plus'),
       description: t('teams.veteranosDesc'),
       iconSize: 'h-9 w-9',
-      images: ['/images/club/veteranos.jpg'] 
+      images: ['/images/club/veteranos.webp'] 
     },
     {
       icon: Stars,
@@ -150,7 +150,7 @@ export function ClubTeamsSection() {
       age: t('teams.todasLasEdades'),
       description: t('teams.ediDesc'),
       iconSize: 'h-9 w-9',
-      images: ['/images/club/edi.jpg'] 
+      images: ['/images/club/edi.webp'] 
     },
     {
       icon: Crown,
@@ -158,7 +158,7 @@ export function ClubTeamsSection() {
       age: t('teams.senior'),
       description: t('teams.primerEquipoDesc'),
       iconSize: 'h-9 w-9',
-      images: ['/images/club/primer-equipo.jpg'] 
+      images: ['/images/club/primer-equipo.webp'] 
     }
   ]
 

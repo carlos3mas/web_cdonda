@@ -105,7 +105,7 @@ export function PromocionesModal() {
               {/* Imagen del árbol de navidad de fondo */}
               <div className="absolute inset-0 pointer-events-none opacity-40 -top-10 sm:-top-12">
                 <Image
-                  src="/images/promociones/arbol-navidad.png"
+                  src="/images/promociones/arbol-navidad.webp"
                   alt="Árbol de Navidad"
                   fill
                   className="object-contain object-center"

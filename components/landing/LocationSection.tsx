@@ -37,7 +37,7 @@ export function LocationSection() {
             <Card className="overflow-hidden h-full">
               <div className="aspect-video relative bg-gradient-to-br from-red-500 to-red-700 overflow-hidden">
                 <Image
-                  src="/images/campos/enrique-saura.jpg"
+                  src="/images/campos/enrique-saura.webp"
                   alt="Campo Municipal Enrique Saura Gil - Vista aérea del complejo deportivo con campo de fútbol y velódromo"
                   fill
                   className="object-cover"
@@ -87,7 +87,7 @@ export function LocationSection() {
             <Card className="overflow-hidden h-full">
               <div className="aspect-video relative bg-gradient-to-br from-gray-600 to-gray-800 overflow-hidden">
                 <Image
-                  src="/images/campos/la-cossa.jpg"
+                  src="/images/campos/la-cossa.webp"
                   alt="Campo Municipal La Cossa"
                   fill
                   className="object-cover"

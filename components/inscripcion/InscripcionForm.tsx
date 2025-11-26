@@ -425,6 +425,21 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
             <div className="space-y-3 sm:space-y-4">
               <h3 className="text-base sm:text-lg font-semibold border-b pb-2">{t('form.justificantePago')}</h3>
 
+              {/* Banner de alerta sobre el pago */}
+              <div className="rounded-lg bg-amber-50 border-2 border-amber-400 p-4 sm:p-5 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-amber-900 text-sm sm:text-base mb-1.5">
+                      {t('form.alertaPagoTitulo')}
+                    </p>
+                    <p className="text-xs sm:text-sm text-amber-800 leading-relaxed">
+                      {t('form.alertaPagoTexto')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <Label htmlFor="justificantePago" className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
                   <span>{t('form.justificantePagoLabel')} *</span>

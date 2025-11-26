@@ -18,7 +18,7 @@ export function HeroSection() {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="none"
           poster="/images/campus/cartel-campus.webp"
           className="absolute inset-0 w-full h-full object-cover blur-[4px] sm:blur-[3px] md:blur-[2px]"
         >
@@ -36,7 +36,7 @@ export function HeroSection() {
             className="relative w-full max-w-[320px] xs:max-w-[360px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-full mx-auto lg:mx-0"
           >
             <div className="absolute -inset-4 sm:-inset-5 md:-inset-6 rounded-2xl sm:rounded-3xl bg-black/20 blur-2xl hidden lg:block" aria-hidden />
-            <div className="relative rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] sm:shadow-[0_25px_60px_rgba(0,0,0,0.5)] md:shadow-[0_30px_70px_rgba(0,0,0,0.55)]">
+            <div className="relative rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] sm:shadow-[0_25px_60px_rgba(0,0,0,0.5)] md:shadow-[0_30px_70px_rgba(0,0,0,0.55)] bg-gray-900">
               <Image
                 src="/images/campus/cartel-campus.webp"
                 alt="Cartel Campus de Navidad 2025"
@@ -44,7 +44,9 @@ export function HeroSection() {
                 height={1067}
                 className="object-contain w-full h-auto"
                 priority
+                quality={85}
                 sizes="(max-width: 475px) 85vw, (max-width: 640px) 75vw, (max-width: 768px) 65vw, (max-width: 1024px) 55vw, 50vw"
+                loading="eager"
               />
             </div>
           </motion.div>

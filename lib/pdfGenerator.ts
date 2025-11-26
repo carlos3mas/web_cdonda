@@ -6,18 +6,20 @@ import { join } from 'path'
 import { existsSync } from 'fs'
 
 // Mapeo de nombres de campos que deben usarse en los PDFs
+// Nombres actualizados para la plantilla 2025: CAMPUS NAVIDAD HOJA INSCRIPCION 2025
 const FIELD_ALIASES: Record<string, string[]> = {
-  nombreJugador: ['Nombre', 'nombreJugador', 'nombreJugador1'],
-  apellidos: ['Apellidos', 'apellidos', 'mas iserte'],
-  fechaNacimiento: ['Fecha Nacimiento', 'fechaNacimiento', 'fechaNacimiento1'],
+  nombreJugador: ['nombre', 'Nombre', 'nombreJugador', 'nombreJugador1'],
+  apellidos: ['apellido', 'Apellidos', 'apellidos', 'mas iserte'],
+  fechaNacimiento: ['fechaNacimiento', 'Fecha Nacimiento', 'fechaNacimiento1'],
   dni: ['DNI', 'dni'],
-  nombreTutor: ['tutor del jugador', 'nombreTutor', 'madrePadreTutor', 'juan mas pradas'],
-  telefono1: ['teléfono padre/tutor', 'telefono madre/tutora', 'telefono1', 'telMadre', 'telefonoMadre'],
-  telefono2: ['telefonos madre/tutora', 'telefono padre/tutor', 'telefono2', 'telPadre', 'telefonoPadre'],
-  enfermedad: ['Padece alguna enfermedad', 'enfermedad'],
-  medicacion: ['Necesita medicación', 'medicacion', 'Necesita  medicación no'],
-  alergico: ['Alérgico  Intolerante a', 'Alérgico / Intolerante a', 'Alergico  Intolerante a', 'alergico', 'Alergico'],
+  nombreTutor: ['tutor', 'tutor del jugador', 'nombreTutor', 'madrePadreTutor', 'juan mas pradas'],
+  telefono1: ['telefono1', 'teléfono padre/tutor', 'telefono madre/tutora', 'telMadre', 'telefonoMadre'],
+  telefono2: ['telefono2', 'telefonos madre/tutora', 'telefono padre/tutor', 'telPadre', 'telefonoPadre'],
+  enfermedad: ['enfermedad', 'Padece alguna enfermedad'],
+  medicacion: ['medicacion', 'Necesita medicación', 'Necesita  medicación no'],
+  alergico: ['alergias', 'Alérgico  Intolerante a', 'Alérgico / Intolerante a', 'Alergico  Intolerante a', 'alergico', 'Alergico'],
   numeroSeguridadSocial: [
+    'SIP',
     'Nº seguridad social del niñ@',
     'N° seguridad social del niñ@',
     'numeroSeguridadSocial',
@@ -25,8 +27,7 @@ const FIELD_ALIASES: Record<string, string[]> = {
     'numSeguridadSocial',
     'nSeguridadSocial',
     'seguridadSocial',
-    'sip',
-    'SIP'
+    'sip'
   ],
   fechaInscripcion: ['fechaInscripcion'],
   idInscripcion: ['idInscripcion'],

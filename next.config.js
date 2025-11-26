@@ -28,6 +28,8 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
+  // Configuración para navegadores modernos (elimina polyfills innecesarios)
+  transpilePackages: [],
 }
 
 module.exports = nextConfig

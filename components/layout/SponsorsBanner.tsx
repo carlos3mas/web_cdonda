@@ -77,8 +77,7 @@ export function SponsorsBanner() {
                   className="h-full w-auto object-contain"
                   loading="lazy"
                   sizes="80px"
-                  quality={60}
-                  unoptimized={logo.endsWith('.webp')}
+                  quality={75}
                 />
               </div>
             </div>

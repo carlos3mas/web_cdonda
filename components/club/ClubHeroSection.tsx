@@ -20,7 +20,7 @@ export function ClubHeroSection() {
           fill
           className="object-cover object-center blur-[8px] sm:blur-[6px] md:blur-[4px]"
           priority
-          quality={80}
+          quality={70}
           sizes="100vw"
         />
         {/* Overlay sutil para mejorar legibilidad del texto */}

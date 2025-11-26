@@ -71,6 +71,7 @@ export function SponsorsSection() {
                   className="object-contain"
                   loading="lazy"
                   sizes="(max-width: 640px) 90vw, (max-width: 1024px) 60vw, 500px"
+                  quality={75}
                 />
               </div>
             </div>
@@ -90,6 +91,7 @@ export function SponsorsSection() {
                       className="object-contain"
                       loading="lazy"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                      quality={75}
                     />
                   </div>
                 </div>
@@ -103,6 +105,7 @@ export function SponsorsSection() {
                       className="object-contain"
                       loading="lazy"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                      quality={75}
                     />
                   </div>
                 </div>
@@ -116,6 +119,7 @@ export function SponsorsSection() {
                       className="object-contain"
                       loading="lazy"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                      quality={75}
                     />
                   </div>
                 </div>
@@ -152,6 +156,7 @@ export function SponsorsSection() {
                     className="object-contain"
                     loading="lazy"
                     sizes="(max-width: 640px) 200px, (max-width: 1024px) 250px, 300px"
+                    quality={75}
                   />
                 </div>
               </div>

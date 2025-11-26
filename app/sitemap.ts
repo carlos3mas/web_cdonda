@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXTAUTH_URL || 'https://www.cdonda.com'
+  const baseUrl = 'https://cdonda.es'
   
   // Fecha de última modificación
   const lastModified = new Date()

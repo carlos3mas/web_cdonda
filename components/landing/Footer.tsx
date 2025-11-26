@@ -114,11 +114,11 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-3 text-[10px] xs:text-xs text-gray-500">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-3 text-[10px] xs:text-xs text-gray-300">
             <p className="text-center md:text-left">
               &copy; {new Date().getFullYear()} Club Deportivo Onda. {t('footer.derechosReservados')}
             </p>
-            <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-gray-500 text-center md:text-right">
+            <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-gray-300 text-center md:text-right">
               {t('footer.disenadoPor')}
             </p>
           </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Gift, X } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
@@ -41,6 +41,8 @@ export function PromocionesModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-4xl w-[95vw] sm:w-[90vw] md:w-full p-0 gap-0 overflow-hidden !border-0 bg-transparent shadow-2xl">
+        <DialogTitle className="sr-only">{t('promocionesModal.titulo')}</DialogTitle>
+        <DialogDescription className="sr-only">{t('promocionesModal.descripcion')}</DialogDescription>
         <div className="relative bg-gradient-to-br from-white via-red-50 to-white rounded-2xl overflow-hidden">
           {/* Decoración navideña superior - adornos colgantes */}
           <div className="absolute top-0 left-0 right-0 h-12 sm:h-16 z-20 pointer-events-none overflow-visible">
@@ -93,9 +95,11 @@ export function PromocionesModal() {
           {/* Botón de cerrar personalizado */}
           <button
             onClick={() => setIsOpen(false)}
+            aria-label={t('promocionesModal.cerrar')}
             className="absolute top-2 right-2 sm:top-3 sm:right-3 z-30 p-1.5 sm:p-2 rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors shadow-lg"
           >
             <X className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="sr-only">{t('promocionesModal.cerrar')}</span>
           </button>
 
           {/* Contenido principal - Grid de dos columnas */}

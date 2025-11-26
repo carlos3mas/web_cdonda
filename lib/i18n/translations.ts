@@ -371,6 +371,7 @@ export const translations = {
       titulo: '¡Nuestras Promociones!',
       descripcion: 'Décimos de lotería disponibles. Apoya al club y participa en nuestros sorteos.',
       contactanos: 'Contáctanos',
+      cerrar: 'Cerrar modal de promociones',
     },
     // Inscripcion Selection
     inscripcionSelection: {
@@ -788,6 +789,7 @@ export const translations = {
       titulo: 'Les Nostres Promocions!',
       descripcion: 'Dècims de loteria disponibles. Recolza el club i participa en els nostres sorteigs.',
       contactanos: 'Contacta\'ns',
+      cerrar: 'Tancar modal de promocions',
     },
     // Inscripcion Selection
     inscripcionSelection: {

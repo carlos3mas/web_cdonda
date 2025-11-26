@@ -55,6 +55,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  other: {
+    'dns-prefetch': 'https://www.googletagmanager.com',
+  },
 }
 
 export default function RootLayout({
@@ -65,6 +68,8 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <GoogleAnalytics />
         <GoogleTagManager />
       </head>

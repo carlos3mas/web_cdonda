@@ -18,7 +18,7 @@ export function PromocionesSection() {
   ]
 
   return (
-    <section id="promociones" className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
+    <section id="promociones" className="py-12 sm:py-16 md:py-20 bg-white">
       <div className="container mx-auto px-3 sm:px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

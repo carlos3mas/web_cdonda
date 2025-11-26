@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Card, CardContent } from '@/components/ui/card'
+import Image from 'next/image'
 import {
   Users,
   Baby,
@@ -16,155 +16,49 @@ import {
   Stars,
   Crown
 } from 'lucide-react'
-import { AnimatedCounter } from '@/components/ui/animated-counter'
 import { useI18n } from '@/lib/i18n/context'
-import { AutoCarousel } from '@/components/ui/auto-carousel'
 
 export function ClubTeamsSection() {
   const { t } = useI18n()
   
-  const categories = [
-    {
-      icon: Baby,
-      title: t('teams.chupetines'),
-      age: t('teams.anos3_4'),
-      description: t('teams.chupetinesDesc'),
-      iconSize: 'h-9 w-9',
-      images: [
-        '/images/club/chupetines-1.webp'
-      ]
-    },
-    {
-      icon: Sparkles,
-      title: t('teams.querubines'),
-      age: t('teams.anos4_5'),
-      description: t('teams.querubinesDesc'),
-      iconSize: 'h-9 w-9',
-      images: [
-        '/images/club/querubines-1.webp',
-        '/images/club/querubines-2.webp'
-      ]
-    },
-    {
-      icon: Flag,
-      title: t('teams.prebenjamin'),
-      age: t('teams.anos6_7'),
-      description: t('teams.prebenjaminDesc'),
-      iconSize: 'h-9 w-9',
-      images: [
-        '/images/club/prebenjamin-1.webp',
-        '/images/club/prebenjamin-2.webp',
-        '/images/club/prebenjamin-3.webp'
-      ]
-    },
-    {
-      icon: School,
-      title: t('teams.benjamin'),
-      age: t('teams.anos8_9'),
-      description: t('teams.benjaminDesc'),
-      iconSize: 'h-9 w-9',
-      images: [
-        '/images/club/benjamin-1.webp',
-        '/images/club/benjamin-2.webp',
-        '/images/club/benjamin-3.webp',
-        '/images/club/benjamin-4.webp',
-        '/images/club/benjamin-5.webp',
-        '/images/club/benjamin-6.webp',
-        '/images/club/benjamin-7.webp',
-      ]
-    },
-    {
-      icon: Shield,
-      title: t('teams.alevin'),
-      age: t('teams.anos10_11'),
-      description: t('teams.alevinDesc'),
-      iconSize: 'h-9 w-9',
-      images: [
-        '/images/club/alevines-1.webp',
-        '/images/club/alevines-2.webp',
-        '/images/club/alevines-3.webp',
-        '/images/club/alevines-4.webp',
-        '/images/club/alevines-5.webp',
-        '/images/club/alevines-6.webp'
-      ]
-    },
-    {
-      icon: Rocket,
-      title: t('teams.infantil'),
-      age: t('teams.anos12_13'),
-      description: t('teams.infantilDesc'),
-      iconSize: 'h-9 w-9',
-      images: [
-        '/images/club/infantiles-1.webp',
-        '/images/club/infantiles-2.webp',
-        '/images/club/infantiles-3.webp',
-        '/images/club/infantiles-4.webp',
-        '/images/club/infantiles-5.webp',
-        '/images/club/infantiles-6.webp'
-      ]
-    },
-    {
-      icon: GraduationCap,
-      title: t('teams.cadete'),
-      age: t('teams.anos14_15'),
-      description: t('teams.cadeteDesc'),
-      iconSize: 'h-9 w-9',
-      images: [
-        '/images/club/cadetes-1.webp',
-        '/images/club/cadetes-2.webp',
-        '/images/club/cadetes-3.webp',
-      ]
-    },
-    {
-      icon: Award,
-      title: t('teams.juvenil'),
-      age: t('teams.anos16_18'),
-      description: t('teams.juvenilDesc'),
-      iconSize: 'h-9 w-9',
-      images: [
-        '/images/club/juveniles-1.webp',
-        '/images/club/juveniles-2.webp',
-        '/images/club/juveniles-3.webp',
-        '/images/club/juveniles-4.webp',
-      ]
-    },
-    {
-      icon: Users,
-      title: t('teams.amateur'),
-      age: t('teams.anos18Plus'),
-      description: t('teams.amateurDesc'),
-      iconSize: 'h-9 w-9',
-      images: ['/images/club/amater.webp'] 
-    },
-    {
-      icon: Heart,
-      title: t('teams.veteranos'),
-      age: t('teams.anos35Plus'),
-      description: t('teams.veteranosDesc'),
-      iconSize: 'h-9 w-9',
-      images: ['/images/club/veteranos.webp'] 
-    },
-    {
-      icon: Stars,
-      title: t('teams.edi'),
-      age: t('teams.todasLasEdades'),
-      description: t('teams.ediDesc'),
-      iconSize: 'h-9 w-9',
-      images: ['/images/club/edi.webp'] 
-    },
-    {
-      icon: Crown,
-      title: t('teams.primerEquipo'),
-      age: t('teams.senior'),
-      description: t('teams.primerEquipoDesc'),
-      iconSize: 'h-9 w-9',
-      images: ['/images/club/primer-equipo.webp'] 
-    }
+  const teams = [
+    { icon: Baby, title: t('teams.chupetines'), age: t('teams.anos3_4'), description: t('teams.chupetinesDesc') },
+    { icon: Sparkles, title: t('teams.querubines'), age: t('teams.anos4_5'), description: t('teams.querubinesDesc') },
+    { icon: Flag, title: t('teams.prebenjamin'), age: t('teams.anos6_7'), description: t('teams.prebenjaminDesc') },
+    { icon: School, title: t('teams.benjamin'), age: t('teams.anos8_9'), description: t('teams.benjaminDesc') },
+    { icon: Shield, title: t('teams.alevin'), age: t('teams.anos10_11'), description: t('teams.alevinDesc') },
+    { icon: Rocket, title: t('teams.infantil'), age: t('teams.anos12_13'), description: t('teams.infantilDesc') },
+    { icon: GraduationCap, title: t('teams.cadete'), age: t('teams.anos14_15'), description: t('teams.cadeteDesc') },
+    { icon: Award, title: t('teams.juvenil'), age: t('teams.anos16_18'), description: t('teams.juvenilDesc') },
+    { icon: Users, title: t('teams.amateur'), age: t('teams.anos18Plus'), description: t('teams.amateurDesc') },
+    { icon: Heart, title: t('teams.veteranos'), age: t('teams.anos35Plus'), description: t('teams.veteranosDesc') },
+    { icon: Stars, title: t('teams.edi'), age: t('teams.todasLasEdades'), description: t('teams.ediDesc') },
+    { icon: Crown, title: t('teams.primerEquipo'), age: t('teams.senior'), description: t('teams.primerEquipoDesc') }
   ]
 
   return (
-    <section id="equipos" className="py-12 sm:py-16 md:py-20 bg-white">
-      <div className="container mx-auto px-3 sm:px-4">
+    <section id="equipos" className="relative py-12 sm:py-16 md:py-20 bg-white overflow-hidden">
+      {/* Imagen collage como fondo */}
+      <div className="absolute inset-0 z-0 opacity-90">
+        <Image
+          src="/images/club/_backup_fotos/collage-bg.webp"
+          alt="Collage de todos los equipos del CD Onda"
+          fill
+          className="object-cover sm:object-contain md:object-cover lg:object-contain"
+          loading="lazy"
+          sizes="100vw"
+          quality={85}
+          style={{ 
+            objectPosition: 'center center'
+          }}
+        />
+      </div>
+
+      {/* Overlay para legibilidad */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-white/60 via-white/55 to-white/60"></div>
+
+      {/* Contenido principal */}
+      <div className="relative z-20 container mx-auto px-3 sm:px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -181,72 +75,72 @@ export function ClubTeamsSection() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-8 sm:mb-10 md:mb-12">
-          {categories.map((category, index) => {
-            const Icon = category.icon
-            return (
-              <motion.div
-                key={category.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card className="h-full border border-red-100 bg-white/95 hover:shadow-xl transition-all duration-300 overflow-hidden">
-                  {/* Imagen o carrusel */}
-                  <div className="relative w-full h-48 sm:h-56 md:h-64 bg-gray-100">
-                    <AutoCarousel
-                      images={category.images || []}
-                      alt={category.title}
-                      interval={4000}
-                      className="rounded-none"
-                      priority={index < 3}
-                    />
-                  </div>
-                  <CardContent className="p-4 sm:p-5 md:p-6 flex flex-col items-center text-center gap-3 sm:gap-4">
-                    <span className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center rounded-full bg-blue-50 -mt-6 sm:-mt-8 relative z-10">
-                      <Icon className={`text-blue-600 h-6 w-6 sm:h-7 sm:w-7 md:h-9 md:w-9`} />
-                    </span>
-                    <div className="space-y-2 sm:space-y-3">
-                      <h3 className="text-lg sm:text-xl font-bold text-red-600">{category.title}</h3>
-                      <span className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 sm:px-3 sm:py-1 text-[10px] xs:text-xs font-semibold uppercase tracking-wide text-blue-700">
-                        {category.age}
-                      </span>
-                      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed px-1">
-                        {category.description}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )
-          })}
-        </div>
-
+        {/* Contenido centrado */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="rounded-2xl bg-gradient-to-b from-[#b10c0c] via-[#d02121] to-[#8f0909] text-white p-5 sm:p-6 md:p-8 lg:p-12 shadow-[0_18px_45px_rgba(139,0,0,0.35)]"
+          className="max-w-5xl mx-auto space-y-8 md:space-y-10"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6 md:gap-8 text-center">
-            <div>
-              <AnimatedCounter end={31} duration={2000} className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl" />
-              <div className="text-white/90 mt-1 sm:mt-2 text-xs sm:text-sm md:text-base px-2">{t('teams.equiposCompeticion')}</div>
+          {/* Categories - Centrado */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="h-1 w-12 bg-blue-600 rounded"></div>
+              <h4 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{t('teams.nuestrasCategoriasSubtitle')}</h4>
+              <div className="h-1 w-12 bg-blue-600 rounded"></div>
             </div>
-            <div>
-              <AnimatedCounter end={612} duration={2000} className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl" />
-              <div className="text-white/90 mt-1 sm:mt-2 text-xs sm:text-sm md:text-base px-2">{t('teams.jugadoresFederados')}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+              {teams.map((team, index) => {
+                const Icon = team.icon
+                return (
+                  <motion.div
+                    key={team.title}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    className="flex flex-col gap-2 p-3 md:p-4 rounded-lg bg-white/80 backdrop-blur-sm hover:bg-white transition-colors shadow-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center shadow-sm">
+                        <Icon className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">
+                          {team.title}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-500">
+                          {team.age}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed pl-0 sm:pl-14">
+                      {team.description}
+                    </p>
+                  </motion.div>
+                )
+              })}
             </div>
-            <div>
-              <AnimatedCounter end={40} duration={2000} className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl" />
-              <div className="text-white/90 mt-1 sm:mt-2 text-xs sm:text-sm md:text-base px-2">{t('teams.entrenadoresTitulados')}</div>
-            </div>
+          </div>
+
+          {/* Nota sobre equipos femeninos - Centrado */}
+          <div className="max-w-3xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="p-4 md:p-6 rounded-lg bg-white/80 backdrop-blur-sm border border-blue-100 shadow-sm text-center"
+            >
+              <p className="text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed">
+                <span className="font-semibold text-blue-600">💙 {t('teams.futbolFemenino')}:</span> {' '}
+                {t('teams.futbolFemeninoDescripcion')}
+              </p>
+            </motion.div>
           </div>
         </motion.div>
       </div>
     </section>
   )
 }
-

@@ -12,7 +12,6 @@ const otherSponsors = [
   'Curto.webp',
   'ELITE-PARFUM.webp',
   'Esmaltile.webp',
-  'ESPORTS-LIZONDO.webp',
   'GALAXY-TILES.webp',
   'Globeenergy.webp',
   'J.P.E.webp',
@@ -57,25 +56,13 @@ export function SponsorsSection() {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto text-center"
         >
-          <h4 className="text-[10px] xs:text-xs sm:text-sm uppercase tracking-[0.25em] sm:tracking-[0.3em] md:tracking-[0.35em] text-blue-600 mb-3 sm:mb-4 md:mb-6 px-2">
+          <h4 className="text-[10px] xs:text-xs sm:text-sm uppercase tracking-[0.25em] sm:tracking-[0.3em] md:tracking-[0.35em] text-blue-600 mb-4 sm:mb-5 md:mb-6 px-2">
             {t('sponsors.patrocinadoresPrincipales')}
           </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-center">
-            {/* Caja Rural - Izquierda */}
-            <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm sm:mt-4 md:mt-6 p-4">
-              <div className="relative w-full h-full">
-                <Image
-                  src="/images/logos/caja-rural.webp"
-                  alt="Caja Rural"
-                  fill
-                  className="object-contain"
-                  loading="lazy"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
-                />
-              </div>
-            </div>
-            {/* Ayuntamiento - Centro */}
-            <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm p-4">
+          
+          {/* Ayuntamiento - Arriba */}
+          <div className="flex justify-center mb-4 sm:mb-5 md:mb-6">
+            <div className="rounded-xl sm:rounded-2xl border border-red-100 bg-white w-full max-w-md sm:max-w-lg md:max-w-xl h-[120px] sm:h-[150px] md:h-[180px] lg:h-[210px] aspect-[4/3] sm:aspect-[5/3] md:aspect-[6/3] flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-shadow p-4 sm:p-5 md:p-6">
               <div className="relative w-full h-full">
                 <Image
                   src="/images/logos/ayuntamiento-onda.webp"
@@ -83,21 +70,55 @@ export function SponsorsSection() {
                   fill
                   className="object-contain"
                   loading="lazy"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                  sizes="(max-width: 640px) 90vw, (max-width: 1024px) 60vw, 500px"
                 />
               </div>
             </div>
-            {/* Diputación - Derecha */}
-            <div className="rounded-2xl sm:rounded-3xl border border-red-100 bg-white h-32 sm:h-40 md:h-52 lg:h-64 flex flex-col items-center justify-center shadow-sm sm:mt-4 md:mt-6 p-4">
-              <div className="relative w-full h-full">
-                <Image
-                  src="/images/logos/Diputacion-Castellon.webp"
-                  alt="Diputación de Castellón"
-                  fill
-                  className="object-contain"
-                  loading="lazy"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
-                />
+          </div>
+
+          {/* Los otros 3 - Debajo en una sola card */}
+          <div className="max-w-6xl mx-auto mb-8 sm:mb-10 md:mb-12">
+            <div className="rounded-xl sm:rounded-2xl border border-red-100 bg-white shadow-sm hover:shadow-md transition-shadow p-4 sm:p-5 md:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 md:gap-6 items-center">
+                {/* Caja Rural */}
+                <div className="h-[110px] sm:h-[140px] md:h-[170px] lg:h-[200px] flex flex-col items-center justify-center">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src="/images/logos/caja-rural.webp"
+                      alt="Caja Rural"
+                      fill
+                      className="object-contain"
+                      loading="lazy"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                    />
+                  </div>
+                </div>
+                {/* Diputación */}
+                <div className="h-[110px] sm:h-[140px] md:h-[170px] lg:h-[200px] flex flex-col items-center justify-center">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src="/images/logos/Diputacion-Castellon.webp"
+                      alt="Diputación de Castellón"
+                      fill
+                      className="object-contain"
+                      loading="lazy"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                    />
+                  </div>
+                </div>
+                {/* Esports Lizondo */}
+                <div className="h-[110px] sm:h-[140px] md:h-[170px] lg:h-[200px] flex flex-col items-center justify-center">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src="/images/logos/ESPORTS-LIZONDO.webp"
+                      alt="Esports Lizondo"
+                      fill
+                      className="object-contain"
+                      loading="lazy"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 300px"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -107,7 +128,7 @@ export function SponsorsSection() {
           <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 sm:w-24 md:w-32 bg-gradient-to-r from-white via-white/70 to-transparent z-10" />
           <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 sm:w-24 md:w-32 bg-gradient-to-l from-white via-white/70 to-transparent z-10" />
           <motion.div
-            className="flex gap-16"
+            className="flex gap-8 sm:gap-12 md:gap-16"
             animate={{ x: [0, -1920] }}
             transition={{
               x: {
@@ -121,7 +142,7 @@ export function SponsorsSection() {
             {duplicatedSponsors.map((logo, index) => (
               <div
                 key={`${logo}-${index}`}
-                className="flex-shrink-0 w-36 sm:w-40 md:w-48 h-20 sm:h-24 md:h-28 flex flex-col items-center justify-center rounded-xl sm:rounded-2xl border border-red-100 bg-white p-3 shadow-sm"
+                className="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 h-28 sm:h-32 md:h-36 lg:h-40 flex flex-col items-center justify-center rounded-xl sm:rounded-2xl border border-red-100 bg-white p-4 sm:p-5 shadow-sm"
               >
                 <div className="relative w-full h-full">
                   <Image
@@ -130,7 +151,7 @@ export function SponsorsSection() {
                     fill
                     className="object-contain"
                     loading="lazy"
-                    sizes="(max-width: 640px) 150px, 200px"
+                    sizes="(max-width: 640px) 200px, (max-width: 1024px) 250px, 300px"
                   />
                 </div>
               </div>

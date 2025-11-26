@@ -37,6 +37,7 @@ export function AutoCarousel({ images, alt, interval = 4000, className = '', pri
           className="object-cover rounded-t-lg"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           loading={priority ? "eager" : "lazy"}
+          decoding="async"
           priority={priority}
           quality={75}
         />
@@ -62,6 +63,7 @@ export function AutoCarousel({ images, alt, interval = 4000, className = '', pri
             className="object-cover rounded-t-lg"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             loading={priority ? "eager" : "lazy"}
+            decoding="async"
             priority={priority}
             quality={75}
           />

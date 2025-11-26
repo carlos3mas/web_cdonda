@@ -115,6 +115,8 @@ export function PromocionesModal() {
                   className="object-contain object-center"
                   sizes="50vw"
                   style={{ filter: 'saturate(1.2) brightness(1.1)' }}
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
 
@@ -224,6 +226,8 @@ export function PromocionesModal() {
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 90vw, (max-width: 768px) 85vw, 50vw"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
 

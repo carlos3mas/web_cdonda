@@ -60,6 +60,8 @@ export function PromocionesSection() {
                   height={600}
                   className="w-full h-auto object-contain"
                   sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, 70vw"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </motion.div>

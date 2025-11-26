@@ -26,6 +26,8 @@ function KitCard({ kit, priority }: { kit: Kit; priority?: boolean }) {
           className="object-cover w-full h-full"
           sizes="(max-width: 768px) 100vw, 50vw"
           priority={priority}
+          loading={priority ? undefined : "lazy"}
+          decoding="async"
           quality={75}
         />
       </div>

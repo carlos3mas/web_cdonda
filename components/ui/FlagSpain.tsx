@@ -9,6 +9,8 @@ export function FlagSpain({ className }: { className?: string }) {
         fill
         className="object-cover rounded"
         sizes="(max-width: 768px) 16px, 20px"
+        loading="lazy"
+        decoding="async"
       />
     </div>
   )

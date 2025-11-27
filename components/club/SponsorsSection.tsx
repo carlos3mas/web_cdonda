@@ -6,11 +6,13 @@ import { useI18n } from '@/lib/i18n/context'
 
 // Otros patrocinadores (excluyendo principales, escudo y escola-futbol)
 const otherSponsors = [
+  '3d-creative.webp',
   'AITAPI.webp',
   'angeli.webp',
   'BESTILE.webp',
   'Curto.webp',
   'ELITE-PARFUM.webp',
+  'entrepistes.webp',
   'Esmaltile.webp',
   'GALAXY-TILES.webp',
   'Globeenergy.webp',
@@ -20,9 +22,10 @@ const otherSponsors = [
   'MOZ-TILES.webp',
   'PURA-MAGIA.webp',
   'rotulos.webp',
-  'sara-blazquez-placeholder.svg',
+  'sara-blazquez.webp',
   'SERCAS.webp',
   'termocontrol.webp',
+  'VICENTE-CASTELLO.webp',
   'vipecons.webp',
 ]
 

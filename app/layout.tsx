@@ -5,6 +5,7 @@ import { SponsorsBanner } from '@/components/layout/SponsorsBanner'
 import { Providers } from '@/components/providers/I18nProvider'
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 import { GoogleTagManager, GoogleTagManagerNoScript } from '@/components/analytics/GoogleTagManager'
+import { CookieBanner } from '@/components/cookies/CookieBanner'
 // Nota: La validación de variables de entorno se hace en runtime en las rutas API
 
 const inter = Inter({ subsets: ['latin'] })
@@ -57,6 +58,7 @@ export const metadata: Metadata = {
   },
   other: {
     'dns-prefetch': 'https://www.googletagmanager.com',
+    'google-site-verification': '4GkomvpOgXCmZmr8o1_VY-j0fLNbxn4rydks_5bcV-I',
   },
 }
 
@@ -78,6 +80,7 @@ export default function RootLayout({
         <Providers>
           <SponsorsBanner />
           {children}
+          <CookieBanner />
         </Providers>
       </body>
     </html>

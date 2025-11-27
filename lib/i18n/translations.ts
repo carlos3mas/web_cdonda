@@ -414,6 +414,23 @@ export const translations = {
       campus2025: 'Campus 2025',
       descripcion: 'Completa el formulario para reservar tu plaza en el Campus de Navidad',
     },
+    // Cookies
+    cookies: {
+      titulo: 'Política de Cookies',
+      descripcion: 'Utilizamos cookies para mejorar tu experiencia de navegación y analizar el tráfico del sitio. Puedes aceptar todas las cookies o configurar tus preferencias.',
+      masInfo: 'Más información en nuestra',
+      politicaCookies: 'Política de Cookies',
+      aceptar: 'Aceptar todas',
+      rechazar: 'Rechazar todas',
+      configurar: 'Configurar',
+      configurarCookies: 'Configurar Cookies',
+      analiticas: 'Cookies de Análisis',
+      opcional: 'Opcional',
+      analiticasDesc: 'Google Analytics y Google Tag Manager nos ayudan a entender cómo los visitantes interactúan con el sitio web.',
+      guardarPreferencias: 'Guardar preferencias',
+      cancelar: 'Cancelar',
+      cerrar: 'Cerrar',
+    },
     // Common
     common: {
       cambiarIdioma: 'Cambiar idioma',
@@ -831,6 +848,23 @@ export const translations = {
       titulo: 'Inscripció',
       campus2025: 'Campus 2025',
       descripcion: 'Completa el formulari per reservar la teua plaça al Campus de Nadal',
+    },
+    // Cookies
+    cookies: {
+      titulo: 'Política de Galetes',
+      descripcion: 'Utilitzem galetes per millorar la teua experiència de navegació i analitzar el trànsit del lloc. Pots acceptar totes les galetes o configurar les teues preferències.',
+      masInfo: 'Més informació a la nostra',
+      politicaCookies: 'Política de Galetes',
+      aceptar: 'Acceptar totes',
+      rechazar: 'Rebutjar totes',
+      configurar: 'Configurar',
+      configurarCookies: 'Configurar Galetes',
+      analiticas: 'Galetes d\'Anàlisi',
+      opcional: 'Opcional',
+      analiticasDesc: 'Google Analytics i Google Tag Manager ens ajuden a entendre com els visitants interactuen amb el lloc web.',
+      guardarPreferencias: 'Guardar preferències',
+      cancelar: 'Cancel·lar',
+      cerrar: 'Tancar',
     },
     // Common
     common: {

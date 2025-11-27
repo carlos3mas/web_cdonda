@@ -114,13 +114,28 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-3 text-[10px] xs:text-xs text-gray-300">
-            <p className="text-center md:text-left">
-              &copy; {new Date().getFullYear()} Club Deportivo Onda. {t('footer.derechosReservados')}
-            </p>
-            <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-gray-300 text-center md:text-right">
-              {t('footer.disenadoPor')}
-            </p>
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-[10px] xs:text-xs text-gray-400">
+              <Link href="/politica-cookies" className="hover:text-red-500 transition-colors">
+                Política de Cookies
+              </Link>
+              <span className="text-gray-600">|</span>
+              <Link href="/politica-privacidad" className="hover:text-red-500 transition-colors">
+                Política de Privacidad
+              </Link>
+              <span className="text-gray-600">|</span>
+              <Link href="/aviso-legal" className="hover:text-red-500 transition-colors">
+                Aviso Legal
+              </Link>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-3 text-[10px] xs:text-xs text-gray-300">
+              <p className="text-center md:text-left">
+                &copy; {new Date().getFullYear()} Club Deportivo Onda. {t('footer.derechosReservados')}
+              </p>
+              <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-gray-300 text-center md:text-right">
+                {t('footer.disenadoPor')}
+              </p>
+            </div>
           </div>
         </div>
       </div>

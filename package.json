@@ -13,7 +13,10 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev",
-    "seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts",
+    "db:check": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/check-database.ts",
+    "db:clean": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/clean-test-inscriptions.ts",
+    "db:delete-all": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/delete-all-inscriptions.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.9.0",

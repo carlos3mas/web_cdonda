@@ -7,8 +7,18 @@ import { requireAuth } from '@/lib/auth-middleware'
 import { inscripcionRateLimit, apiRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
 
+// Deshabilitar cache para estas rutas
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // GET - Obtener todas las inscripciones (opcionalmente filtradas por tipo)
 export async function GET(request: NextRequest) {
+  // Deshabilitar cache para asegurar datos frescos
+  const headers = new Headers()
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  headers.set('Pragma', 'no-cache')
+  headers.set('Expires', '0')
+  
   // Proteger con autenticación
   const authError = await requireAuth(request)
   if (authError) return authError
@@ -37,7 +47,10 @@ export async function GET(request: NextRequest) {
       }
     })
     
-    return NextResponse.json(inscripciones)
+    // Log para diagnóstico en producción
+    console.log(`📊 Inscripciones obtenidas: ${inscripciones.length} (tipo: ${tipoInscripcion || 'todos'})`)
+    
+    return NextResponse.json(inscripciones, { headers })
   } catch (error) {
     console.error('Error al obtener inscripciones:', error)
     return NextResponse.json(
@@ -153,28 +166,50 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear inscripción en la base de datos
-    const inscripcion = await prisma.inscripcion.create({
-      data: {
-        tipoInscripcion: tipoInscripcion || 'campus-navidad',
-        nombreJugador,
-        apellidos,
-        fechaNacimiento: new Date(fechaNacimiento),
-        dni,
-        nombreTutor,
-        telefono1,
-        telefono2: telefono2 || null,
-        enfermedad: enfermedad || null,
-        medicacion: medicacion || null,
-        alergico: alergico || null,
-        numeroSeguridadSocial: numeroSeguridadSocial || null,
-        pagada: false,
-        justificantePago: justificantePath,
-        nombreArchivoJustificante,
-        firma: firmaPath,
-        nombreArchivoFirma,
-        derechosImagen: derechosImagen === 'true',
-        comentarios: comentarios || null
+    // Usar una transacción explícita para asegurar que se confirme correctamente
+    const inscripcion = await prisma.$transaction(async (tx) => {
+      const nuevaInscripcion = await tx.inscripcion.create({
+        data: {
+          tipoInscripcion: tipoInscripcion || 'campus-navidad',
+          nombreJugador,
+          apellidos,
+          fechaNacimiento: new Date(fechaNacimiento),
+          dni,
+          nombreTutor,
+          telefono1,
+          telefono2: telefono2 || null,
+          enfermedad: enfermedad || null,
+          medicacion: medicacion || null,
+          alergico: alergico || null,
+          numeroSeguridadSocial: numeroSeguridadSocial || null,
+          pagada: false,
+          justificantePago: justificantePath,
+          nombreArchivoJustificante,
+          firma: firmaPath,
+          nombreArchivoFirma,
+          derechosImagen: derechosImagen === 'true',
+          comentarios: comentarios || null
+        }
+      })
+      
+      // Verificar que la inscripción se creó correctamente
+      const verificacion = await tx.inscripcion.findUnique({
+        where: { id: nuevaInscripcion.id }
+      })
+      
+      if (!verificacion) {
+        throw new Error('La inscripción no se pudo verificar después de crearse')
       }
+      
+      return nuevaInscripcion
+    })
+
+    // Log para producción - verificar que se guardó
+    console.log('✅ Inscripción creada exitosamente:', {
+      id: inscripcion.id,
+      nombreJugador: inscripcion.nombreJugador,
+      tipoInscripcion: inscripcion.tipoInscripcion,
+      createdAt: inscripcion.createdAt
     })
 
     return NextResponse.json({
@@ -183,11 +218,26 @@ export async function POST(request: NextRequest) {
       message: 'Inscripción creada correctamente'
     })
   } catch (error) {
-    console.error('Error al crear inscripción:', error)
+    console.error('❌ Error al crear inscripción:', error)
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-    console.error('Detalles del error:', errorMessage)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
+    // Log detallado para diagnóstico en producción
+    console.error('Detalles del error:', {
+      message: errorMessage,
+      stack: errorStack,
+      name: error instanceof Error ? error.name : undefined,
+      // Log de Prisma si es un error de Prisma
+      ...(error && typeof error === 'object' && 'code' in error ? { prismaCode: error.code } : {})
+    })
+    
     return NextResponse.json(
-      { error: 'Error al procesar la inscripción', details: errorMessage },
+      { 
+        error: 'Error al procesar la inscripción', 
+        details: process.env.NODE_ENV === 'production' 
+          ? 'Error interno del servidor' 
+          : errorMessage 
+      },
       { status: 500 }
     )
   }

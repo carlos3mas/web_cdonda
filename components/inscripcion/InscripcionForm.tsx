@@ -425,6 +425,36 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
             <div className="space-y-3 sm:space-y-4">
               <h3 className="text-base sm:text-lg font-semibold border-b pb-2">{t('form.justificantePago')}</h3>
 
+              {/* Información de cuentas bancarias */}
+              <div className="rounded-lg bg-blue-50 border-2 border-blue-400 p-4 sm:p-5 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-blue-900 text-sm sm:text-base mb-3">
+                      Cuentas bancarias para el pago:
+                    </p>
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="bg-white rounded-md p-3 sm:p-4 border border-blue-200">
+                        <p className="font-semibold text-blue-800 text-xs sm:text-sm mb-1">
+                          Caja Rural Onda
+                        </p>
+                        <p className="text-xs sm:text-sm text-blue-900 font-mono break-all">
+                          ES78 3134 - 3499 - 9620 - 1552 - 5021
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-md p-3 sm:p-4 border border-blue-200">
+                        <p className="font-semibold text-blue-800 text-xs sm:text-sm mb-1">
+                          IBERCAJA
+                        </p>
+                        <p className="text-xs sm:text-sm text-blue-900 font-mono break-all">
+                          ES63 2085 - 9564 - 8603 - 3026 - 2351
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Banner de alerta sobre el pago */}
               <div className="rounded-lg bg-amber-50 border-2 border-amber-400 p-4 sm:p-5 shadow-sm">
                 <div className="flex items-start gap-3">

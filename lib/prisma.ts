@@ -18,7 +18,24 @@ function createPrismaClient() {
       },
     })
   }
-  return new PrismaClient()
+  
+  // Configuración optimizada para producción
+  const prismaClient = new PrismaClient({
+    log: process.env.NODE_ENV === 'production' 
+      ? ['error', 'warn'] 
+      : ['query', 'error', 'warn', 'info'],
+    errorFormat: 'pretty',
+  })
+  
+  // Manejar desconexión en producción
+  if (process.env.NODE_ENV === 'production') {
+    // Asegurar que las conexiones se cierren correctamente
+    process.on('beforeExit', async () => {
+      await prismaClient.$disconnect()
+    })
+  }
+  
+  return prismaClient
 }
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient()

@@ -6,6 +6,31 @@ async function main() {
   console.log('🔍 Verificando base de datos...\n')
 
   try {
+    // Mostrar información de la conexión (ocultando contraseña)
+    const dbUrl = process.env.DATABASE_URL
+    if (dbUrl) {
+      const safeUrl = dbUrl.replace(/:[^:@]+@/, ':****@')
+      console.log('📡 URL de conexión:', safeUrl)
+      
+      // Detectar si es Neon
+      if (dbUrl.includes('neon.tech')) {
+        console.log('☁️  Proveedor: Neon PostgreSQL')
+        if (dbUrl.includes('pooler')) {
+          console.log('   - Tipo: Pooler')
+        } else {
+          console.log('   - Tipo: Directa')
+        }
+        // Extraer el endpoint
+        const match = dbUrl.match(/@([^/]+)\//)
+        if (match) {
+          console.log(`   - Endpoint: ${match[1]}`)
+        }
+      }
+      console.log('')
+    } else {
+      console.log('⚠️  DATABASE_URL no está configurada\n')
+    }
+    
     // Verificar conexión
     await prisma.$connect()
     console.log('✅ Conexión a la base de datos exitosa\n')

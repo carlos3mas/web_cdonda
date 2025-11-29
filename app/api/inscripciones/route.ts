@@ -166,8 +166,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear inscripción en la base de datos
+    console.log('🔄 [INSCRIPCIÓN] Iniciando proceso de guardado en base de datos...')
+    console.log('📝 [INSCRIPCIÓN] Datos a guardar:', {
+      tipoInscripcion: tipoInscripcion || 'campus-navidad',
+      nombreJugador,
+      apellidos,
+      dni,
+      nombreTutor
+    })
+    
     // Usar una transacción explícita para asegurar que se confirme correctamente
     const inscripcion = await prisma.$transaction(async (tx) => {
+      console.log('💾 [INSCRIPCIÓN] Ejecutando transacción de base de datos...')
+      
       const nuevaInscripcion = await tx.inscripcion.create({
         data: {
           tipoInscripcion: tipoInscripcion || 'campus-navidad',
@@ -192,25 +203,36 @@ export async function POST(request: NextRequest) {
         }
       })
       
+      console.log('✅ [INSCRIPCIÓN] Registro creado en base de datos con ID:', nuevaInscripcion.id)
+      
       // Verificar que la inscripción se creó correctamente
+      console.log('🔍 [INSCRIPCIÓN] Verificando que el registro se guardó correctamente...')
       const verificacion = await tx.inscripcion.findUnique({
         where: { id: nuevaInscripcion.id }
       })
       
       if (!verificacion) {
+        console.error('❌ [INSCRIPCIÓN] ERROR: El registro no se encontró después de crearse')
         throw new Error('La inscripción no se pudo verificar después de crearse')
       }
       
+      console.log('✅ [INSCRIPCIÓN] Verificación exitosa - Registro confirmado en base de datos')
       return nuevaInscripcion
     })
 
     // Log para producción - verificar que se guardó
-    console.log('✅ Inscripción creada exitosamente:', {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('✅ [INSCRIPCIÓN] INSCRIPCIÓN GUARDADA EXITOSAMENTE EN BASE DE DATOS')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📋 [INSCRIPCIÓN] Detalles:', {
       id: inscripcion.id,
       nombreJugador: inscripcion.nombreJugador,
+      apellidos: inscripcion.apellidos,
       tipoInscripcion: inscripcion.tipoInscripcion,
-      createdAt: inscripcion.createdAt
+      createdAt: inscripcion.createdAt,
+      pagada: inscripcion.pagada
     })
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     return NextResponse.json({
       success: true,

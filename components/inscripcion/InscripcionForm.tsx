@@ -58,7 +58,12 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
   useEffect(() => {
     if (!signatureCanvasRef.current) return
 
-    const pad = new SignaturePad(signatureCanvasRef.current, {
+    const canvas = signatureCanvasRef.current
+    let lastWidth = canvas.offsetWidth
+    let lastHeight = canvas.offsetHeight
+    let resizeTimeout: NodeJS.Timeout | null = null
+
+    const pad = new SignaturePad(canvas, {
       minWidth: 1,
       maxWidth: 2.5,
       penColor: '#111827',
@@ -68,21 +73,75 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     signaturePadRef.current = pad
 
     const resizeCanvas = () => {
-      const canvas = signatureCanvasRef.current
       if (!canvas) return
+      
+      const currentWidth = canvas.offsetWidth
+      const currentHeight = canvas.offsetHeight
+      
+      // Solo redimensionar si realmente cambió el tamaño
+      if (currentWidth === lastWidth && currentHeight === lastHeight) {
+        return
+      }
+      
+      // Guardar el contenido del canvas antes de redimensionar
+      const imageData = pad.toDataURL()
+      const isEmpty = pad.isEmpty()
+      
+      const ratio = Math.max(window.devicePixelRatio || 1, 1)
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      
+      // Guardar el tamaño anterior
+      lastWidth = currentWidth
+      lastHeight = currentHeight
+      
+      // Redimensionar el canvas
+      canvas.width = currentWidth * ratio
+      canvas.height = currentHeight * ratio
+      ctx.scale(ratio, ratio)
+      
+      // Restaurar el contenido si no estaba vacío
+      if (!isEmpty && imageData) {
+        // Usar fromDataURL para restaurar el contenido del pad
+        pad.fromDataURL(imageData)
+      } else {
+        pad.clear()
+        setSignatureFile(null)
+      }
+    }
+
+    // Inicializar el canvas
+    const initCanvas = () => {
       const ratio = Math.max(window.devicePixelRatio || 1, 1)
       canvas.width = canvas.offsetWidth * ratio
       canvas.height = canvas.offsetHeight * ratio
       canvas.getContext('2d')?.scale(ratio, ratio)
-      pad.clear()
-      setSignatureFile(null)
+      lastWidth = canvas.offsetWidth
+      lastHeight = canvas.offsetHeight
     }
 
-    resizeCanvas()
-    window.addEventListener('resize', resizeCanvas)
+    initCanvas()
+
+    // Usar debounce para evitar redimensionar demasiado frecuentemente
+    const handleResize = () => {
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout)
+      }
+      resizeTimeout = setTimeout(() => {
+        resizeCanvas()
+      }, 150) // Esperar 150ms antes de redimensionar
+    }
+
+    // Solo escuchar resize real, no scroll
+    window.addEventListener('resize', handleResize)
+    
+    // Mejorar el rendimiento en móvil - ya está en el style del JSX
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas)
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout)
+      }
+      window.removeEventListener('resize', handleResize)
       pad.off()
       signaturePadRef.current = null
     }
@@ -408,6 +467,12 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                   <canvas
                     ref={signatureCanvasRef}
                     className="w-full h-28 sm:h-32 md:h-40 touch-none border border-gray-200 rounded"
+                    style={{ 
+                      touchAction: 'none',
+                      willChange: 'contents',
+                      WebkitTransform: 'translateZ(0)',
+                      transform: 'translateZ(0)'
+                    }}
                   />
                   <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[10px] xs:text-xs text-gray-500">
                     <span className="text-center sm:text-left">{t('form.dibujaFirma')}</span>

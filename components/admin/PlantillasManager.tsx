@@ -21,10 +21,6 @@ export function PlantillasManager() {
   const [uploading, setUploading] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
-  useEffect(() => {
-    loadPlantillas()
-  }, [loadPlantillas])
-
   const loadPlantillas = useCallback(async () => {
     try {
       const response = await fetch('/api/plantillas')
@@ -42,6 +38,10 @@ export function PlantillasManager() {
       showMessage('error', 'Error al cargar plantillas')
     }
   }, [])
+
+  useEffect(() => {
+    loadPlantillas()
+  }, [loadPlantillas])
 
   const handleUpload = async (tipo: string, file: File) => {
     setUploading(tipo)

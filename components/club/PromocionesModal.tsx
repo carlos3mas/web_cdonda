@@ -206,214 +206,48 @@ export function PromocionesModal() {
               transition={{ duration: 0.6 }}
               className="relative bg-gradient-to-br from-red-600 to-red-700 p-4 sm:p-6 md:p-8 lg:p-10 flex items-center justify-center min-h-[250px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[500px]"
             >
-              {/* Decoración de fondo - círculos */}
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute top-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-                <div className="absolute bottom-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-              </div>
+              {/* Decoración de fondo eliminada */}
 
               {/* Imagen del décimo con marco decorativo */}
-              <div className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg">
+              <div className="absolute inset-0 z-10">
                 <div className="relative">
-                  {/* Sombra decorativa */}
-                  <div className="absolute -inset-2 sm:-inset-3 bg-white/20 rounded-xl sm:rounded-2xl blur-xl" />
                   
-                  {/* Marco de la imagen */}
-                  <div className="relative aspect-[3/2] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-white shadow-2xl">
-                    <Image
-                      src="/images/promociones/decimo-navidad.webp"
-                      alt={t('promociones.decimoNavidadAlt')}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 90vw, (max-width: 768px) 85vw, 50vw"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
+                  {/* Composición solapada ocupando todo el panel rojo */}
+                  <div className="absolute inset-0">
+                      {/* Décimo Navidad (arriba-izquierda, rotado) */}
+                      <div className="absolute left-3 sm:left-4 md:left-6 top-28 sm:top-40 md:top-52 translate-y-2 sm:translate-y-4 w-[78%] sm:w-[68%] md:w-[60%] rotate-[-6deg] z-20 drop-shadow-2xl">
+                        <div className="relative aspect-[3/2] rounded-lg sm:rounded-xl overflow-hidden bg-white">
+                          <Image
+                            src="/images/promociones/decimo-navidad.webp"
+                            alt={t('promociones.decimoNavidadAlt')}
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 640px) 90vw, (max-width: 768px) 85vw, 45vw"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        
+                      </div>
 
-                  {/* Muñeco de nieve decorativo */}
-                  <div className="absolute -bottom-6 -left-6 sm:-bottom-8 sm:-left-8 md:-bottom-10 md:-left-10 hidden sm:block">
-                    <div className="relative" style={{ width: '50px', height: '60px' }}>
-                      {/* Cuerpo inferior */}
-                      <div 
-                        className="absolute rounded-full border-2 border-blue-200"
-                        style={{
-                          width: '42px',
-                          height: '34px',
-                          background: 'linear-gradient(135deg, #ffffff, #f0f9ff)',
-                          bottom: '0',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                        }}
-                      />
-                      {/* Cuerpo superior */}
-                      <div 
-                        className="absolute rounded-full border-2 border-blue-200"
-                        style={{
-                          width: '32px',
-                          height: '28px',
-                          background: 'linear-gradient(135deg, #ffffff, #f0f9ff)',
-                          bottom: '28px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                        }}
-                      />
-                      {/* Ojos */}
-                      <div 
-                        className="absolute rounded-full"
-                        style={{
-                          width: '4px',
-                          height: '4px',
-                          background: '#1a1a1a',
-                          bottom: '42px',
-                          left: '17px',
-                        }}
-                      />
-                      <div 
-                        className="absolute rounded-full"
-                        style={{
-                          width: '4px',
-                          height: '4px',
-                          background: '#1a1a1a',
-                          bottom: '42px',
-                          right: '17px',
-                        }}
-                      />
-                      {/* Nariz (zanahoria) */}
-                      <div 
-                        className="absolute"
-                        style={{
-                          width: '0',
-                          height: '0',
-                          borderLeft: '3px solid transparent',
-                          borderRight: '3px solid transparent',
-                          borderTop: '8px solid #ff8c00',
-                          bottom: '38px',
-                          left: '50%',
-                          transform: 'translateX(-50%) rotate(180deg)',
-                        }}
-                      />
-                      {/* Sombrero */}
-                      <div 
-                        className="absolute rounded-t-lg"
-                        style={{
-                          width: '28px',
-                          height: '12px',
-                          background: '#1a1a1a',
-                          bottom: '54px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                        }}
-                      />
-                      <div 
-                        className="absolute rounded-full"
-                        style={{
-                          width: '32px',
-                          height: '4px',
-                          background: '#1a1a1a',
-                          bottom: '52px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                        }}
-                      />
-                      {/* Bufanda roja */}
-                      <div 
-                        className="absolute"
-                        style={{
-                          width: '24px',
-                          height: '6px',
-                          background: '#dc2626',
-                          bottom: '28px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          borderRadius: '3px',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        }}
-                      />
+                      {/* Décimo Niño (abajo-derecha, rotado) */}
+                      <div className="absolute right-3 sm:right-4 md:right-6 -bottom-20 sm:-bottom-28 md:-bottom-36 translate-y-12 sm:translate-y-16 md:translate-y-20 w-[78%] sm:w-[68%] md:w-[60%] rotate-[4deg] z-10 drop-shadow-2xl">
+                        <div className="relative aspect-[3/2] rounded-lg sm:rounded-xl overflow-hidden bg-white">
+                          <Image
+                            src="/images/promociones/decimo-niño.webp"
+                            alt={t('promociones.decimoNinoAlt')}
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 640px) 90vw, (max-width: 768px) 85vw, 45vw"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Regalo decorativo */}
-                  <div className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 md:-bottom-8 md:-right-8 hidden sm:block">
-                    <div className="relative" style={{ width: '40px', height: '40px' }}>
-                      {/* Caja del regalo */}
-                      <div 
-                        className="absolute rounded-lg"
-                        style={{
-                          width: '40px',
-                          height: '32px',
-                          background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
-                          bottom: '0',
-                          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                        }}
-                      />
-                      {/* Cinta horizontal */}
-                      <div 
-                        className="absolute rounded-sm"
-                        style={{
-                          width: '40px',
-                          height: '5px',
-                          background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                          bottom: '14px',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        }}
-                      />
-                      {/* Cinta vertical */}
-                      <div 
-                        className="absolute rounded-sm"
-                        style={{
-                          width: '5px',
-                          height: '32px',
-                          background: 'linear-gradient(to bottom, #fbbf24, #f59e0b)',
-                          bottom: '0',
-                          left: '17.5px',
-                          boxShadow: '2px 0 4px rgba(0,0,0,0.1)',
-                        }}
-                      />
-                      {/* Lazo - parte izquierda */}
-                      <div 
-                        className="absolute rounded-full"
-                        style={{
-                          width: '14px',
-                          height: '10px',
-                          background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                          bottom: '30px',
-                          left: '6px',
-                          clipPath: 'ellipse(50% 50% at 0% 50%)',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        }}
-                      />
-                      {/* Lazo - parte derecha */}
-                      <div 
-                        className="absolute rounded-full"
-                        style={{
-                          width: '14px',
-                          height: '10px',
-                          background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                          bottom: '30px',
-                          right: '6px',
-                          clipPath: 'ellipse(50% 50% at 100% 50%)',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        }}
-                      />
-                      {/* Lazo - centro */}
-                      <div 
-                        className="absolute rounded-full"
-                        style={{
-                          width: '8px',
-                          height: '8px',
-                          background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                          bottom: '31px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        }}
-                      />
-                    </div>
-                  </div>
+                  {/* Decoración navideña eliminada */}
                 </div>
               </div>
             </motion.div>

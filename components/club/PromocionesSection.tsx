@@ -15,6 +15,12 @@ export function PromocionesSection() {
       image: '/images/promociones/decimo-navidad.webp',
       alt: t('promociones.decimoNavidadAlt')
     }
+    ,
+    {
+      id: 'decimo-nino',
+      image: '/images/promociones/decimo-niño.webp',
+      alt: t('promociones.decimoNinoAlt')
+    }
   ]
 
   return (
@@ -41,31 +47,37 @@ export function PromocionesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-2xl mx-auto mb-10 sm:mb-12 md:mb-16"
+          className="max-w-5xl mx-auto mb-10 sm:mb-12 md:mb-16"
         >
-          {decimos.map((decimo, index) => (
-            <motion.div
-              key={decimo.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-              className="relative w-full flex justify-center"
-            >
-              <div className="relative w-full max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
-                <Image
-                  src={decimo.image}
-                  alt={decimo.alt}
-                  width={800}
-                  height={600}
-                  className="w-full h-auto object-contain"
-                  sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, 70vw"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            </motion.div>
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            {decimos.map((decimo, index) => (
+              <motion.div
+                key={decimo.id}
+                initial={{ opacity: 0, scale: 0.98 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="rounded-xl sm:rounded-2xl border border-red-100 bg-white shadow-sm hover:shadow-md transition-shadow p-4 sm:p-5"
+              >
+                <div className="relative aspect-[3/2] w-full overflow-hidden rounded-lg">
+                  <Image
+                    src={decimo.image}
+                    alt={decimo.alt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 500px"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div className="mt-3 sm:mt-4 text-center">
+                  <span className="inline-block text-xs sm:text-sm font-semibold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">
+                    {decimo.alt}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
         <motion.div

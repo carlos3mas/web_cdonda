@@ -4,7 +4,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 import { requireAuth } from '@/lib/auth-middleware'
-import { uploadRateLimit, apiRateLimit } from '@/lib/rate-limit'
+import { uploadRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
 
 // GET - Obtener todas las plantillas o una específica por tipo

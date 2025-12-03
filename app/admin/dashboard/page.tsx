@@ -21,7 +21,7 @@ const tiposInscripcion = [
 ]
 
 export default function AdminDashboardPage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('todos')
   const [stats, setStats] = useState<Record<string, DashboardStats>>({})

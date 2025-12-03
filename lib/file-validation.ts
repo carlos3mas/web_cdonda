@@ -83,7 +83,7 @@ export async function validateFileType(file: File): Promise<{ valid: boolean; ty
       valid: false,
       error: 'Tipo de archivo no permitido o no reconocido'
     }
-  } catch (error) {
+  } catch {
     return {
       valid: false,
       error: 'Error al validar el archivo'

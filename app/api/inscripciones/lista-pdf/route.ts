@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { requireAuth } from '@/lib/auth-middleware'
 import { generateListaInscripcionesPDF } from '@/lib/pdfGenerator'
 
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     const busqueda = searchParams.get('busqueda') // Búsqueda de texto
 
     // Construir el objeto where con todos los filtros
-    const where: any = {}
+    const where: Prisma.InscripcionWhereInput = {}
 
     // Filtro por tipo de inscripción
     if (tipoInscripcion && tipoInscripcion !== 'todos') {

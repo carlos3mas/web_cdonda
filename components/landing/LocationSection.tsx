@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { MapPin, Clock, Phone, Mail, Users, Award } from 'lucide-react'
+import { MapPin, Clock, Phone, Mail } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
 import { useI18n } from '@/lib/i18n/context'

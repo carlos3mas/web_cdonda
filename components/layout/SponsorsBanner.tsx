@@ -24,7 +24,8 @@ const sponsors = [
   'LOGILOP.webp',
   'Marplac.webp',
   'MOZ-TILES.webp',
-  'PURA-MAGIA.webp',
+  'pura-magia.webp',
+  'tiles-cut.webp',
   'rotulos.webp',
   'sara-blazquez.webp',
   'SERCAS.webp',
@@ -36,8 +37,8 @@ const sponsors = [
 export function SponsorsBanner() {
   const pathname = usePathname()
   
-  // No mostrar el banner en rutas de administración
-  if (pathname?.startsWith('/admin')) {
+  // Mostrar solo en la landing page
+  if (pathname !== '/') {
     return null
   }
 
@@ -69,17 +70,16 @@ export function SponsorsBanner() {
           {duplicatedSponsors.map((logo, index) => (
             <div
               key={`${logo}-${index}`}
-              className="flex-shrink-0 flex items-center h-8 sm:h-10 opacity-70 hover:opacity-100 transition-opacity px-2"
+              className="flex-shrink-0 flex items-center h-12 sm:h-14 w-32 sm:w-40 opacity-70 hover:opacity-100 transition-opacity px-2"
             >
-              <div className="relative w-auto h-full" style={{ aspectRatio: 'auto' }}>
+              <div className="relative w-full h-full">
                 <Image
                   src={`/images/logos/${logo}`}
                   alt={logo.replace(/\.(jpg|png|jpeg|tif|webp)$/i, '').replace(/-/g, ' ')}
-                  width={80}
-                  height={32}
-                  className="h-full w-auto object-contain"
+                  fill
+                  className="h-full w-full object-contain"
                   loading="lazy"
-                  sizes="80px"
+                  sizes="128px"
                   quality={75}
                 />
               </div>

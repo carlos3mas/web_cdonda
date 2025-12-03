@@ -6,6 +6,7 @@ import { existsSync } from 'fs'
 import { requireAuth } from '@/lib/auth-middleware'
 import { inscripcionRateLimit, apiRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
+import { z } from 'zod'
 
 // Deshabilitar cache para estas rutas
 export const dynamic = 'force-dynamic'
@@ -92,14 +93,48 @@ export async function POST(request: NextRequest) {
     const justificanteFile = formData.get('justificantePago') as File | null
     const firmaFile = formData.get('firmaTutor') as File | null
 
-    // Validar campos requeridos
-    if (!nombreJugador || !apellidos || !fechaNacimiento || 
-        !dni || !nombreTutor || !telefono1) {
+    const schema = z.object({
+      tipoInscripcion: z.enum(['campus-navidad','campus-pascua','campus-verano','anual']).optional(),
+      nombreJugador: z.string().min(2),
+      apellidos: z.string().min(2),
+      fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      dni: z.string().regex(/^[0-9]{8}[A-Za-z]$/),
+      nombreTutor: z.string().min(2),
+      telefono1: z.string().regex(/^[0-9]{9}$/),
+      telefono2: z.string().optional().refine((v) => !v || /^[0-9]{9}$/.test(v)),
+      enfermedad: z.string().optional(),
+      medicacion: z.string().optional(),
+      alergico: z.string().optional(),
+      numeroSeguridadSocial: z.string().optional().refine((v) => !v || /^[0-9 ]{10,}$/.test(v)),
+      derechosImagen: z.string().optional(),
+      comentarios: z.string().optional()
+    })
+    const payload = {
+      tipoInscripcion,
+      nombreJugador,
+      apellidos,
+      fechaNacimiento,
+      dni,
+      nombreTutor,
+      telefono1,
+      telefono2,
+      enfermedad,
+      medicacion,
+      alergico,
+      numeroSeguridadSocial,
+      derechosImagen,
+      comentarios
+    }
+    const parsed = schema.safeParse(payload)
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Faltan campos obligatorios' },
+        { error: 'Datos inválidos', issues: parsed.error.issues.map(i => ({ path: i.path, message: i.message })) },
         { status: 400 }
       )
     }
+
+    // Validar campos requeridos
+    
 
     // Validar que se haya adjuntado el justificante
     if (!justificanteFile) {
@@ -181,7 +216,7 @@ export async function POST(request: NextRequest) {
       
       const nuevaInscripcion = await tx.inscripcion.create({
         data: {
-          tipoInscripcion: tipoInscripcion || 'campus-navidad',
+          tipoInscripcion: (parsed.data.tipoInscripcion || 'campus-navidad'),
           nombreJugador,
           apellidos,
           fechaNacimiento: new Date(fechaNacimiento),

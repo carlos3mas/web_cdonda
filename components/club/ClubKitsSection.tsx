@@ -47,16 +47,16 @@ export function ClubKitsSection() {
       name: t('kits.primeraEquipacion'),
       description: t('kits.primeraEquipacionDesc'),
       image: {
-        src: '/images/kits/primera-chico.webp',
-        alt: t('kits.primeraEquipacionAlt') + ' - Chico'
+        src: '/images/kits/primera-chica.webp',
+        alt: t('kits.primeraEquipacionAlt') + ' - Chica'
       }
     },
     {
       name: t('kits.segundaEquipacion'),
       description: t('kits.segundaEquipacionDesc'),
       image: {
-        src: '/images/kits/segunda-chica.webp',
-        alt: t('kits.segundaEquipacionAlt') + ' - Chica'
+        src: '/images/kits/segunda-chico.webp',
+        alt: t('kits.segundaEquipacionAlt') + ' - Chico'
       }
     }
   ]

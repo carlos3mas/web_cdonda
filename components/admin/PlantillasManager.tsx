@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -23,9 +23,9 @@ export function PlantillasManager() {
 
   useEffect(() => {
     loadPlantillas()
-  }, [])
+  }, [loadPlantillas])
 
-  const loadPlantillas = async () => {
+  const loadPlantillas = useCallback(async () => {
     try {
       const response = await fetch('/api/plantillas')
       const data: PlantillaPDF[] = await response.json()
@@ -41,7 +41,7 @@ export function PlantillasManager() {
       console.error('Error al cargar plantillas:', error)
       showMessage('error', 'Error al cargar plantillas')
     }
-  }
+  }, [])
 
   const handleUpload = async (tipo: string, file: File) => {
     setUploading(tipo)

@@ -44,17 +44,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   // Translation function
   const t = (key: string): string => {
     const keys = key.split('.')
-    let value: any = translations[locale]
-    
+    let value: unknown = translations[locale]
     for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k]
+      if (value && typeof value === 'object' && k in (value as Record<string, unknown>)) {
+        value = (value as Record<string, unknown>)[k]
       } else {
-        // Fallback to Spanish if key not found
         value = translations.es
         for (const fallbackKey of keys) {
-          if (value && typeof value === 'object' && fallbackKey in value) {
-            value = value[fallbackKey]
+          if (value && typeof value === 'object' && fallbackKey in (value as Record<string, unknown>)) {
+            value = (value as Record<string, unknown>)[fallbackKey]
           } else {
             return key
           }
@@ -62,7 +60,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         return key
       }
     }
-    
     return typeof value === 'string' ? value : key
   }
 

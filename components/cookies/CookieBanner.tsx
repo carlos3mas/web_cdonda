@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useCookieConsent } from '@/lib/hooks/useCookieConsent'
 import { useI18n } from '@/lib/i18n/context'
 import Link from 'next/link'
-import { X, Settings, Check, X as XIcon } from 'lucide-react'
+import { X, Settings, Check } from 'lucide-react'
 
 export function CookieBanner() {
   const { showBanner, acceptCookies, rejectCookies } = useCookieConsent()

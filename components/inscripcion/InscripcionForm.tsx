@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+ 
 import { InscripcionFormData } from '@/types'
 import { Download, Loader2, CheckCircle, AlertCircle, Upload, FileText } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -28,7 +28,6 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [justificanteFile, setJustificanteFile] = useState<File | null>(null)
-  const [signatureFile, setSignatureFile] = useState<File | null>(null)
   const signatureCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const signaturePadRef = useRef<SignaturePad | null>(null)
   
@@ -106,7 +105,6 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
         pad.fromDataURL(imageData)
       } else {
         pad.clear()
-        setSignatureFile(null)
       }
     }
 
@@ -259,7 +257,6 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
 
   const clearSignature = () => {
     signaturePadRef.current?.clear()
-    setSignatureFile(null)
   }
 
   if (submitStatus === 'success') {

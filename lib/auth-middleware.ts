@@ -6,6 +6,9 @@ import { authOptions } from './auth'
  * Middleware para proteger rutas de API que requieren autenticación
  */
 export async function requireAuth(request: NextRequest) {
+  if (!request) {
+    return NextResponse.json({ error: 'No autorizado. Debes iniciar sesión.' }, { status: 401 })
+  }
   const session = await getServerSession(authOptions)
   
   if (!session) {
@@ -21,8 +24,8 @@ export async function requireAuth(request: NextRequest) {
 /**
  * Wrapper para rutas protegidas
  */
-export function withAuth(handler: Function) {
-  return async (request: NextRequest, ...args: any[]) => {
+export function withAuth(handler: (request: NextRequest, ...args: unknown[]) => Promise<unknown>) {
+  return async (request: NextRequest, ...args: unknown[]) => {
     const authError = await requireAuth(request)
     if (authError) return authError
     

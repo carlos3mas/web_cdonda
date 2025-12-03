@@ -55,7 +55,7 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
           const field = form.getTextField(candidate)
           field.setText(value)
           return
-        } catch (error) {
+        } catch {
           continue
         }
       }

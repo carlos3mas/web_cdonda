@@ -181,10 +181,13 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       
       // Añadir el archivo
       formDataToSend.append('justificantePago', justificanteFile)
-      if (signaturePadRef.current) {
-        const dataUrl = signaturePadRef.current.toDataURL('image/png')
-        const blob = await (await fetch(dataUrl)).blob()
-        formDataToSend.append('firmaTutor', blob, 'firma.png')
+      if (signatureCanvasRef.current) {
+        const blob = await new Promise<Blob | null>((resolve) => {
+          signatureCanvasRef.current!.toBlob(resolve, 'image/png')
+        })
+        if (blob) {
+          formDataToSend.append('firmaTutor', blob, 'firma.png')
+        }
       }
 
       const response = await fetch('/api/inscripciones', {

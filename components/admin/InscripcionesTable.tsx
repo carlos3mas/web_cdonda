@@ -311,7 +311,8 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          {/* Vista de Tabla para Escritorio */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
@@ -416,6 +417,74 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                 )}
               </tbody>
             </table>
+          </div>
+          {/* Vista de Tarjetas para Móvil */}
+          <div className="md:hidden space-y-4">
+            {filteredInscripciones.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                {!Array.isArray(inscripciones) || inscripciones.length === 0
+                  ? 'No hay inscripciones todavía'
+                  : 'No se encontraron inscripciones con ese criterio de búsqueda'}
+              </div>
+            ) : (
+              filteredInscripciones.map((inscripcion) => (
+                <motion.div
+                  key={inscripcion.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="bg-white rounded-lg border p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-bold text-base">{`${inscripcion.nombreJugador} ${inscripcion.apellidos}`}</p>
+                        <p className="text-sm text-gray-500">{formatDate(inscripcion.createdAt)}</p>
+                      </div>
+                      <Badge
+                        variant={inscripcion.pagada ? 'default' : 'secondary'}
+                        className="cursor-pointer text-xs"
+                        onClick={() => handleTogglePagada(inscripcion)}
+                      >
+                        {inscripcion.pagada ? (
+                          <>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Pagada
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Pendiente
+                          </>
+                        )}
+                      </Badge>
+                    </div>
+                    {showTipoFilter && (
+                        <Badge variant="outline" className="text-xs mt-2">
+                            {inscripcion.tipoInscripcion === 'campus-navidad' ? 'Campus Navidad' :
+                             inscripcion.tipoInscripcion === 'campus-pascua' ? 'Campus Pascua' :
+                             inscripcion.tipoInscripcion === 'campus-verano' ? 'Campus Verano' :
+                             inscripcion.tipoInscripcion === 'anual' ? 'Anual' :
+                             inscripcion.tipoInscripcion}
+                        </Badge>
+                    )}
+                    <div className="flex items-center justify-end gap-1 mt-3">
+                      <Button size="sm" variant="ghost" onClick={() => handleViewDetails(inscripcion)}>
+                        <Eye className="h-4 w-4" />
+                        <span className="sr-only">Ver</span>
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleDownloadPDF(inscripcion.id)}>
+                        <Download className="h-4 w-4" />
+                        <span className="sr-only">Descargar</span>
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleDeleteClick(inscripcion.id)} className="text-red-600 hover:text-red-700">
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Eliminar</span>
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

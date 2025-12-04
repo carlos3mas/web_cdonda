@@ -55,95 +55,61 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
   }, [searchParams, tipoInscripcion])
 
   useEffect(() => {
-    if (!signatureCanvasRef.current) return
+    if (!signatureCanvasRef.current) return;
 
-    const canvas = signatureCanvasRef.current
-    let lastWidth = canvas.offsetWidth
-    let lastHeight = canvas.offsetHeight
-    let resizeTimeout: NodeJS.Timeout | null = null
-
+    const canvas = signatureCanvasRef.current;
     const pad = new SignaturePad(canvas, {
       minWidth: 1,
       maxWidth: 2.5,
       penColor: '#111827',
       backgroundColor: 'rgba(255,255,255,0)',
-    })
+    });
+    signaturePadRef.current = pad;
 
-    signaturePadRef.current = pad
+    let resizeTimeout: NodeJS.Timeout | null = null;
 
     const resizeCanvas = () => {
-      if (!canvas) return
+      if (!canvas || !signaturePadRef.current) return;
+
+      // Guardar los datos de la firma antes de redimensionar
+      const data = signaturePadRef.current.toData();
+
+      // Ajustar el tamaño del canvas según el contenedor y la densidad de píxeles
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
       
-      const currentWidth = canvas.offsetWidth
-      const currentHeight = canvas.offsetHeight
-      
-      // Solo redimensionar si realmente cambió el tamaño
-      if (currentWidth === lastWidth && currentHeight === lastHeight) {
-        return
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.scale(ratio, ratio);
       }
-      
-      // Guardar el contenido del canvas antes de redimensionar
-      const imageData = pad.toDataURL()
-      const isEmpty = pad.isEmpty()
-      
-      const ratio = Math.max(window.devicePixelRatio || 1, 1)
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-      
-      // Guardar el tamaño anterior
-      lastWidth = currentWidth
-      lastHeight = currentHeight
-      
-      // Redimensionar el canvas
-      canvas.width = currentWidth * ratio
-      canvas.height = currentHeight * ratio
-      ctx.scale(ratio, ratio)
-      
-      // Restaurar el contenido si no estaba vacío
-      if (!isEmpty && imageData) {
-        // Usar fromDataURL para restaurar el contenido del pad
-        pad.fromDataURL(imageData)
-      } else {
-        pad.clear()
-      }
-    }
 
-    // Inicializar el canvas
-    const initCanvas = () => {
-      const ratio = Math.max(window.devicePixelRatio || 1, 1)
-      canvas.width = canvas.offsetWidth * ratio
-      canvas.height = canvas.offsetHeight * ratio
-      canvas.getContext('2d')?.scale(ratio, ratio)
-      lastWidth = canvas.offsetWidth
-      lastHeight = canvas.offsetHeight
-    }
+      // Restaurar los datos de la firma en el canvas redimensionado
+      signaturePadRef.current.fromData(data);
+    };
 
-    initCanvas()
+    // Redimensionar inicialmente
+    resizeCanvas();
 
-    // Usar debounce para evitar redimensionar demasiado frecuentemente
     const handleResize = () => {
       if (resizeTimeout) {
-        clearTimeout(resizeTimeout)
+        clearTimeout(resizeTimeout);
       }
       resizeTimeout = setTimeout(() => {
-        resizeCanvas()
-      }, 150) // Esperar 150ms antes de redimensionar
-    }
+        resizeCanvas();
+      }, 150);
+    };
 
-    // Solo escuchar resize real, no scroll
-    window.addEventListener('resize', handleResize)
-    
-    // Mejorar el rendimiento en móvil - ya está en el style del JSX
+    window.addEventListener('resize', handleResize);
 
     return () => {
       if (resizeTimeout) {
-        clearTimeout(resizeTimeout)
+        clearTimeout(resizeTimeout);
       }
-      window.removeEventListener('resize', handleResize)
-      pad.off()
-      signaturePadRef.current = null
-    }
-  }, [])
+      window.removeEventListener('resize', handleResize);
+      pad.off();
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

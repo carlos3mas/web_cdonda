@@ -144,6 +144,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validar que se haya adjuntado la firma
+    if (!firmaFile || firmaFile.size === 0) {
+      return NextResponse.json(
+        { error: 'La firma del tutor es obligatoria y no se ha recibido correctamente. Por favor, inténtalo de nuevo.' },
+        { status: 400 }
+      )
+    }
+
     // Validar el archivo con magic numbers y tamaño
     const fileValidation = await validateFile(justificanteFile, 5)
     if (!fileValidation.valid) {

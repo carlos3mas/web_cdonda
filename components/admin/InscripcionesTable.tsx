@@ -77,7 +77,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
           const nombreB = `${b.nombreJugador} ${b.apellidos}`.toLowerCase()
           return nombreA.localeCompare(nombreB)
         case 'fechaNacimiento':
-          return new Date(b.fechaNacimiento).getTime() - new Date(a.fechaNacimiento).getTime()
+          return new Date(a.fechaNacimiento).getTime() - new Date(b.fechaNacimiento).getTime()
         case 'fechaInscripcion':
         default:
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -320,6 +320,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                     <th className="text-left py-3 px-4 font-semibold text-sm">Tipo</th>
                   )}
                   <th className="text-left py-3 px-4 font-semibold text-sm">Jugador</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm">Fecha Nac.</th>
                   <th className="text-left py-3 px-4 font-semibold text-sm">DNI</th>
                   <th className="text-left py-3 px-4 font-semibold text-sm">Tutor</th>
                   <th className="text-left py-3 px-4 font-semibold text-sm">Teléfono</th>
@@ -361,6 +362,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                         <div className="font-medium">{inscripcion.nombreJugador}</div>
                         <div className="text-sm text-gray-500">{inscripcion.apellidos}</div>
                       </td>
+                      <td className="py-3 px-4 text-sm">{formatDate(inscripcion.fechaNacimiento)}</td>
                       <td className="py-3 px-4 text-sm">{inscripcion.dni}</td>
                       <td className="py-3 px-4 text-sm">{inscripcion.nombreTutor}</td>
                       <td className="py-3 px-4 text-sm">{inscripcion.telefono1}</td>
@@ -438,6 +440,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-bold text-base">{`${inscripcion.nombreJugador} ${inscripcion.apellidos}`}</p>
+                        <p className="text-sm text-gray-500">Nacimiento: {formatDate(inscripcion.fechaNacimiento)}</p>
                         <p className="text-sm text-gray-500">{formatDate(inscripcion.createdAt)}</p>
                       </div>
                       <Badge

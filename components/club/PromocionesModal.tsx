@@ -149,28 +149,28 @@ export function PromocionesModal() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="relative bg-gradient-to-br from-red-600 to-red-700 p-6 flex items-center justify-center min-h-[300px] md:min-h-[450px] overflow-hidden"
+              className="relative bg-gradient-to-br from-red-600 to-red-700 p-6 flex items-center justify-center min-h-[300px] sm:min-h-[420px] md:min-h-[480px] lg:min-h-[560px] overflow-hidden"
             >
               <div className="relative w-full h-full flex items-center justify-center">
-                <div className="relative w-full max-w-sm h-full">
+                <div className="relative w-full h-full max-w-[560px] md:max-w-[520px] lg:max-w-[560px]">
                   <motion.div
-                    className="absolute top-[10%] left-[5%] w-[80%] md:w-[70%] z-10"
-                    initial={{ opacity: 0, x: -50, rotate: -15 }}
-                    animate={{ opacity: 1, x: 0, rotate: -10 }}
+                    className="absolute top-[2%] left-[6%] w-[72%] sm:top-[5%] sm:left-[8%] sm:w-[76%] md:top-[8%] md:left-[10%] md:w-[72%] z-10"
+                    initial={{ opacity: 0, x: -50, rotate: -12 }}
+                    animate={{ opacity: 1, x: 0, rotate: -8 }}
                     transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
                   >
                     <div className="relative aspect-[5/3] drop-shadow-2xl">
-                      <Image src="/images/promociones/decimo-navidad.webp" alt={t('promociones.decimoNavidadAlt')} fill className="object-contain rounded-lg" sizes="(max-width: 768px) 70vw, 35vw" />
+                      <Image src="/images/promociones/decimo-navidad.webp" alt={t('promociones.decimoNavidadAlt')} fill className="object-contain rounded-lg" sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 560px" />
                     </div>
                   </motion.div>
                   <motion.div
-                    className="absolute bottom-[10%] right-[5%] w-[80%] md:w-[70%] z-20"
-                    initial={{ opacity: 0, x: 50, rotate: 15 }}
-                    animate={{ opacity: 1, x: 0, rotate: 10 }}
+                    className="absolute bottom-[2%] right-[6%] w-[68%] sm:bottom-[5%] sm:right-[8%] sm:w-[72%] md:bottom-[8%] md:right-[10%] md:w-[70%] z-20"
+                    initial={{ opacity: 0, x: 50, rotate: 12 }}
+                    animate={{ opacity: 1, x: 0, rotate: 8 }}
                     transition={{ duration: 0.7, delay: 0.4, ease: "easeOut" }}
                   >
                     <div className="relative aspect-[5/3] drop-shadow-2xl">
-                      <Image src="/images/promociones/decimo-niño.webp" alt={t('promociones.decimoNinoAlt')} fill className="object-contain rounded-lg" sizes="(max-width: 768px) 70vw, 35vw" />
+                      <Image src="/images/promociones/decimo-niño.webp" alt={t('promociones.decimoNinoAlt')} fill className="object-contain rounded-lg" sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 560px" />
                     </div>
                   </motion.div>
                 </div>

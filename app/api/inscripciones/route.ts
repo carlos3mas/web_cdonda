@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar que se haya adjuntado la firma
-    if (!firmaFile || firmaFile.size === 0) {
+    if (!firmaFile) {
       return NextResponse.json(
         { error: 'La firma del tutor es obligatoria y no se ha recibido correctamente. Por favor, inténtalo de nuevo.' },
         { status: 400 }

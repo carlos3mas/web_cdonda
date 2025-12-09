@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 import { requireAuth } from '@/lib/auth-middleware'
 import { inscripcionRateLimit, apiRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
 import { z } from 'zod'
+import { put } from '@vercel/blob'
 
 // Deshabilitar cache para estas rutas
 export const dynamic = 'force-dynamic'
@@ -161,51 +159,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let justificantePath: string | null = null
+    let justificanteUrl: string | null = null
     let nombreArchivoJustificante: string | null = null
-    let firmaPath: string | null = null
+    let firmaUrl: string | null = null
     let nombreArchivoFirma: string | null = null
 
-    // Guardar el archivo del justificante en carpeta PRIVADA
+    // Subir el justificante a Vercel Blob
     if (justificanteFile && justificanteFile.size > 0) {
-      // Crear directorio PRIVADO si no existe
-      const justificantesDir = join(process.cwd(), 'storage', 'justificantes')
-      if (!existsSync(justificantesDir)) {
-        await mkdir(justificantesDir, { recursive: true })
-      }
-
-      // Generar nombre único y seguro para el archivo
-      const timestamp = Date.now()
-      const randomStr = Math.random().toString(36).substring(7)
-      const extension = justificanteFile.name.split('.').pop()
-      const fileName = `justificante-${timestamp}-${randomStr}.${extension}`
-      const filePath = join(justificantesDir, fileName)
-      justificantePath = fileName // Solo guardamos el nombre, no la ruta pública
+      const uniqueName = `justificantes/${Date.now()}-${justificanteFile.name}`
+      const blob = await put(uniqueName, justificanteFile, {
+        access: 'public',
+      })
+      justificanteUrl = blob.url
       nombreArchivoJustificante = justificanteFile.name
-
-      // Guardar archivo
-      const bytes = await justificanteFile.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      await writeFile(filePath, buffer)
     }
 
+    // Subir la firma a Vercel Blob
     if (firmaFile && firmaFile.size > 0) {
-      const firmasDir = join(process.cwd(), 'storage', 'firmas')
-      if (!existsSync(firmasDir)) {
-        await mkdir(firmasDir, { recursive: true })
-      }
-
-      const timestamp = Date.now()
-      const randomStr = Math.random().toString(36).substring(7)
-      const extension = 'png'
-      const fileName = `firma-${timestamp}-${randomStr}.${extension}`
-      const filePath = join(firmasDir, fileName)
-      firmaPath = fileName
-      nombreArchivoFirma = firmaFile.name || 'firma.png'
-
-      const bytes = await firmaFile.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      await writeFile(filePath, buffer)
+      const uniqueName = `firmas/${Date.now()}-firma.png`
+      const blob = await put(uniqueName, firmaFile, {
+        access: 'public',
+      })
+      firmaUrl = blob.url
+      nombreArchivoFirma = 'firma.png'
     }
 
     // Crear inscripción en la base de datos
@@ -237,9 +213,9 @@ export async function POST(request: NextRequest) {
           alergico: alergico || null,
           numeroSeguridadSocial: numeroSeguridadSocial || null,
           pagada: false,
-          justificantePago: justificantePath,
+          justificantePago: justificanteUrl,
           nombreArchivoJustificante,
-          firma: firmaPath,
+          firma: firmaUrl,
           nombreArchivoFirma,
           derechosImagen: derechosImagen === 'true',
           comentarios: comentarios || null

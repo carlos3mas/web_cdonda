@@ -441,12 +441,13 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                 <div className="rounded-xl border border-red-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm">
                   <canvas
                     ref={signatureCanvasRef}
-                    className="w-full h-28 sm:h-32 md:h-40 touch-none border border-gray-200 rounded"
+                    className="w-full h-32 sm:h-36 md:h-40 touch-none border border-gray-200 rounded"
                     style={{ 
                       touchAction: 'none',
                       willChange: 'contents',
                       WebkitTransform: 'translateZ(0)',
-                      transform: 'translateZ(0)'
+                      transform: 'translateZ(0)',
+                      WebkitTapHighlightColor: 'transparent'
                     }}
                   />
                   <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[10px] xs:text-xs text-gray-500">
@@ -552,7 +553,8 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                   <input
                     id="justificantePago"
                     type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,application/pdf,.heic,.heif"
+                    capture="environment"
                     className="hidden"
                     onChange={handleFileChange}
                     required

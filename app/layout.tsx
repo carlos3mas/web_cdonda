@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { SponsorsBanner } from '@/components/layout/SponsorsBanner'
@@ -9,6 +9,14 @@ import { CookieBanner } from '@/components/cookies/CookieBanner'
 // Nota: La validación de variables de entorno se hace en runtime en las rutas API
 
 const inter = Inter({ subsets: ['latin'] })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#8b0000',
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://cdonda.es'),

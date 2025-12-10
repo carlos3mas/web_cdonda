@@ -1,15 +1,18 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSql } from '@prisma/adapter-libsql'
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
+import { createClient } from '@libsql/client'
 import bcrypt from 'bcryptjs'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
 function createPrismaClient() {
-  // Configurar adaptador Turso/LibSQL
-  const adapter = new PrismaLibSql({
+  // Configurar cliente Turso/LibSQL
+  const libsql = createClient({
     url: process.env.DATABASE_URL!,
     authToken: process.env.TURSO_AUTH_TOKEN,
   })
+  
+  const adapter = new PrismaLibSQL(libsql)
   
   const prismaClient = new PrismaClient({
     adapter,

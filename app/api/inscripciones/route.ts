@@ -6,6 +6,7 @@ import { existsSync } from 'fs'
 import { requireAuth } from '@/lib/auth-middleware'
 import { inscripcionRateLimit, apiRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
+import { compressFile, getFileInfo } from '@/lib/file-compression'
 import { z } from 'zod'
 
 // Deshabilitar cache para estas rutas
@@ -174,6 +175,17 @@ export async function POST(request: NextRequest) {
         await mkdir(justificantesDir, { recursive: true })
       }
 
+      // Obtener buffer del archivo
+      const bytes = await justificanteFile.arrayBuffer()
+      let buffer = Buffer.from(bytes)
+      
+      // Log del tamaño original
+      const originalInfo = getFileInfo(buffer, justificanteFile.name)
+      console.log(`📎 Justificante original: ${originalInfo.sizeFormatted}`)
+      
+      // Comprimir archivo si es imagen
+      buffer = await compressFile(buffer, justificanteFile.type, 800) // Max 800KB
+      
       // Generar nombre único y seguro para el archivo
       const timestamp = Date.now()
       const randomStr = Math.random().toString(36).substring(7)
@@ -183,10 +195,11 @@ export async function POST(request: NextRequest) {
       justificantePath = fileName // Solo guardamos el nombre, no la ruta pública
       nombreArchivoJustificante = justificanteFile.name
 
-      // Guardar archivo
-      const bytes = await justificanteFile.arrayBuffer()
-      const buffer = Buffer.from(bytes)
+      // Guardar archivo comprimido
       await writeFile(filePath, buffer)
+      
+      const finalInfo = getFileInfo(buffer, fileName)
+      console.log(`💾 Justificante guardado: ${finalInfo.sizeFormatted}`)
     }
 
     if (firmaFile && firmaFile.size > 0) {
@@ -195,6 +208,17 @@ export async function POST(request: NextRequest) {
         await mkdir(firmasDir, { recursive: true })
       }
 
+      // Obtener buffer del archivo
+      const bytes = await firmaFile.arrayBuffer()
+      let buffer = Buffer.from(bytes)
+      
+      // Log del tamaño original
+      const originalInfo = getFileInfo(buffer, 'firma.png')
+      console.log(`✍️  Firma original: ${originalInfo.sizeFormatted}`)
+      
+      // Comprimir firma (las firmas suelen ser PNG grandes)
+      buffer = await compressFile(buffer, 'image/png', 200) // Max 200KB para firmas
+      
       const timestamp = Date.now()
       const randomStr = Math.random().toString(36).substring(7)
       const extension = 'png'
@@ -203,9 +227,11 @@ export async function POST(request: NextRequest) {
       firmaPath = fileName
       nombreArchivoFirma = firmaFile.name || 'firma.png'
 
-      const bytes = await firmaFile.arrayBuffer()
-      const buffer = Buffer.from(bytes)
+      // Guardar firma comprimida
       await writeFile(filePath, buffer)
+      
+      const finalInfo = getFileInfo(buffer, fileName)
+      console.log(`💾 Firma guardada: ${finalInfo.sizeFormatted}`)
     }
 
     // Crear inscripción en la base de datos

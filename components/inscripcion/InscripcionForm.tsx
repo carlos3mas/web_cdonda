@@ -174,13 +174,9 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       
       // Añadir el archivo
       formDataToSend.append('justificantePago', justificanteFile)
-      if (signatureCanvasRef.current) {
-        const blob = await new Promise<Blob | null>((resolve) => {
-          signatureCanvasRef.current!.toBlob(resolve, 'image/png')
-        })
-        if (blob) {
-          formDataToSend.append('firmaTutor', blob, 'firma.png')
-        }
+      {
+        const blob = await canvasToBlob()
+        if (blob) formDataToSend.append('firmaTutor', blob, 'firma.png')
       }
 
       const response = await fetch('/api/inscripciones', {
@@ -195,22 +191,8 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
 
       const data = await response.json()
       setSubmitStatus('success')
-      
-      // Descargar el PDF
-      if (data.inscripcionId) {
-        const pdfResponse = await fetch(`/api/inscripciones/${data.inscripcionId}/pdf`)
-        if (pdfResponse.ok) {
-          const blob = await pdfResponse.blob()
-          const url = window.URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.download = `inscripcion-${data.inscripcionId}.pdf`
-          document.body.appendChild(a)
-          a.click()
-          window.URL.revokeObjectURL(url)
-          document.body.removeChild(a)
-        }
-      }
+      setIsSubmitting(false)
+      if (data.inscripcionId) void downloadPdf(data.inscripcionId)
 
       // Redirigir después de 3 segundos
       setTimeout(() => {
@@ -227,6 +209,30 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
 
   const clearSignature = () => {
     signaturePadRef.current?.clear()
+  }
+
+  const canvasToBlob = async (): Promise<Blob | null> => {
+    if (!signatureCanvasRef.current) return null
+    const canvas = signatureCanvasRef.current
+    if (canvas.toBlob) {
+      return await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, 'image/png')
+      })
+    }
+    try {
+      const dataUrl = canvas.toDataURL('image/png')
+      const res = await fetch(dataUrl)
+      return await res.blob()
+    } catch {
+      return null
+    }
+  }
+
+  const downloadPdf = async (id: string) => {
+    try {
+      const url = `/api/inscripciones/${id}/pdf`
+      window.open(url, '_blank', 'noopener')
+    } catch {}
   }
 
   if (submitStatus === 'success') {

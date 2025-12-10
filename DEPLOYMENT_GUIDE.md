@@ -28,13 +28,21 @@
 
 ## 🚀 Variables de Entorno para Dockploy
 
-Asegúrate de configurar estas variables en Dockploy:
+Asegúrate de configurar estas variables en Dockploy (usa **tus propios valores reales**, no los de ejemplo):
 
 ```env
-DATABASE_URL="libsql://cdondaweb-cdonda.aws-eu-west-1.turso.io"
-TURSO_AUTH_TOKEN="eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NjUzMjUwNDksImlkIjoiZmE3YjI5YzMtZTU3ZC00OTg2LTkwZmQtMzQ2NGU0Mjk1NTdkIiwicmlkIjoiNGNjZDIwOTQtOWEzOS00MjZhLWE1MjYtYzgxZDhhM2QzNDQ0In0.VBiR9YEmVtwtoBMhrc3XyKQtapK19Jl_vMIkJJYAAfW4Nva1CbXt25lwcrFQvbg9vnpCT0TrTpee_z0vCaFXDw"
-NEXTAUTH_SECRET="campus-cd-onda-secret-2025-change-in-production"
+# URL de tu base de datos Turso (la encuentras en el panel de Turso)
+DATABASE_URL="libsql://TU-NOMBRE-DB.turso.io"
+
+# Token de autenticación de Turso (cópialo desde Turso, NO lo subas nunca a git)
+TURSO_AUTH_TOKEN="TU_TURSO_AUTH_TOKEN_AQUI"
+
+# Secret para NextAuth (genera uno aleatorio, por ejemplo con: openssl rand -base64 32)
+NEXTAUTH_SECRET="TU_NEXTAUTH_SECRET_AQUÍ"
+
+# URL pública de tu web en producción
 NEXTAUTH_URL="https://tu-dominio.com"
+
 NODE_ENV="production"
 ```
 

@@ -1,27 +1,19 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaLibSql } from '@prisma/adapter-libsql'
 import bcrypt from 'bcryptjs'
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
+const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
-// Solo inicializar Prisma si DATABASE_URL está disponible
-// Esto evita errores durante el build cuando las variables de entorno no están configuradas
 function createPrismaClient() {
-  if (!process.env.DATABASE_URL) {
-    // Retornar un cliente "mock" que lanzará errores informativos si se intenta usar
-    return new Proxy({} as PrismaClient, {
-      get() {
-        throw new Error(
-          'Prisma Client no está inicializado. DATABASE_URL no está configurada.'
-        )
-      },
-    })
-  }
+  // Configurar adaptador Turso/LibSQL
+  const adapter = new PrismaLibSql({
+    url: process.env.DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  })
   
-  // Configuración optimizada para producción
   const prismaClient = new PrismaClient({
-    log: process.env.NODE_ENV === 'production' 
+    adapter,
+    log: process.env.NODE_ENV === 'production'
       ? ['error', 'warn'] 
       : ['query', 'error', 'warn', 'info'],
     errorFormat: 'pretty',

@@ -28,8 +28,8 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [justificanteFile, setJustificanteFile] = useState<File | null>(null)
-  const signatureCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const signaturePadRef = useRef<SignaturePad | null>(null)
+  const signatureCanvasRef = useRef<HTMLCanvasElement | null>(null)
   
   const [formData, setFormData] = useState<Omit<InscripcionFormData, 'justificantePago'>>({
     tipoInscripcion: tipoFromUrl,
@@ -53,6 +53,34 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     const tipo = searchParams?.get('tipo') || tipoInscripcion || 'campus-navidad'
     setFormData(prev => ({ ...prev, tipoInscripcion: tipo }))
   }, [searchParams, tipoInscripcion])
+
+  // Función para manejar cambios en el formulario
+  const handleChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  // Función para manejar cambio de archivo
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
+    if (!validTypes.includes(file.type)) {
+      setErrorMessage(t('form.errorArchivo'))
+      setSubmitStatus('error')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage(t('form.errorTamano'))
+      setSubmitStatus('error')
+      return
+    }
+
+    setJustificanteFile(file)
+    setSubmitStatus('idle')
+    setErrorMessage('')
+  }
 
   useEffect(() => {
     if (!signatureCanvasRef.current) return;
@@ -106,7 +134,6 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       if (resizeTimeout) {
         clearTimeout(resizeTimeout);
       }
-      window.removeEventListener('resize', handleResize);
       pad.off();
     };
   }, []);
@@ -198,32 +225,6 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     }
   }
 
-  const handleChange = (field: keyof Omit<InscripcionFormData, 'justificantePago'>, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
-      if (!validTypes.includes(file.type)) {
-        setErrorMessage(t('form.errorArchivo'))
-        setSubmitStatus('error')
-        return
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMessage(t('form.errorTamano'))
-        setSubmitStatus('error')
-        return
-      }
-
-      setJustificanteFile(file)
-      setSubmitStatus('idle')
-      setErrorMessage('')
-    }
-  }
-
   const clearSignature = () => {
     signaturePadRef.current?.clear()
   }
@@ -267,7 +268,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
           </CardDescription>
           <div className="mt-3 sm:mt-4 rounded-xl bg-gradient-to-r from-[#8b0000] via-[#c91818] to-[#5c0303] px-4 py-3 sm:px-5 sm:py-4 text-xs sm:text-sm text-white shadow">
             <p className="font-semibold">{t('form.informacionImportante')}</p>
-            <p className="mt-1 text-white/85 leading-relaxed">
+            <p className="mt-2">
               {t('form.informacionCampus')}
             </p>
           </div>

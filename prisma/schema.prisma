@@ -2,36 +2,37 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model Inscripcion {
-  id                     String   @id @default(cuid())
-  tipoInscripcion        String   @default("campus-navidad") // campus-navidad, campus-verano, anual, etc.
-  nombreJugador          String
-  apellidos              String
-  fechaNacimiento        DateTime
-  dni                    String
-  nombreTutor            String
-  telefono1              String
-  telefono2              String?
-  enfermedad             String?
-  medicacion             String?
-  alergico               String?
-  numeroSeguridadSocial  String?
-  pagada                 Boolean  @default(false)
-  justificantePago       String?  // Ruta al archivo del justificante
+  id                        String   @id @default(cuid())
+  tipoInscripcion           String   @default("campus-navidad") // campus-navidad, campus-verano, anual, etc.
+  nombreJugador             String
+  apellidos                 String
+  fechaNacimiento           DateTime
+  dni                       String
+  nombreTutor               String
+  telefono1                 String
+  telefono2                 String?
+  enfermedad                String?
+  medicacion                String?
+  alergico                  String?
+  numeroSeguridadSocial     String?
+  pagada                    Boolean  @default(false)
+  justificantePago          String?  // Ruta al archivo del justificante
   nombreArchivoJustificante String?  // Nombre original del archivo
-  firma                  String?
-  nombreArchivoFirma     String?
-  derechosImagen         Boolean  @default(false) // Autorización para usar imágenes en redes sociales
-  comentarios            String?  // Comentarios adicionales del tutor
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  firma                     String?
+  nombreArchivoFirma        String?  // Nombre original del archivo de firma
+  derechosImagen            Boolean  @default(false)
+  comentarios               String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
 
   @@map("inscripciones")
 }

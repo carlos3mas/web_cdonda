@@ -11,6 +11,7 @@
 # next.js
 /.next/
 /out/
+/dist/
 
 # production
 /build
@@ -19,20 +20,14 @@
 .DS_Store
 *.pem
 
-# Archivos grandes que no deben subirse
-*.tif
-*.tiff
-
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
 .env
-# Mantener .env.example para referencia
-!.env.example
+.env*.local
 
 # vercel
 .vercel
@@ -42,33 +37,15 @@ yarn-error.log*
 next-env.d.ts
 
 # prisma
-prisma/*.db
-prisma/*.db-journal
+prisma/dev.db
+prisma/dev.db-journal
 
-# storage (archivos subidos localmente)
-storage/firmas/*
-!storage/firmas/.gitkeep
-storage/justificantes/*
-!storage/justificantes/.gitkeep
+# storage (archivos privados)
+/storage
 
 # IDE
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.idea
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
-.project
-.classpath
-.settings/
-*.sublime-workspace
-.cursor
-
-# Archivos con información sensible
-VARIABLES_ENTORNO.txt
-NUEVAS_CREDENCIALES.md
-*.credentials
-*.secrets

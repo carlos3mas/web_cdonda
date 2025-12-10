@@ -16,7 +16,8 @@ export default function HomePage() {
     <>
       <Header />
       <PromocionesModal />
-      <main className="min-h-screen pt-16 md:pt-24">
+      {/* pt-28 en móvil para header (64px) + banner sponsors (48px) */}
+      <main className="min-h-screen pt-28 sm:pt-32 md:pt-36">
         <ClubHeroSection />
         <ClubHistorySection />
         <ClubStatsSection />

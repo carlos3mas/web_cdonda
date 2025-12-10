@@ -554,7 +554,6 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                     id="justificantePago"
                     type="file"
                     accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,application/pdf,.heic,.heif"
-                    capture="environment"
                     className="hidden"
                     onChange={handleFileChange}
                     required

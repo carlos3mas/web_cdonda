@@ -175,16 +175,16 @@ export async function POST(request: NextRequest) {
         await mkdir(justificantesDir, { recursive: true })
       }
 
-      // Obtener buffer del archivo
+      // Obtener buffer del archivo (asegurando tipo Buffer de Node.js)
       const bytes = await justificanteFile.arrayBuffer()
-      let buffer = Buffer.from(bytes)
+      let buffer: Buffer = Buffer.from(bytes as ArrayBuffer)
       
       // Log del tamaño original
       const originalInfo = getFileInfo(buffer, justificanteFile.name)
       console.log(`📎 Justificante original: ${originalInfo.sizeFormatted}`)
       
       // Comprimir archivo si es imagen
-      buffer = await compressFile(buffer, justificanteFile.type, 800) // Max 800KB
+      buffer = (await compressFile(buffer, justificanteFile.type, 800)) as Buffer // Max 800KB
       
       // Generar nombre único y seguro para el archivo
       const timestamp = Date.now()
@@ -208,16 +208,16 @@ export async function POST(request: NextRequest) {
         await mkdir(firmasDir, { recursive: true })
       }
 
-      // Obtener buffer del archivo
+      // Obtener buffer del archivo (asegurando tipo Buffer de Node.js)
       const bytes = await firmaFile.arrayBuffer()
-      let buffer = Buffer.from(bytes)
+      let buffer: Buffer = Buffer.from(bytes as ArrayBuffer)
       
       // Log del tamaño original
       const originalInfo = getFileInfo(buffer, 'firma.png')
       console.log(`✍️  Firma original: ${originalInfo.sizeFormatted}`)
       
       // Comprimir firma (las firmas suelen ser PNG grandes)
-      buffer = await compressFile(buffer, 'image/png', 200) // Max 200KB para firmas
+      buffer = (await compressFile(buffer, 'image/png', 200)) as Buffer // Max 200KB para firmas
       
       const timestamp = Date.now()
       const randomStr = Math.random().toString(36).substring(7)

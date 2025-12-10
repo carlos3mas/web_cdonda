@@ -64,15 +64,17 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
-    if (!validTypes.includes(file.type)) {
+    // Aceptar HEIC/HEIF (formato de iPhone) además de los formatos estándar
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf']
+    if (!validTypes.includes(file.type) && !file.name.toLowerCase().match(/\.(heic|heif)$/)) {
       setErrorMessage(t('form.errorArchivo'))
       setSubmitStatus('error')
       return
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage(t('form.errorTamano'))
+    // Aumentar límite a 10MB para fotos de móvil
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMessage('El archivo es demasiado grande. Máximo 10MB.')
       setSubmitStatus('error')
       return
     }

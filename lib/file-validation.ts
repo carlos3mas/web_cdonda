@@ -34,6 +34,17 @@ const FILE_SIGNATURES: FileSignature[] = [
     signatures: [[0x52, 0x49, 0x46, 0x46]], // "RIFF"
     extension: 'webp'
   },
+  // HEIC/HEIF (iPhone)
+  {
+    mime: 'image/heic',
+    signatures: [[0x00, 0x00, 0x00]], // Simplificado para HEIC
+    extension: 'heic'
+  },
+  {
+    mime: 'image/heif',
+    signatures: [[0x00, 0x00, 0x00]], // Simplificado para HEIF
+    extension: 'heif'
+  },
   // PDF
   {
     mime: 'application/pdf',
@@ -63,8 +74,16 @@ export async function validateFileType(file: File): Promise<{ valid: boolean; ty
         }
         
         if (matches) {
-          // Verificar que el MIME type declarado coincida
-          if (file.type !== fileType.mime) {
+          // Para HEIC/HEIF, ser más permisivo con el MIME type (iPhone a veces no lo reporta bien)
+          if (fileType.mime.includes('heic') || fileType.mime.includes('heif')) {
+            return {
+              valid: true,
+              type: fileType.mime
+            }
+          }
+          
+          // Verificar que el MIME type declarado coincida para otros formatos
+          if (file.type !== fileType.mime && file.type !== '') {
             return {
               valid: false,
               error: `El tipo de archivo no coincide. Archivo real: ${fileType.mime}, declarado: ${file.type}`
@@ -94,7 +113,7 @@ export async function validateFileType(file: File): Promise<{ valid: boolean; ty
 /**
  * Valida el tamaño del archivo
  */
-export function validateFileSize(file: File, maxSizeMB: number = 5): { valid: boolean; error?: string } {
+export function validateFileSize(file: File, maxSizeMB: number = 10): { valid: boolean; error?: string } {
   const maxSizeBytes = maxSizeMB * 1024 * 1024
   
   if (file.size > maxSizeBytes) {
@@ -117,7 +136,7 @@ export function validateFileSize(file: File, maxSizeMB: number = 5): { valid: bo
 /**
  * Validación completa del archivo
  */
-export async function validateFile(file: File, maxSizeMB: number = 5): Promise<{ valid: boolean; error?: string }> {
+export async function validateFile(file: File, maxSizeMB: number = 10): Promise<{ valid: boolean; error?: string }> {
   // Validar tamaño
   const sizeValidation = validateFileSize(file, maxSizeMB)
   if (!sizeValidation.valid) {

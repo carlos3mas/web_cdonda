@@ -10,6 +10,8 @@ interface FileSignature {
 
 // Magic numbers para tipos de archivo permitidos
 const FILE_SIGNATURES: FileSignature[] = [
+  // === IMÁGENES ===
+
   // JPEG
   {
     mime: 'image/jpeg',
@@ -18,7 +20,9 @@ const FILE_SIGNATURES: FileSignature[] = [
       [0xFF, 0xD8, 0xFF, 0xE1],
       [0xFF, 0xD8, 0xFF, 0xE2],
       [0xFF, 0xD8, 0xFF, 0xE3],
-      [0xFF, 0xD8, 0xFF, 0xE8]
+      [0xFF, 0xD8, 0xFF, 0xE8],
+      [0xFF, 0xD8, 0xFF, 0xDB],
+      [0xFF, 0xD8, 0xFF, 0xEE]
     ],
     extension: 'jpg'
   },
@@ -28,23 +32,56 @@ const FILE_SIGNATURES: FileSignature[] = [
     signatures: [[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]],
     extension: 'png'
   },
+  // GIF
+  {
+    mime: 'image/gif',
+    signatures: [
+      [0x47, 0x49, 0x46, 0x38, 0x37, 0x61], // GIF87a
+      [0x47, 0x49, 0x46, 0x38, 0x39, 0x61]  // GIF89a
+    ],
+    extension: 'gif'
+  },
+  // BMP
+  {
+    mime: 'image/bmp',
+    signatures: [[0x42, 0x4D]], // "BM"
+    extension: 'bmp'
+  },
   // WEBP
   {
     mime: 'image/webp',
     signatures: [[0x52, 0x49, 0x46, 0x46]], // "RIFF"
     extension: 'webp'
   },
+  // TIFF
+  {
+    mime: 'image/tiff',
+    signatures: [
+      [0x49, 0x49, 0x2A, 0x00], // Little endian
+      [0x4D, 0x4D, 0x00, 0x2A]  // Big endian
+    ],
+    extension: 'tiff'
+  },
   // HEIC/HEIF (iPhone)
   {
     mime: 'image/heic',
-    signatures: [[0x00, 0x00, 0x00]], // Simplificado para HEIC
+    signatures: [
+      [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63], // ftyp heic
+      [0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63]  // ftyp heic (variant)
+    ],
     extension: 'heic'
   },
   {
     mime: 'image/heif',
-    signatures: [[0x00, 0x00, 0x00]], // Simplificado para HEIF
+    signatures: [
+      [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6D, 0x69, 0x66, 0x31], // ftyp mif1
+      [0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70, 0x6D, 0x69, 0x66, 0x31]  // ftyp mif1 (variant)
+    ],
     extension: 'heif'
   },
+
+  // === DOCUMENTOS ===
+
   // PDF
   {
     mime: 'application/pdf',
@@ -81,15 +118,8 @@ export async function validateFileType(file: File): Promise<{ valid: boolean; ty
               type: fileType.mime
             }
           }
-          
-          // Verificar que el MIME type declarado coincida para otros formatos
-          if (file.type !== fileType.mime && file.type !== '') {
-            return {
-              valid: false,
-              error: `El tipo de archivo no coincide. Archivo real: ${fileType.mime}, declarado: ${file.type}`
-            }
-          }
-          
+
+          // Para el resto de tipos, confiamos en los magic numbers y no en el MIME declarado
           return {
             valid: true,
             type: fileType.mime

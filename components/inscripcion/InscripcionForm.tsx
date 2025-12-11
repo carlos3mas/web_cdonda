@@ -64,9 +64,17 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Aceptar HEIC/HEIF (formato de iPhone) además de los formatos estándar
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf']
-    if (!validTypes.includes(file.type) && !file.name.toLowerCase().match(/\.(heic|heif)$/)) {
+    // Aceptar cualquier imagen (independientemente del formato) y solo PDF como documento
+    const lowerName = file.name.toLowerCase()
+    const isImageByMime = file.type.startsWith('image/')
+    const isImageByExt = /\.(jpg|jpeg|png|gif|bmp|webp|tif|tiff|heic|heif)$/i.test(lowerName)
+    const isPdfByMime = file.type === 'application/pdf'
+    const isPdfByExt = lowerName.endsWith('.pdf')
+
+    const isImage = isImageByMime || isImageByExt
+    const isPdf = isPdfByMime || isPdfByExt
+
+    if (!isImage && !isPdf) {
       setErrorMessage(t('form.errorArchivo'))
       setSubmitStatus('error')
       return
@@ -517,11 +525,11 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                   <span className="text-xs text-gray-500 font-normal">{t('form.justificantePagoSub')}</span>
                 </Label>
                 <div className="mt-2">
-                  <label 
-                    htmlFor="justificantePago" 
+                  <label
+                    htmlFor="justificantePago"
                     className={`flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 md:p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                      justificanteFile 
-                        ? 'border-green-400 bg-green-50' 
+                      justificanteFile
+                        ? 'border-green-400 bg-green-50'
                         : 'border-gray-300 hover:border-red-400 hover:bg-red-50'
                     }`}
                   >
@@ -553,7 +561,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                   <input
                     id="justificantePago"
                     type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,application/pdf,.heic,.heif"
+                    accept="image/*,application/pdf,.heic,.heif"
                     className="hidden"
                     onChange={handleFileChange}
                     required

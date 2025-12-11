@@ -99,14 +99,14 @@ export async function POST(request: NextRequest) {
       nombreJugador: z.string().min(2),
       apellidos: z.string().min(2),
       fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-      dni: z.string().regex(/^[0-9]{8}[A-Za-z]$/),
+      dni: z.string().min(8).max(20),
       nombreTutor: z.string().min(2),
-      telefono1: z.string().regex(/^[0-9]{9}$/),
-      telefono2: z.string().optional().refine((v) => !v || /^[0-9]{9}$/.test(v)),
+      telefono1: z.string().min(9).max(20),
+      telefono2: z.string().optional().refine((v) => !v || (v.length >= 9 && v.length <= 20)),
       enfermedad: z.string().optional(),
       medicacion: z.string().optional(),
       alergico: z.string().optional(),
-      numeroSeguridadSocial: z.string().optional().refine((v) => !v || /^[0-9 ]{10,}$/.test(v)),
+      numeroSeguridadSocial: z.string().optional(),
       derechosImagen: z.string().optional(),
       comentarios: z.string().optional()
     })

@@ -126,8 +126,13 @@ export async function POST(request: NextRequest) {
       derechosImagen: derechosImagen || undefined,
       comentarios: comentarios || undefined
     }
+    
+    // Log para diagnóstico
+    console.log('📋 Payload recibido:', JSON.stringify(payload, null, 2))
+    
     const parsed = schema.safeParse(payload)
     if (!parsed.success) {
+      console.error('❌ Error de validación:', JSON.stringify(parsed.error.issues, null, 2))
       return NextResponse.json(
         { error: 'Datos inválidos', issues: parsed.error.issues.map(i => ({ path: i.path, message: i.message })) },
         { status: 400 }

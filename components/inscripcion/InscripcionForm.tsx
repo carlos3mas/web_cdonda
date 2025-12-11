@@ -338,10 +338,9 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
               </div>
 
               <div>
-                <Label htmlFor="numeroSeguridadSocial" className="text-sm">{t('form.sipJugador')} *</Label>
+                <Label htmlFor="numeroSeguridadSocial" className="text-sm">{t('form.sipJugador')}</Label>
                 <Input
                   id="numeroSeguridadSocial"
-                  required
                   value={formData.numeroSeguridadSocial}
                   onChange={(e) => handleChange('numeroSeguridadSocial', e.target.value)}
                   placeholder={t('form.sipPlaceholder')}

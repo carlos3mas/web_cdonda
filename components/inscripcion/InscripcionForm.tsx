@@ -173,11 +173,16 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       // Crear FormData para enviar archivos
       const formDataToSend = new FormData()
       
-      // Añadir todos los campos del formulario
+      // Añadir todos los campos del formulario (solo los que tienen valor)
       Object.entries(formData).forEach(([key, value]) => {
         if (key === 'derechosImagen') {
           formDataToSend.append(key, String(value))
-        } else {
+        } else if (value !== '' && value !== null && value !== undefined) {
+          // Solo enviar campos que tienen valor
+          formDataToSend.append(key, value as string)
+        } else if (key === 'tipoInscripcion' || key === 'nombreJugador' || key === 'apellidos' || 
+                   key === 'fechaNacimiento' || key === 'dni' || key === 'nombreTutor' || key === 'telefono1') {
+          // Campos obligatorios siempre se envían
           formDataToSend.append(key, value as string)
         }
       })

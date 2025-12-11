@@ -118,13 +118,13 @@ export async function POST(request: NextRequest) {
       dni,
       nombreTutor,
       telefono1,
-      telefono2,
-      enfermedad,
-      medicacion,
-      alergico,
-      numeroSeguridadSocial,
-      derechosImagen,
-      comentarios
+      telefono2: telefono2 || undefined,
+      enfermedad: enfermedad || undefined,
+      medicacion: medicacion || undefined,
+      alergico: alergico || undefined,
+      numeroSeguridadSocial: numeroSeguridadSocial || undefined,
+      derechosImagen: derechosImagen || undefined,
+      comentarios: comentarios || undefined
     }
     const parsed = schema.safeParse(payload)
     if (!parsed.success) {

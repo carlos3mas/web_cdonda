@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 import { requireAuth } from '@/lib/auth-middleware'
+import { prisma } from '@/lib/prisma'
 
 /**
  * API segura para servir justificantes de pago
@@ -19,54 +17,39 @@ export async function GET(
   try {
     const { filename } = params
     
-    // Validar que el nombre del archivo sea seguro (sin path traversal)
-    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-      return NextResponse.json(
-        { error: 'Nombre de archivo no válido' },
-        { status: 400 }
-      )
-    }
+    // El filename es el ID de la inscripción
+    const inscripcionId = filename
     
-    // Ruta al archivo en storage privado
-    const filePath = join(process.cwd(), 'storage', 'justificantes', filename)
+    // Buscar la inscripción en la base de datos
+    const inscripcion = await prisma.inscripcion.findUnique({
+      where: { id: inscripcionId },
+      select: {
+        justificantePago: true,
+        justificantePagoMimeType: true,
+        nombreArchivoJustificante: true,
+      },
+    })
     
-    // Verificar que el archivo existe
-    if (!existsSync(filePath)) {
+    if (!inscripcion || !inscripcion.justificantePago) {
       return NextResponse.json(
-        { error: 'Archivo no encontrado' },
+        { error: 'Justificante no encontrado' },
         { status: 404 }
       )
     }
     
-    // Leer el archivo
-    const fileBuffer = await readFile(filePath)
+    // Convertir base64 a buffer
+    const fileBuffer = Buffer.from(inscripcion.justificantePago, 'base64')
     
-    // Determinar el tipo MIME basado en la extensión
-    const extension = filename.split('.').pop()?.toLowerCase()
-    let contentType = 'application/octet-stream'
-    
-    switch (extension) {
-      case 'pdf':
-        contentType = 'application/pdf'
-        break
-      case 'jpg':
-      case 'jpeg':
-        contentType = 'image/jpeg'
-        break
-      case 'png':
-        contentType = 'image/png'
-        break
-      case 'webp':
-        contentType = 'image/webp'
-        break
-    }
+    // Usar el MIME type guardado en la BD
+    const contentType = inscripcion.justificantePagoMimeType || 'application/octet-stream'
+    const originalFilename = inscripcion.nombreArchivoJustificante || 'justificante'
     
     // Devolver el archivo con headers apropiados
     return new NextResponse(fileBuffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `inline; filename="${filename}"`,
+        'Content-Disposition': `inline; filename="${originalFilename}"`,
         'Cache-Control': 'private, max-age=3600',
       },
     })

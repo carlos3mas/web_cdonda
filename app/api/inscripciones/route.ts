@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 import { requireAuth } from '@/lib/auth-middleware'
 import { inscripcionRateLimit, apiRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
@@ -167,20 +164,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let justificantePath: string | null = null
+    let justificanteBase64: string | null = null
+    let justificanteMimeType: string | null = null
     let nombreArchivoJustificante: string | null = null
-    let firmaPath: string | null = null
+    let firmaBase64: string | null = null
+    let firmaMimeType: string | null = null
     let nombreArchivoFirma: string | null = null
 
-    // Guardar el archivo del justificante en carpeta PRIVADA
+    // Convertir el justificante a base64 y guardarlo en BD
     if (justificanteFile && justificanteFile.size > 0) {
-      // Crear directorio PRIVADO si no existe
-      const justificantesDir = join(process.cwd(), 'storage', 'justificantes')
-      if (!existsSync(justificantesDir)) {
-        await mkdir(justificantesDir, { recursive: true })
-      }
-
-      // Obtener buffer del archivo (asegurando tipo Buffer de Node.js)
+      // Obtener buffer del archivo
       const bytes = await justificanteFile.arrayBuffer()
       let buffer: Buffer = Buffer.from(bytes as ArrayBuffer)
       
@@ -191,29 +184,18 @@ export async function POST(request: NextRequest) {
       // Comprimir archivo si es imagen
       buffer = (await compressFile(buffer, justificanteFile.type, 800)) as Buffer // Max 800KB
       
-      // Generar nombre único y seguro para el archivo
-      const timestamp = Date.now()
-      const randomStr = Math.random().toString(36).substring(7)
-      const extension = justificanteFile.name.split('.').pop()
-      const fileName = `justificante-${timestamp}-${randomStr}.${extension}`
-      const filePath = join(justificantesDir, fileName)
-      justificantePath = fileName // Solo guardamos el nombre, no la ruta pública
+      // Convertir a base64
+      justificanteBase64 = buffer.toString('base64')
+      justificanteMimeType = justificanteFile.type
       nombreArchivoJustificante = justificanteFile.name
-
-      // Guardar archivo comprimido
-      await writeFile(filePath, buffer)
       
-      const finalInfo = getFileInfo(buffer, fileName)
-      console.log(`💾 Justificante guardado: ${finalInfo.sizeFormatted}`)
+      const finalInfo = getFileInfo(buffer, justificanteFile.name)
+      console.log(`💾 Justificante convertido a base64: ${finalInfo.sizeFormatted}`)
     }
 
+    // Convertir la firma a base64 y guardarla en BD
     if (firmaFile && firmaFile.size > 0) {
-      const firmasDir = join(process.cwd(), 'storage', 'firmas')
-      if (!existsSync(firmasDir)) {
-        await mkdir(firmasDir, { recursive: true })
-      }
-
-      // Obtener buffer del archivo (asegurando tipo Buffer de Node.js)
+      // Obtener buffer del archivo
       const bytes = await firmaFile.arrayBuffer()
       let buffer: Buffer = Buffer.from(bytes as ArrayBuffer)
       
@@ -224,19 +206,13 @@ export async function POST(request: NextRequest) {
       // Comprimir firma (las firmas suelen ser PNG grandes)
       buffer = (await compressFile(buffer, 'image/png', 200)) as Buffer // Max 200KB para firmas
       
-      const timestamp = Date.now()
-      const randomStr = Math.random().toString(36).substring(7)
-      const extension = 'png'
-      const fileName = `firma-${timestamp}-${randomStr}.${extension}`
-      const filePath = join(firmasDir, fileName)
-      firmaPath = fileName
+      // Convertir a base64
+      firmaBase64 = buffer.toString('base64')
+      firmaMimeType = 'image/png'
       nombreArchivoFirma = firmaFile.name || 'firma.png'
-
-      // Guardar firma comprimida
-      await writeFile(filePath, buffer)
       
-      const finalInfo = getFileInfo(buffer, fileName)
-      console.log(`💾 Firma guardada: ${finalInfo.sizeFormatted}`)
+      const finalInfo = getFileInfo(buffer, 'firma.png')
+      console.log(`💾 Firma convertida a base64: ${finalInfo.sizeFormatted}`)
     }
 
     // Crear inscripción en la base de datos
@@ -268,9 +244,11 @@ export async function POST(request: NextRequest) {
           alergico: alergico || null,
           numeroSeguridadSocial: numeroSeguridadSocial || null,
           pagada: false,
-          justificantePago: justificantePath,
+          justificantePago: justificanteBase64,
+          justificantePagoMimeType: justificanteMimeType,
           nombreArchivoJustificante,
-          firma: firmaPath,
+          firma: firmaBase64,
+          firmaMimeType: firmaMimeType,
           nombreArchivoFirma,
           derechosImagen: derechosImagen === 'true',
           comentarios: comentarios || null

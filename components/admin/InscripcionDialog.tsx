@@ -149,7 +149,7 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
                   </div>
                   <div className="flex gap-2">
                     <a 
-                      href={`/api/justificantes/${inscripcion.justificantePago}`} 
+                      href={`/api/justificantes/${inscripcion.id}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                     >
@@ -159,7 +159,7 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
                       </Button>
                     </a>
                     <a 
-                      href={`/api/justificantes/${inscripcion.justificantePago}`} 
+                      href={`/api/justificantes/${inscripcion.id}`} 
                       download={inscripcion.nombreArchivoJustificante || 'justificante.pdf'}
                     >
                       <Button size="sm" variant="outline">

@@ -25,9 +25,11 @@ model Inscripcion {
   alergico                  String?
   numeroSeguridadSocial     String?
   pagada                    Boolean  @default(false)
-  justificantePago          String?  // Ruta al archivo del justificante
+  justificantePago          String?  // Base64 del justificante de pago
+  justificantePagoMimeType  String?  // Tipo MIME del justificante (image/jpeg, application/pdf, etc.)
   nombreArchivoJustificante String?  // Nombre original del archivo
-  firma                     String?
+  firma                     String?  // Base64 de la firma del tutor
+  firmaMimeType             String?  // Tipo MIME de la firma
   nombreArchivoFirma        String?  // Nombre original del archivo de firma
   derechosImagen            Boolean  @default(false)
   comentarios               String?

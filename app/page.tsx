@@ -12,10 +12,12 @@ import { ContactSection } from '@/components/club/ContactSection'
 import { Footer } from '@/components/landing/Footer'
 
 export default function HomePage() {
+  const showPromos = process.env.NEXT_PUBLIC_SHOW_PROMOS === 'true'
+
   return (
     <>
       <Header />
-      <PromocionesModal />
+      {showPromos && <PromocionesModal />}
       {/* pt-28 en móvil para header (64px) + banner sponsors (48px) */}
       <main className="min-h-screen pt-28 sm:pt-32 md:pt-36">
         <ClubHeroSection />
@@ -24,7 +26,7 @@ export default function HomePage() {
         <LocationSection />
         <ClubKitsSection />
         <ClubTeamsSection />
-        <PromocionesSection />
+        {showPromos && <PromocionesSection />}
         <SponsorsSection />
         <ContactSection />
         <Footer />

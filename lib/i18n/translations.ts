@@ -411,7 +411,7 @@ export const translations = {
     // Inscripcion Page
     inscripcionPage: {
       titulo: 'Inscripción',
-      campus2025: 'Campus 2025',
+      campus2025: 'Campus 2026',
       descripcion: 'Completa el formulario para reservar tu plaza en el Campus de Pascua',
     },
     // Cookies
@@ -846,7 +846,7 @@ export const translations = {
     // Inscripcion Page
     inscripcionPage: {
       titulo: 'Inscripció',
-      campus2025: 'Campus 2025',
+      campus2025: 'Campus 2026',
       descripcion: 'Completa el formulari per reservar la teua plaça al Campus de Pasqua',
     },
     // Cookies

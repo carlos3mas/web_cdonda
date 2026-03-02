@@ -241,9 +241,21 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
 
   const downloadPdf = async (id: string) => {
     try {
-      const url = `/api/inscripciones/${id}/pdf`
-      window.open(url, '_blank', 'noopener')
-    } catch {}
+      const response = await fetch(`/api/inscripciones/${id}/pdf`)
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `inscripcion-${id}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      }
+    } catch (error) {
+      console.error('Error al descargar el PDF:', error)
+    }
   }
 
   if (submitStatus === 'success') {

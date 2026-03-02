@@ -19,7 +19,7 @@ export function HeroSection() {
           muted
           playsInline
           preload="none"
-          poster="/images/campus/cartel-campus.webp"
+          poster="/images/campus/cartel-pascua.jpeg"
           className="absolute inset-0 w-full h-full object-cover blur-[4px] sm:blur-[3px] md:blur-[2px]"
         >
           <source src="/images/campus/hero-video.mp4" type="video/mp4" />
@@ -38,8 +38,8 @@ export function HeroSection() {
             <div className="absolute -inset-4 sm:-inset-5 md:-inset-6 rounded-2xl sm:rounded-3xl bg-black/20 blur-2xl hidden lg:block" aria-hidden />
             <div className="relative rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] sm:shadow-[0_25px_60px_rgba(0,0,0,0.5)] md:shadow-[0_30px_70px_rgba(0,0,0,0.55)] bg-gray-900">
               <Image
-                src="/images/campus/cartel-campus.webp"
-                alt="Cartel Campus de Navidad 2025"
+                src="/images/campus/cartel-pascua.jpeg"
+                alt="Cartel Campus de Pascua"
                 width={800}
                 height={1067}
                 className="object-contain w-full h-auto"
@@ -76,7 +76,7 @@ export function HeroSection() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-              <Link href="/campus-navidad/inscripcion" className="w-full sm:w-auto">
+              <Link href="/campus-pascua/inscripcion" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto bg-white text-red-600 hover:bg-red-100 text-sm sm:text-base md:text-lg px-5 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6">
                   <Calendar className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                   {t('campusHero.inscrbeteAhora')}

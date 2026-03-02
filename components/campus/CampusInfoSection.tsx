@@ -30,11 +30,6 @@ export function CampusInfoSection() {
       description: t('campus.seguroDesc')
     },
     {
-      icon: Camera,
-      title: t('campus.fotos'),
-      description: t('campus.fotosDesc')
-    },
-    {
       icon: Clock,
       title: t('campus.atencion'),
       description: t('campus.atencionDesc')

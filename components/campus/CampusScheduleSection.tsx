@@ -10,9 +10,9 @@ export function CampusScheduleSection() {
   
   const schedule = [
     { time: '9:00 - 9:30', activity: t('campusSchedule.recepcion'), description: t('campusSchedule.recepcionDesc') },
-    { time: '9:30 - 10:45', activity: t('campusSchedule.entrenamientoTecnico'), description: t('campusSchedule.entrenamientoTecnicoDesc') },
-    { time: '10:45 - 11:15', activity: t('campusSchedule.almuerzo'), description: t('campusSchedule.almuerzoDesc') },
-    { time: '11:15 - 12:30', activity: t('campusSchedule.partidos'), description: t('campusSchedule.partidosDesc') },
+    { time: '9:30 - 11:00', activity: t('campusSchedule.entrenamientoTecnico'), description: t('campusSchedule.entrenamientoTecnicoDesc') },
+    { time: '11:00 - 11:30', activity: t('campusSchedule.almuerzo'), description: t('campusSchedule.almuerzoDesc') },
+    { time: '11:30 - 12:30', activity: t('campusSchedule.partidos'), description: t('campusSchedule.partidosDesc') },
     { time: '12:30 - 13:00', activity: t('campusSchedule.actividades'), description: t('campusSchedule.actividadesDesc') },
   ]
 

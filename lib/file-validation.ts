@@ -98,7 +98,7 @@ export async function validateFileType(file: File): Promise<{ valid: boolean; ty
     // Leer los primeros 12 bytes del archivo
     const buffer = await file.arrayBuffer()
     const bytes = new Uint8Array(buffer).slice(0, 12)
-    
+
     // Verificar contra las firmas conocidas
     for (const fileType of FILE_SIGNATURES) {
       for (const signature of fileType.signatures) {
@@ -109,7 +109,7 @@ export async function validateFileType(file: File): Promise<{ valid: boolean; ty
             break
           }
         }
-        
+
         if (matches) {
           // Para HEIC/HEIF, ser más permisivo con el MIME type (iPhone a veces no lo reporta bien)
           if (fileType.mime.includes('heic') || fileType.mime.includes('heif')) {
@@ -127,7 +127,7 @@ export async function validateFileType(file: File): Promise<{ valid: boolean; ty
         }
       }
     }
-    
+
     return {
       valid: false,
       error: 'Tipo de archivo no permitido o no reconocido'
@@ -145,40 +145,40 @@ export async function validateFileType(file: File): Promise<{ valid: boolean; ty
  */
 export function validateFileSize(file: File, maxSizeMB: number = 10): { valid: boolean; error?: string } {
   const maxSizeBytes = maxSizeMB * 1024 * 1024
-  
+
   if (file.size > maxSizeBytes) {
     return {
       valid: false,
       error: `El archivo es demasiado grande. Máximo ${maxSizeMB}MB`
     }
   }
-  
+
   if (file.size === 0) {
     return {
       valid: false,
       error: 'El archivo está vacío'
     }
   }
-  
+
   return { valid: true }
 }
 
 /**
  * Validación completa del archivo
  */
-export async function validateFile(file: File, maxSizeMB: number = 10): Promise<{ valid: boolean; error?: string }> {
+export async function validateFile(file: File, maxSizeMB: number = 10): Promise<{ valid: boolean; error?: string; type?: string }> {
   // Validar tamaño
   const sizeValidation = validateFileSize(file, maxSizeMB)
   if (!sizeValidation.valid) {
     return sizeValidation
   }
-  
+
   // Validar tipo usando magic numbers
   const typeValidation = await validateFileType(file)
   if (!typeValidation.valid) {
     return typeValidation
   }
-  
-  return { valid: true }
+
+  return { valid: true, type: typeValidation.type }
 }
 

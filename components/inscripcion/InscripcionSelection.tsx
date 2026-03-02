@@ -17,30 +17,29 @@ export function InscripcionSelection() {
       title: t('inscripcionSelection.campusNavidad'),
       description: t('inscripcionSelection.campusNavidadDesc'),
       icon: Calendar,
-      available: true,
-      href: '/campus-navidad/inscripcion?tipo=campus-navidad',
+      available: false,
+      href: '#',
       features: [
         t('inscripcionSelection.campusNavidadFeature1'),
         t('inscripcionSelection.campusNavidadFeature2'),
         t('inscripcionSelection.campusNavidadFeature3'),
         t('inscripcionSelection.campusNavidadFeature4')
       ],
-      badge: t('inscripcionSelection.disponible')
+      badge: t('inscripcionSelection.proximamente')
     },
     {
       id: 'campus-pascua',
       title: t('inscripcionSelection.campusPascua'),
       description: t('inscripcionSelection.campusPascuaDesc'),
       icon: Calendar,
-      available: false,
-      href: '#',
+      available: true,
+      href: '/campus-pascua/inscripcion?tipo=campus-pascua',
       features: [
-        t('inscripcionSelection.proximamente'),
         t('inscripcionSelection.campusPascuaFeature1'),
         t('inscripcionSelection.campusPascuaFeature2'),
         t('inscripcionSelection.campusPascuaFeature3')
       ],
-      badge: t('inscripcionSelection.proximamente')
+      badge: t('inscripcionSelection.disponible')
     },
     {
       id: 'campus-verano',

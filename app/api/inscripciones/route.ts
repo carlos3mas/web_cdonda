@@ -17,11 +17,11 @@ export async function GET(request: NextRequest) {
   headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
   headers.set('Pragma', 'no-cache')
   headers.set('Expires', '0')
-  
+
   // Proteger con autenticación
   const authError = await requireAuth(request)
   if (authError) return authError
-  
+
   // Rate limiting
   const rateLimitError = apiRateLimit(request)
   if (rateLimitError) {
@@ -30,13 +30,13 @@ export async function GET(request: NextRequest) {
       { status: rateLimitError.status, headers: { 'Retry-After': String(rateLimitError.retryAfter) } }
     )
   }
-  
+
   try {
     const { searchParams } = new URL(request.url)
     const tipoInscripcion = searchParams.get('tipo')
 
-    const where = tipoInscripcion && tipoInscripcion !== 'todos' 
-      ? { tipoInscripcion } 
+    const where = tipoInscripcion && tipoInscripcion !== 'todos'
+      ? { tipoInscripcion }
       : {}
 
     const inscripciones = await prisma.inscripcion.findMany({
@@ -45,10 +45,10 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc'
       }
     })
-    
+
     // Log para diagnóstico en producción
     console.log(`📊 Inscripciones obtenidas: ${inscripciones.length} (tipo: ${tipoInscripcion || 'todos'})`)
-    
+
     return NextResponse.json(inscripciones, { headers })
   } catch (error) {
     console.error('Error al obtener inscripciones:', error)
@@ -69,10 +69,10 @@ export async function POST(request: NextRequest) {
       { status: rateLimitError.status, headers: { 'Retry-After': String(rateLimitError.retryAfter) } }
     )
   }
-  
+
   try {
     const formData = await request.formData()
-    
+
     // Extraer datos del formulario
     const tipoInscripcion = formData.get('tipoInscripcion') as string
     const nombreJugador = formData.get('nombreJugador') as string
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     const firmaFile = formData.get('firmaTutor') as File | null
 
     const schema = z.object({
-      tipoInscripcion: z.enum(['campus-navidad','campus-pascua','campus-verano','anual']).optional(),
+      tipoInscripcion: z.enum(['campus-navidad', 'campus-pascua', 'campus-verano', 'anual']).optional(),
       nombreJugador: z.string().min(2),
       apellidos: z.string().min(2),
       fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -123,10 +123,10 @@ export async function POST(request: NextRequest) {
       derechosImagen: derechosImagen || undefined,
       comentarios: comentarios || undefined
     }
-    
+
     // Log para diagnóstico
     console.log('📋 Payload recibido:', JSON.stringify(payload, null, 2))
-    
+
     const parsed = schema.safeParse(payload)
     if (!parsed.success) {
       console.error('❌ Error de validación:', JSON.stringify(parsed.error.issues, null, 2))
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar campos requeridos
-    
+
 
     // Validar que se haya adjuntado el justificante
     if (!justificanteFile) {
@@ -176,19 +176,20 @@ export async function POST(request: NextRequest) {
       // Obtener buffer del archivo
       const bytes = await justificanteFile.arrayBuffer()
       let buffer: Buffer = Buffer.from(bytes as ArrayBuffer)
-      
+
       // Log del tamaño original
       const originalInfo = getFileInfo(buffer, justificanteFile.name)
       console.log(`📎 Justificante original: ${originalInfo.sizeFormatted}`)
-      
-      // Comprimir archivo si es imagen
-      buffer = (await compressFile(buffer, justificanteFile.type, 800)) as Buffer // Max 800KB
-      
+
+      // Comprimir archivo si es imagen (el tipo prioritario es el detectado por magic numbers o el del formData)
+      const compressResult = await compressFile(buffer, fileValidation.type || justificanteFile.type, 800)
+      buffer = compressResult.buffer
+      justificanteMimeType = compressResult.mimeType
+
       // Convertir a base64
       justificanteBase64 = buffer.toString('base64')
-      justificanteMimeType = justificanteFile.type
       nombreArchivoJustificante = justificanteFile.name
-      
+
       const finalInfo = getFileInfo(buffer, justificanteFile.name)
       console.log(`💾 Justificante convertido a base64: ${finalInfo.sizeFormatted}`)
     }
@@ -198,19 +199,20 @@ export async function POST(request: NextRequest) {
       // Obtener buffer del archivo
       const bytes = await firmaFile.arrayBuffer()
       let buffer: Buffer = Buffer.from(bytes as ArrayBuffer)
-      
+
       // Log del tamaño original
       const originalInfo = getFileInfo(buffer, 'firma.png')
       console.log(`✍️  Firma original: ${originalInfo.sizeFormatted}`)
-      
+
       // Comprimir firma (las firmas suelen ser PNG grandes)
-      buffer = (await compressFile(buffer, 'image/png', 200)) as Buffer // Max 200KB para firmas
-      
+      const firmaCompressResult = await compressFile(buffer, 'image/png', 200)
+      buffer = firmaCompressResult.buffer
+      firmaMimeType = firmaCompressResult.mimeType
+
       // Convertir a base64
       firmaBase64 = buffer.toString('base64')
-      firmaMimeType = 'image/png'
       nombreArchivoFirma = firmaFile.name || 'firma.png'
-      
+
       const finalInfo = getFileInfo(buffer, 'firma.png')
       console.log(`💾 Firma convertida a base64: ${finalInfo.sizeFormatted}`)
     }
@@ -224,11 +226,11 @@ export async function POST(request: NextRequest) {
       dni,
       nombreTutor
     })
-    
+
     // Usar una transacción explícita para asegurar que se confirme correctamente
     const inscripcion = await prisma.$transaction(async (tx) => {
       console.log('💾 [INSCRIPCIÓN] Ejecutando transacción de base de datos...')
-      
+
       const nuevaInscripcion = await tx.inscripcion.create({
         data: {
           tipoInscripcion: (parsed.data.tipoInscripcion || 'campus-navidad'),
@@ -254,20 +256,20 @@ export async function POST(request: NextRequest) {
           comentarios: comentarios || null
         }
       })
-      
+
       console.log('✅ [INSCRIPCIÓN] Registro creado en base de datos con ID:', nuevaInscripcion.id)
-      
+
       // Verificar que la inscripción se creó correctamente
       console.log('🔍 [INSCRIPCIÓN] Verificando que el registro se guardó correctamente...')
       const verificacion = await tx.inscripcion.findUnique({
         where: { id: nuevaInscripcion.id }
       })
-      
+
       if (!verificacion) {
         console.error('❌ [INSCRIPCIÓN] ERROR: El registro no se encontró después de crearse')
         throw new Error('La inscripción no se pudo verificar después de crearse')
       }
-      
+
       console.log('✅ [INSCRIPCIÓN] Verificación exitosa - Registro confirmado en base de datos')
       return nuevaInscripcion
     })
@@ -295,7 +297,7 @@ export async function POST(request: NextRequest) {
     console.error('❌ Error al crear inscripción:', error)
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
     const errorStack = error instanceof Error ? error.stack : undefined
-    
+
     // Log detallado para diagnóstico en producción
     console.error('Detalles del error:', {
       message: errorMessage,
@@ -304,13 +306,13 @@ export async function POST(request: NextRequest) {
       // Log de Prisma si es un error de Prisma
       ...(error && typeof error === 'object' && 'code' in error ? { prismaCode: error.code } : {})
     })
-    
+
     return NextResponse.json(
-      { 
-        error: 'Error al procesar la inscripción', 
-        details: process.env.NODE_ENV === 'production' 
-          ? 'Error interno del servidor' 
-          : errorMessage 
+      {
+        error: 'Error al procesar la inscripción',
+        details: process.env.NODE_ENV === 'production'
+          ? 'Error interno del servidor'
+          : errorMessage
       },
       { status: 500 }
     )

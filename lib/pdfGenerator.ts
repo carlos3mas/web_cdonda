@@ -8,16 +8,16 @@ import { existsSync } from 'fs'
 // Mapeo de nombres de campos que deben usarse en los PDFs
 // Nombres actualizados para la plantilla 2025: CAMPUS NAVIDAD HOJA INSCRIPCION 2025
 const FIELD_ALIASES: Record<string, string[]> = {
-  nombreJugador: ['nombre', 'Nombre', 'nombreJugador', 'nombreJugador1'],
-  apellidos: ['apellido', 'Apellidos', 'apellidos', 'mas iserte'],
-  fechaNacimiento: ['fechaNacimiento', 'Fecha Nacimiento', 'fechaNacimiento1'],
+  nombreJugador: ['NOMBRE', 'nombre', 'Nombre', 'nombreJugador', 'nombreJugador1'],
+  apellidos: ['APELLIDOS', 'apellido', 'Apellidos', 'apellidos', 'mas iserte'],
+  fechaNacimiento: ['FECHA NACIMIENTO', 'fechaNacimiento', 'Fecha Nacimiento', 'fechaNacimiento1'],
   dni: ['DNI', 'dni'],
-  nombreTutor: ['tutor', 'tutor del jugador', 'nombreTutor', 'madrePadreTutor', 'juan mas pradas'],
-  telefono1: ['telefono1', 'teléfono padre/tutor', 'telefono madre/tutora', 'telMadre', 'telefonoMadre'],
-  telefono2: ['telefono2', 'telefonos madre/tutora', 'telefono padre/tutor', 'telPadre', 'telefonoPadre'],
-  enfermedad: ['enfermedad', 'Padece alguna enfermedad'],
-  medicacion: ['medicacion', 'Necesita medicación', 'Necesita  medicación no'],
-  alergico: ['alergias', 'Alérgico  Intolerante a', 'Alérgico / Intolerante a', 'Alergico  Intolerante a', 'alergico', 'Alergico'],
+  nombreTutor: ['NOMBRE JUGADOR', 'NOMBRE PADRE / MADRE', 'tutor', 'tutor del jugador', 'nombreTutor', 'madrePadreTutor', 'juan mas pradas'],
+  telefono1: ['TFN MADRE / TUTORA', 'telefono1', 'teléfono padre/tutor', 'telefono madre/tutora', 'telMadre', 'telefonoMadre'],
+  telefono2: ['TFN PADRE / TUTOR', 'telefono2', 'telefonos madre/tutora', 'telefono padre/tutor', 'telPadre', 'telefonoPadre'],
+  enfermedad: ['ENFERMEDAD', 'enfermedad', 'Padece alguna enfermedad'],
+  medicacion: ['MEDICACIÓN', 'medicacion', 'Necesita medicación', 'Necesita  medicación no'],
+  alergico: ['ALERGIAS / INTOLERANCIAS', 'alergias', 'Alérgico  Intolerante a', 'Alérgico / Intolerante a', 'Alergico  Intolerante a', 'alergico', 'Alergico'],
   numeroSeguridadSocial: [
     'SIP',
     'Nº seguridad social del niñ@',
@@ -31,7 +31,7 @@ const FIELD_ALIASES: Record<string, string[]> = {
   ],
   fechaInscripcion: ['fechaInscripcion'],
   idInscripcion: ['idInscripcion'],
-  firma: ['firma', 'Firma']
+  firma: ['FIRMA', 'firma', 'Firma']
 }
 
 // Función para rellenar un PDF con plantilla
@@ -82,14 +82,14 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
         if (existsSync(firmaPath)) {
           const firmaBytes = await readFile(firmaPath)
           const firmaImage = await pdfDoc.embedPng(firmaBytes)
-          
+
           // Buscar el campo de firma en el PDF
           const pages = pdfDoc.getPages()
           const firstPage = pages[0]
-          
+
           // Dimensiones de la imagen de firma
           const firmaDims = firmaImage.scale(0.15) // Escala para que quepa en el espacio
-          
+
           // Posición aproximada donde debería ir la firma (ajustar según el PDF)
           // En el PDF que veo, la firma está cerca de la parte inferior
           firstPage.drawImage(firmaImage, {
@@ -98,7 +98,7 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
             width: firmaDims.width,
             height: firmaDims.height,
           })
-          
+
           console.log('Firma incrustada en el PDF')
         }
       } catch (error) {
@@ -153,7 +153,7 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
     color: rgb(1, 1, 1),
   })
 
-  page.drawText('Campus de Navidad 2025', {
+  page.drawText('Campus de Pascua 2025', {
     x: 50,
     y: yPosition - 25,
     size: 16,
@@ -380,7 +380,7 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
   })
 
   // Pie de página
-  page.drawText('Campus de Navidad 2025 – Club Deportivo Onda', {
+  page.drawText('Campus de Pascua 2025 – Club Deportivo Onda', {
     x: width / 2 - 150,
     y: 60,
     size: 10,
@@ -388,7 +388,7 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
     color: redColor,
   })
 
-  page.drawText('Del 23 al 30 de Diciembre 2025', {
+  page.drawText('Del 7 al 10 de Abril 2025', {
     x: width / 2 - 95,
     y: 45,
     size: 9,
@@ -414,7 +414,7 @@ export async function generatePDFForInscripcion(inscripcion: Inscripcion): Promi
   try {
     // Intentar cargar la plantilla para el tipo de inscripción
     const templatePath = join(process.cwd(), 'public', 'templates', `${inscripcion.tipoInscripcion}.pdf`)
-    
+
     if (existsSync(templatePath)) {
       console.log(`Usando plantilla para ${inscripcion.tipoInscripcion}`)
       return await fillPDFTemplate(templatePath, inscripcion)
@@ -602,7 +602,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
     if (yPosition < 100) {
       const newPage = pdfDoc.addPage([595, 842])
       yPosition = height - 50
-      
+
       // Repetir encabezado completo en nueva página
       const headerHeightTotal = 85
       newPage.drawRectangle({
@@ -653,7 +653,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       })
 
       yPosition -= (headerHeightTotal + 10)
-      
+
       // Repetir encabezado de tabla en nueva página
       newPage.drawRectangle({
         x: margin,

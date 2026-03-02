@@ -22,7 +22,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
   const { t } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const tipoFromUrl = searchParams?.get('tipo') || tipoInscripcion || 'campus-navidad'
+  const tipoFromUrl = searchParams?.get('tipo') || tipoInscripcion || 'campus-pascua'
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -50,7 +50,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
 
   // Actualizar tipoInscripcion cuando cambie la URL
   useEffect(() => {
-    const tipo = searchParams?.get('tipo') || tipoInscripcion || 'campus-navidad'
+    const tipo = searchParams?.get('tipo') || tipoInscripcion || 'campus-pascua'
     setFormData(prev => ({ ...prev, tipoInscripcion: tipo }))
   }, [searchParams, tipoInscripcion])
 
@@ -209,10 +209,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       setIsSubmitting(false)
       if (data.inscripcionId) void downloadPdf(data.inscripcionId)
 
-      // Redirigir después de 3 segundos
-      setTimeout(() => {
-        router.push('/')
-      }, 3000)
+
 
     } catch (error) {
       setSubmitStatus('error')
@@ -264,9 +261,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
             <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 px-3 leading-relaxed">
               {t('form.inscripcionProcesada')}
             </p>
-            <p className="text-xs sm:text-sm text-gray-500 px-3">
-              {t('form.redireccionando')}
-            </p>
+
           </CardContent>
         </Card>
       </motion.div>

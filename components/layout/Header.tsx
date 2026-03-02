@@ -13,8 +13,8 @@ import { LanguageSelector } from './LanguageSelector'
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
-  const isCampusPage = pathname?.startsWith('/campus-navidad')
-  const isInscripcionPage = pathname === '/campus-navidad/inscripcion'
+  const isCampusPage = pathname?.startsWith('/campus-pascua')
+  const isInscripcionPage = pathname === '/campus-pascua/inscripcion'
   const { t } = useI18n()
 
   // Cerrar menú cuando cambia la ruta
@@ -61,10 +61,10 @@ export function Header() {
 
   // Subsecciones del campus
   const campusSubsections = [
-    { href: '/campus-navidad#campus-incluye', label: t('campus.queIncluyeSub') },
-    { href: '/campus-navidad#campus-info', label: t('campus.informacionPractica') },
-    { href: '/campus-navidad#campus-horario', label: t('campus.horarioDiario') },
-    { href: '/campus-navidad#campus-cta', label: t('campus.inscrbete') },
+    { href: '/campus-pascua#campus-incluye', label: t('campus.queIncluyeSub') },
+    { href: '/campus-pascua#campus-info', label: t('campus.informacionPractica') },
+    { href: '/campus-pascua#campus-horario', label: t('campus.horarioDiario') },
+    { href: '/campus-pascua#campus-cta', label: t('campus.inscrbete') },
   ]
 
   // Manejar scroll suave para enlaces de anclaje
@@ -76,7 +76,7 @@ export function Header() {
       const currentPath = pathname || '/'
       
       // Si el hash es para la página del campus y estamos en ella
-      if (hash && isCampusPage && normalizedPath === '/campus-navidad') {
+      if (hash && isCampusPage && normalizedPath === '/campus-pascua') {
         setIsMenuOpen(false)
         setTimeout(() => {
           const element = document.getElementById(hash)
@@ -133,10 +133,9 @@ export function Header() {
     { href: '/#instalaciones', label: t('header.instalaciones') },
     { href: '/#equipajes', label: t('header.equipajes') },
     { href: '/#equipos', label: t('header.equipos') },
-    { href: '/#promociones', label: t('header.promociones') },
     { href: '/#patrocinadores', label: t('header.patrocinadores') },
     { href: '/#contacto', label: t('header.contacto') },
-    { href: '/campus-navidad', label: t('header.campusNavidad'), highlight: true },
+    { href: '/campus-pascua', label: t('header.campusNavidad'), highlight: true },
   ]
 
   return (

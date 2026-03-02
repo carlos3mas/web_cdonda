@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, Clock, Users, Trophy, Shield, Camera } from 'lucide-react'
+import { Calendar, Clock, Users, Trophy, Shield } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 
 export function CampusInfoSection() {

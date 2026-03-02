@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
  
 import { InscripcionFormData } from '@/types'
 import { Download, Loader2, CheckCircle, AlertCircle, Upload, FileText } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import SignaturePad from 'signature_pad'
 import { useI18n } from '@/lib/i18n/context'
 
@@ -20,7 +20,6 @@ interface InscripcionFormProps {
 
 export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
   const { t } = useI18n()
-  const router = useRouter()
   const searchParams = useSearchParams()
   const tipoFromUrl = searchParams?.get('tipo') || tipoInscripcion || 'campus-pascua'
   

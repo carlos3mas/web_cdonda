@@ -34,7 +34,7 @@ export function Footer() {
     { label: t('header.instalaciones'), anchor: 'instalaciones' },
     { label: t('header.equipos'), anchor: 'equipos' },
     { label: t('header.contacto'), anchor: 'contacto' },
-    { label: t('header.campusNavidad'), href: '/campus-navidad' }
+    { label: t('header.campusNavidad'), href: '/campus-verano' }
   ]
   
   return (

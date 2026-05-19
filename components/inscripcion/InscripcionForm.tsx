@@ -13,6 +13,15 @@ import { Download, Loader2, CheckCircle, AlertCircle, Upload, FileText } from 'l
 import { useSearchParams } from 'next/navigation'
 import SignaturePad from 'signature_pad'
 import { useI18n } from '@/lib/i18n/context'
+import { CampusVeranoFormFields } from '@/components/inscripcion/CampusVeranoFormFields'
+import {
+  buildInscripcionValidationPayload,
+  formatValidationIssues,
+  getInscripcionSchema,
+  issuesToFieldErrors,
+  scrollToField,
+  type ValidationIssue,
+} from '@/lib/inscripcionValidation'
 
 interface InscripcionFormProps {
   tipoInscripcion?: string
@@ -21,21 +30,27 @@ interface InscripcionFormProps {
 export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
   const { t } = useI18n()
   const searchParams = useSearchParams()
-  const tipoFromUrl = searchParams?.get('tipo') || tipoInscripcion || 'campus-pascua'
+  const tipoFromUrl = searchParams?.get('tipo') || tipoInscripcion || 'campus-verano'
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [justificanteFile, setJustificanteFile] = useState<File | null>(null)
   const signaturePadRef = useRef<SignaturePad | null>(null)
   const signatureCanvasRef = useRef<HTMLCanvasElement | null>(null)
   
+  const [semanasSeleccionadas, setSemanasSeleccionadas] = useState<string[]>([])
   const [formData, setFormData] = useState<Omit<InscripcionFormData, 'justificantePago'>>({
     tipoInscripcion: tipoFromUrl,
     nombreJugador: '',
     apellidos: '',
     fechaNacimiento: '',
     dni: '',
+    direccion: '',
+    localidad: '',
+    codigoPostal: '',
+    diasSueltos: '',
     nombreTutor: '',
     telefono1: '',
     telefono2: '',
@@ -43,19 +58,51 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     medicacion: '',
     alergico: '',
     numeroSeguridadSocial: '',
+    tallaCamiseta: '',
+    tallaPantalon: '',
+    tallaCalcetines: '',
     derechosImagen: false,
-    comentarios: ''
+    comentarios: '',
   })
+
+  const isCampusVerano = formData.tipoInscripcion === 'campus-verano'
 
   // Actualizar tipoInscripcion cuando cambie la URL
   useEffect(() => {
-    const tipo = searchParams?.get('tipo') || tipoInscripcion || 'campus-pascua'
+    const tipo = searchParams?.get('tipo') || tipoInscripcion || 'campus-verano'
     setFormData(prev => ({ ...prev, tipoInscripcion: tipo }))
   }, [searchParams, tipoInscripcion])
 
   // Función para manejar cambios en el formulario
   const handleChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
+  }
+
+  const applyValidationErrors = (issues: ValidationIssue[]) => {
+    const errors = issuesToFieldErrors(issues)
+    setFieldErrors(errors)
+    setErrorMessage(formatValidationIssues(issues))
+    setSubmitStatus('error')
+    const firstField = Object.keys(errors)[0]
+    if (firstField) scrollToField(firstField)
+  }
+
+  const toggleSemana = (semanaId: string) => {
+    setSemanasSeleccionadas(prev =>
+      prev.includes(semanaId) ? prev.filter(id => id !== semanaId) : [...prev, semanaId]
+    )
+    setFieldErrors((prev) => {
+      if (!prev.semanasCampus) return prev
+      const next = { ...prev }
+      delete next.semanasCampus
+      return next
+    })
   }
 
   // Función para manejar cambio de archivo
@@ -152,11 +199,25 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     setIsSubmitting(true)
     setSubmitStatus('idle')
     setErrorMessage('')
+    setFieldErrors({})
 
-    // Validar que se haya adjuntado el justificante
     if (!justificanteFile) {
       setSubmitStatus('error')
       setErrorMessage(t('form.errorJustificante'))
+      scrollToField('justificantePago')
+      setIsSubmitting(false)
+      return
+    }
+
+    const validationPayload = buildInscripcionValidationPayload(
+      formData,
+      semanasSeleccionadas
+    )
+    const parsed = getInscripcionSchema(isCampusVerano).safeParse(validationPayload)
+    if (!parsed.success) {
+      applyValidationErrors(
+        parsed.error.issues.map((i) => ({ path: i.path, message: i.message }))
+      )
       setIsSubmitting(false)
       return
     }
@@ -164,7 +225,9 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
     try {
       if (signaturePadRef.current && signaturePadRef.current.isEmpty()) {
         setSubmitStatus('error')
+        setFieldErrors({ firmaTutor: t('form.errorFirma') })
         setErrorMessage(t('form.errorFirma'))
+        scrollToField('firmaTutor')
         setIsSubmitting(false)
         return
       }
@@ -177,14 +240,31 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
         if (key === 'derechosImagen') {
           formDataToSend.append(key, String(value))
         } else if (value !== '' && value !== null && value !== undefined) {
-          // Solo enviar campos que tienen valor
           formDataToSend.append(key, value as string)
-        } else if (key === 'tipoInscripcion' || key === 'nombreJugador' || key === 'apellidos' || 
-                   key === 'fechaNacimiento' || key === 'dni' || key === 'nombreTutor' || key === 'telefono1') {
-          // Campos obligatorios siempre se envían
-          formDataToSend.append(key, value as string)
+        } else if (
+          key === 'tipoInscripcion' ||
+          key === 'nombreJugador' ||
+          key === 'apellidos' ||
+          key === 'fechaNacimiento' ||
+          key === 'dni' ||
+          key === 'nombreTutor' ||
+          key === 'telefono1' ||
+          (isCampusVerano &&
+            (key === 'direccion' ||
+              key === 'localidad' ||
+              key === 'codigoPostal' ||
+              key === 'numeroSeguridadSocial' ||
+              key === 'tallaCamiseta' ||
+              key === 'tallaPantalon' ||
+              key === 'tallaCalcetines'))
+        ) {
+          formDataToSend.append(key, (value as string) ?? '')
         }
       })
+
+      if (isCampusVerano && semanasSeleccionadas.length > 0) {
+        formDataToSend.append('semanasCampus', JSON.stringify(semanasSeleccionadas))
+      }
       
       // Añadir el archivo
       formDataToSend.append('justificantePago', justificanteFile)
@@ -199,8 +279,21 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || t('form.errorJustificante'))
+        const error = await response.json() as {
+          error?: string
+          details?: string
+          issues?: ValidationIssue[]
+        }
+        if (error.issues?.length) {
+          applyValidationErrors(error.issues)
+          setIsSubmitting(false)
+          return
+        }
+        const serverMsg =
+          error.details && process.env.NODE_ENV === 'development'
+            ? error.details
+            : error.error
+        throw new Error(serverMsg || t('form.errorEnvio'))
       }
 
       const data = await response.json()
@@ -302,6 +395,17 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+            {isCampusVerano ? (
+              <CampusVeranoFormFields
+                formData={formData}
+                semanasSeleccionadas={semanasSeleccionadas}
+                onChange={handleChange}
+                onToggleSemana={toggleSemana}
+                fieldErrors={fieldErrors}
+                t={t}
+              />
+            ) : (
+            <>
             {/* Datos del Jugador */}
             <div className="space-y-3 sm:space-y-4">
               <h3 className="text-base sm:text-lg font-semibold border-b pb-2">{t('form.datosJugador')}</h3>
@@ -430,7 +534,7 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                   <Label htmlFor="medicacion" className="text-sm">{t('form.medicacion')}</Label>
                   <Input
                     id="medicacion"
-                    value={formData.medicacion}
+                    value={formData.medicacion ?? ''}
                     onChange={(e) => handleChange('medicacion', e.target.value)}
                     placeholder={t('form.medicacionPlaceholder')}
                     className="text-sm sm:text-base"
@@ -449,14 +553,20 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                 />
               </div>
             </div>
+            </>
+            )}
 
             {/* Firma */}
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-3 sm:space-y-4" id="firmaTutor">
               <h3 className="text-base sm:text-lg font-semibold border-b pb-2">{t('form.firmaTutor')}</h3>
 
               <div className="space-y-2 sm:space-y-3">
                 <p className="font-semibold text-sm sm:text-base text-red-600">{t('form.firmaPadre')} *</p>
-                <div className="rounded-xl border border-red-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm">
+                <div
+                  className={`rounded-xl border bg-white p-2 sm:p-3 md:p-4 shadow-sm ${
+                    fieldErrors.firmaTutor ? 'border-red-500' : 'border-red-200'
+                  }`}
+                >
                   <canvas
                     ref={signatureCanvasRef}
                     className="w-full h-32 sm:h-36 md:h-40 touch-none border border-gray-200 rounded"
@@ -477,6 +587,9 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
                     </Button>
                   </div>
                 </div>
+                {fieldErrors.firmaTutor && (
+                  <p className="text-xs text-red-600">{fieldErrors.firmaTutor}</p>
+                )}
               </div>
             </div>
 
@@ -640,14 +753,28 @@ export function InscripcionForm({ tipoInscripcion }: InscripcionFormProps) {
               </div>
             </div>
 
-            {submitStatus === 'error' && (
+            {submitStatus === 'error' && errorMessage && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-start sm:items-center gap-2 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
+                className="flex items-start gap-2 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
+                role="alert"
               >
-                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5 sm:mt-0" />
-                <p className="text-xs sm:text-sm leading-relaxed">{errorMessage}</p>
+                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5" />
+                <div className="text-xs sm:text-sm leading-relaxed min-w-0">
+                  {errorMessage.includes('\n') || errorMessage.startsWith('•') ? (
+                    <>
+                      <p className="font-semibold mb-1">{t('form.erroresTitulo')}</p>
+                      <ul className="list-disc list-inside space-y-0.5">
+                        {errorMessage.split('\n').map((line) => (
+                          <li key={line}>{line.replace(/^•\s*/, '')}</li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <p>{errorMessage}</p>
+                  )}
+                </div>
               </motion.div>
             )}
 

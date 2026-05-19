@@ -19,14 +19,26 @@ const nextConfig = {
   },
   compress: true,
   poweredByHeader: false,
-  swcMinify: true,
-  // Optimizaciones de producción
   reactStrictMode: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   experimental: {
     scrollRestoration: true,
+  },
+  async redirects() {
+    return [
+      {
+        source: '/campus-pascua',
+        destination: '/campus-verano',
+        permanent: true,
+      },
+      {
+        source: '/campus-pascua/inscripcion',
+        destination: '/campus-verano/inscripcion',
+        permanent: true,
+      },
+    ]
   },
   // Configuración para navegadores modernos (elimina polyfills innecesarios)
   transpilePackages: [],

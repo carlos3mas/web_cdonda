@@ -7,6 +7,14 @@ export interface Inscripcion {
   apellidos: string;
   fechaNacimiento: Date;
   dni: string;
+  direccion?: string | null;
+  localidad?: string | null;
+  codigoPostal?: string | null;
+  semanasCampus?: string | null;
+  diasSueltos?: string | null;
+  tallaCamiseta?: string | null;
+  tallaPantalon?: string | null;
+  tallaCalcetines?: string | null;
   nombreTutor: string;
   telefono1: string;
   telefono2?: string | null;
@@ -18,6 +26,7 @@ export interface Inscripcion {
   justificantePago?: string | null;
   nombreArchivoJustificante?: string | null;
   firma?: string | null;
+  firmaMimeType?: string | null;
   nombreArchivoFirma?: string | null;
   derechosImagen: boolean;
   comentarios?: string | null;
@@ -31,6 +40,14 @@ export interface InscripcionFormData {
   apellidos: string;
   fechaNacimiento: string;
   dni: string;
+  direccion?: string;
+  localidad?: string;
+  codigoPostal?: string;
+  semanasCampus?: string[];
+  diasSueltos?: string;
+  tallaCamiseta?: string;
+  tallaPantalon?: string;
+  tallaCalcetines?: string;
   nombreTutor: string;
   telefono1: string;
   telefono2?: string;

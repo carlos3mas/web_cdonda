@@ -58,7 +58,7 @@ export function CampusCTASection() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Link href="/campus-navidad/inscripcion" className="w-full sm:w-auto">
+            <Link href="/campus-verano/inscripcion" className="w-full sm:w-auto">
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base md:text-lg px-6 sm:px-8 md:px-10 py-5 sm:py-6 md:py-7 font-bold"

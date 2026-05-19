@@ -17,6 +17,14 @@ model Inscripcion {
   apellidos                 String
   fechaNacimiento           DateTime
   dni                       String
+  direccion                 String?
+  localidad                 String?
+  codigoPostal              String?
+  semanasCampus             String?
+  diasSueltos               String?
+  tallaCamiseta             String?
+  tallaPantalon             String?
+  tallaCalcetines           String?
   nombreTutor               String
   telefono1                 String
   telefono2                 String?

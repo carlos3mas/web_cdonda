@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Inscripcion } from '@/types'
 import { formatDate } from '@/lib/utils'
+import { formatSemanasCampus } from '@/lib/campusVeranoConfig'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FileText, Download, ExternalLink } from 'lucide-react'
@@ -119,8 +120,38 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
               )}
               {inscripcion.numeroSeguridadSocial && (
                 <div>
-                  <p className="text-sm text-gray-500">Nº Seguridad Social</p>
+                  <p className="text-sm text-gray-500">Nº SIP</p>
                   <p className="font-medium">{inscripcion.numeroSeguridadSocial}</p>
+                </div>
+              )}
+              {inscripcion.direccion && (
+                <div>
+                  <p className="text-sm text-gray-500">Dirección</p>
+                  <p className="font-medium">
+                    {inscripcion.direccion}
+                    {inscripcion.localidad ? `, ${inscripcion.localidad}` : ''}
+                    {inscripcion.codigoPostal ? ` (${inscripcion.codigoPostal})` : ''}
+                  </p>
+                </div>
+              )}
+              {inscripcion.semanasCampus && (
+                <div>
+                  <p className="text-sm text-gray-500">Semanas campus</p>
+                  <p className="font-medium">{formatSemanasCampus(inscripcion.semanasCampus)}</p>
+                </div>
+              )}
+              {inscripcion.diasSueltos && (
+                <div>
+                  <p className="text-sm text-gray-500">Días sueltos</p>
+                  <p className="font-medium">{inscripcion.diasSueltos}</p>
+                </div>
+              )}
+              {(inscripcion.tallaCamiseta || inscripcion.tallaPantalon || inscripcion.tallaCalcetines) && (
+                <div className="sm:col-span-2">
+                  <p className="text-sm text-gray-500">Tallas equipación</p>
+                  <p className="font-medium">
+                    Camiseta: {inscripcion.tallaCamiseta || '—'} · Pantalón: {inscripcion.tallaPantalon || '—'} · Calcetines: {inscripcion.tallaCalcetines || '—'}
+                  </p>
                 </div>
               )}
               {inscripcion.comentarios && (

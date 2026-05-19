@@ -1,6 +1,8 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import sharp from 'sharp'
 import { Inscripcion } from '@/types'
 import { formatDate } from './utils'
+import { CAMPUS_VERANO_SEMANAS, formatSemanasCampus } from './campusVeranoConfig'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
@@ -11,13 +13,39 @@ const FIELD_ALIASES: Record<string, string[]> = {
   nombreJugador: ['NOMBRE', 'nombre', 'Nombre', 'nombreJugador', 'nombreJugador1'],
   apellidos: ['APELLIDOS', 'apellido', 'Apellidos', 'apellidos', 'mas iserte'],
   fechaNacimiento: ['FECHA NACIMIENTO', 'fechaNacimiento', 'Fecha Nacimiento', 'fechaNacimiento1'],
-  dni: ['DNI', 'dni'],
-  nombreTutor: ['NOMBRE JUGADOR', 'NOMBRE PADRE / MADRE', 'tutor', 'tutor del jugador', 'nombreTutor', 'madrePadreTutor', 'juan mas pradas'],
-  telefono1: ['TFN MADRE / TUTORA', 'telefono1', 'teléfono padre/tutor', 'telefono madre/tutora', 'telMadre', 'telefonoMadre'],
-  telefono2: ['TFN PADRE / TUTOR', 'telefono2', 'telefonos madre/tutora', 'telefono padre/tutor', 'telPadre', 'telefonoPadre'],
-  enfermedad: ['ENFERMEDAD', 'enfermedad', 'Padece alguna enfermedad'],
+  dni: ['DNI_TUTOR', 'DNI', 'dni'],
+  direccion: ['DIRECCIÓN', 'DIRECCION', 'direccion', 'Dirección'],
+  localidad: ['LOCALIDAD', 'localidad', 'Localidad'],
+  codigoPostal: ['CP', 'C.P.', 'C.P', 'codigoPostal', 'Código Postal'],
+  nombreTutor: ['NOMBRE_TUTOR', 'NOMBRE PADRE/MADRE', 'NOMBRE JUGADOR', 'NOMBRE PADRE / MADRE', 'tutor', 'tutor del jugador', 'nombreTutor', 'madrePadreTutor'],
+  telefono1: [
+    'TELEFONOS DE CONTACT1',
+    'TELEFONOS DE CONTACT',
+    'TFN MADRE/TUTORA',
+    'TFN MADRE / TUTORA',
+    'telefono1',
+    'teléfono padre/tutor',
+    'telefono madre/tutora',
+    'telMadre',
+    'telefonoMadre',
+  ],
+  telefono2: [
+    'TELEFONOS DE CONTACT2',
+    'TFN PADRE/TUTOR',
+    'TFN PADRE / TUTOR',
+    'telefono2',
+    'telefonos madre/tutora',
+    'telefono padre/tutor',
+    'telPadre',
+    'telefonoPadre',
+  ],
+  enfermedad: ['PADECE ALGUNA ENFERMEDAD', 'ENFERMEDAD', 'enfermedad', 'Padece alguna enfermedad'],
   medicacion: ['MEDICACIÓN', 'medicacion', 'Necesita medicación', 'Necesita  medicación no'],
-  alergico: ['ALERGIAS / INTOLERANCIAS', 'alergias', 'Alérgico  Intolerante a', 'Alérgico / Intolerante a', 'Alergico  Intolerante a', 'alergico', 'Alergico'],
+  alergico: ['ALERGIAINTOLERANCIA', 'ALERGIA/INTOLERANCIA', 'ALERGIAS/INTOLERANCIAS', 'ALERGIAS / INTOLERANCIAS', 'alergias', 'Alérgico  Intolerante a', 'Alérgico / Intolerante a', 'Alergico  Intolerante a', 'alergico', 'Alergico'],
+  diasSueltos: ['DIAS SUELTOS', 'diasSueltos', 'COMENTARIOS', 'comentarios'],
+  tallaCamiseta: ['TALLA CAMISETA', 'CAMISETA', 'tallaCamiseta'],
+  tallaPantalon: ['TALLA PANTALON', 'PANTALON', 'tallaPantalon'],
+  tallaCalcetines: ['TALLA CALCETINES', 'CALCETINES', 'tallaCalcetines'],
   numeroSeguridadSocial: [
     'SIP',
     'Nº seguridad social del niñ@',
@@ -32,6 +60,122 @@ const FIELD_ALIASES: Record<string, string[]> = {
   fechaInscripcion: ['fechaInscripcion'],
   idInscripcion: ['idInscripcion'],
   firma: ['FIRMA', 'firma', 'Firma']
+}
+
+type FirmaRect = { x: number; y: number; width: number; height: number }
+
+/** Índice de página donde está el widget del formulario (p. ej. FIRMA en página 2). */
+function getWidgetPageIndex(
+  pdfDoc: PDFDocument,
+  widget: { P: () => unknown }
+): number {
+  const pages = pdfDoc.getPages()
+  let pageRef: unknown
+  try {
+    pageRef = widget.P()
+  } catch {
+    return 0
+  }
+  for (let i = 0; i < pages.length; i++) {
+    const ref = pages[i].ref
+    if (ref === pageRef || String(ref) === String(pageRef)) return i
+  }
+  return 0
+}
+
+/** La firma se guarda en BD como base64; antes se usaba un archivo en storage/firmas. */
+async function loadFirmaBytes(firma: string): Promise<Uint8Array | null> {
+  const trimmed = firma.trim()
+  if (!trimmed) return null
+
+  if (trimmed.startsWith('data:')) {
+    const comma = trimmed.indexOf(',')
+    if (comma === -1) return null
+    return Uint8Array.from(Buffer.from(trimmed.slice(comma + 1), 'base64'))
+  }
+
+  const normalized = trimmed.replace(/\s/g, '')
+  const isBase64Payload =
+    normalized.length > 100 && /^[A-Za-z0-9+/=]+$/.test(normalized)
+
+  if (isBase64Payload) {
+    try {
+      const decoded = Buffer.from(normalized, 'base64')
+      if (decoded.length > 0) return Uint8Array.from(decoded)
+    } catch {
+      /* intentar como archivo */
+    }
+  }
+
+  if (trimmed.length < 120 && (trimmed.includes('\\') || /\.[a-z0-9]+$/i.test(trimmed))) {
+    const firmaPath = join(process.cwd(), 'storage', 'firmas', trimmed)
+    if (existsSync(firmaPath)) {
+      return readFile(firmaPath)
+    }
+  }
+
+  return null
+}
+
+async function embedFirmaImage(
+  pdfDoc: PDFDocument,
+  bytes: Uint8Array,
+  mimeType?: string | null
+) {
+  const mime = mimeType?.toLowerCase() ?? ''
+  const isWebp =
+    mime.includes('webp') ||
+    (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46)
+
+  if (mime.includes('jpeg') || mime.includes('jpg')) {
+    return pdfDoc.embedJpg(bytes)
+  }
+
+  if (isWebp) {
+    const pngBuffer = await sharp(Buffer.from(bytes)).png().toBuffer()
+    return pdfDoc.embedPng(pngBuffer)
+  }
+
+  try {
+    return await pdfDoc.embedPng(bytes)
+  } catch {
+    const pngBuffer = await sharp(Buffer.from(bytes)).png().toBuffer()
+    return pdfDoc.embedPng(pngBuffer)
+  }
+}
+
+function drawFirmaOnPage(
+  page: ReturnType<PDFDocument['getPages']>[number],
+  firmaImage: { width: number; height: number },
+  firmaRect: FirmaRect | null
+) {
+  if (firmaRect) {
+    const imgRatio = firmaImage.width / firmaImage.height
+    const boxRatio = firmaRect.width / firmaRect.height
+    let drawWidth = firmaRect.width - 4
+    let drawHeight = firmaRect.height - 4
+    if (imgRatio > boxRatio) {
+      drawHeight = drawWidth / imgRatio
+    } else {
+      drawWidth = drawHeight * imgRatio
+    }
+    const drawX = firmaRect.x + (firmaRect.width - drawWidth) / 2
+    const drawY = firmaRect.y + (firmaRect.height - drawHeight) / 2
+    page.drawImage(firmaImage, {
+      x: drawX,
+      y: drawY,
+      width: drawWidth,
+      height: drawHeight,
+    })
+  } else {
+    const firmaDims = firmaImage.scale(0.15)
+    page.drawImage(firmaImage, {
+      x: 50,
+      y: 130,
+      width: firmaDims.width,
+      height: firmaDims.height,
+    })
+  }
 }
 
 // Función para rellenar un PDF con plantilla
@@ -62,52 +206,115 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
       console.warn(`Campo '${aliasKey}' no encontrado en la plantilla (probados: ${candidates.join(', ')})`)
     }
 
+    const fillCheckBox = (fieldName: string) => {
+      try {
+        form.getCheckBox(fieldName).check()
+      } catch {
+        console.warn(`Checkbox '${fieldName}' no encontrado en la plantilla`)
+      }
+    }
+
     // Rellenar campos básicos
     fillTextField('nombreJugador', inscripcion.nombreJugador)
     fillTextField('apellidos', inscripcion.apellidos)
     fillTextField('fechaNacimiento', formatDate(inscripcion.fechaNacimiento))
+    fillTextField('direccion', inscripcion.direccion || '')
+    fillTextField('localidad', inscripcion.localidad || '')
+    fillTextField('codigoPostal', inscripcion.codigoPostal || '')
     fillTextField('numeroSeguridadSocial', inscripcion.numeroSeguridadSocial || '')
-    fillTextField('telefono1', inscripcion.telefono1)
+    fillTextField('telefono1', inscripcion.telefono1 || '')
     fillTextField('telefono2', inscripcion.telefono2 || '')
+    // Plantillas antiguas con un solo campo de teléfonos
+    const telefonosCombinados = [inscripcion.telefono1, inscripcion.telefono2]
+      .filter(Boolean)
+      .join(' / ')
+    if (telefonosCombinados) {
+      try {
+        form.getTextField('TELEFONOS DE CONTACT').setText(telefonosCombinados)
+      } catch {
+        /* campus-verano y otras usan CONTACT1/CONTACT2 */
+      }
+    }
     fillTextField('enfermedad', inscripcion.enfermedad || '')
     fillTextField('medicacion', inscripcion.medicacion || '')
     fillTextField('alergico', inscripcion.alergico || '')
     fillTextField('nombreTutor', inscripcion.nombreTutor)
     fillTextField('dni', inscripcion.dni)
 
-    // Intentar incrustar la firma si existe
+    const semanasLabels = formatSemanasCampus(inscripcion.semanasCampus)
+    if (inscripcion.semanasCampus) {
+      try {
+        const ids = JSON.parse(inscripcion.semanasCampus) as string[]
+        for (const semana of CAMPUS_VERANO_SEMANAS) {
+          if (ids.includes(semana.id)) {
+            fillCheckBox(semana.pdfFieldName)
+          }
+        }
+      } catch {
+        /* JSON inválido: solo texto en diasSueltos */
+      }
+    }
+    const diasInfo = [semanasLabels, inscripcion.diasSueltos].filter(Boolean).join(' | ')
+    fillTextField('diasSueltos', diasInfo)
+    fillTextField('tallaCamiseta', inscripcion.tallaCamiseta || '')
+    fillTextField('tallaPantalon', inscripcion.tallaPantalon || '')
+    fillTextField('tallaCalcetines', inscripcion.tallaCalcetines || '')
+
+    let firmaRectData: FirmaRect | null = null
+    let firmaPageIndex = 0
+
+    // Posición del campo FIRMA en la plantilla (ANTES de aplanar)
+    if (inscripcion.firma) {
+      const firmaCandidates = FIELD_ALIASES['firma'] || ['FIRMA', 'firma', 'Firma']
+      for (const cand of firmaCandidates) {
+        try {
+          const field = form.getField(cand)
+          const widgets = field.acroField.getWidgets()
+          if (widgets.length > 0) {
+            const widget = widgets[0]
+            firmaRectData = widget.getRectangle()
+            firmaPageIndex = getWidgetPageIndex(pdfDoc, widget)
+            try {
+              form.getTextField(cand).setText('')
+            } catch {
+              /* no es texto o ya vacío */
+            }
+            break
+          }
+        } catch {
+          /* campo no encontrado */
+        }
+      }
+    }
+
+    // MUY IMPORTANTE: Aplanar el formulario para que los campos no sean editables,
+    // ANTES de dibujar la firma. Si aplanamos después, el fondo blanco opaco del 
+    // campo de texto tapará completamente la imagen.
+    form.flatten()
+
+    // Incrustar firma (base64 en BD) sobre la página correcta tras aplanar
     if (inscripcion.firma) {
       try {
-        const firmaPath = join(process.cwd(), 'storage', 'firmas', inscripcion.firma)
-        if (existsSync(firmaPath)) {
-          const firmaBytes = await readFile(firmaPath)
-          const firmaImage = await pdfDoc.embedPng(firmaBytes)
-
-          // Buscar el campo de firma en el PDF
+        const firmaBytes = await loadFirmaBytes(inscripcion.firma)
+        if (firmaBytes) {
+          const firmaImage = await embedFirmaImage(
+            pdfDoc,
+            firmaBytes,
+            inscripcion.firmaMimeType
+          )
           const pages = pdfDoc.getPages()
-          const firstPage = pages[0]
-
-          // Dimensiones de la imagen de firma
-          const firmaDims = firmaImage.scale(0.15) // Escala para que quepa en el espacio
-
-          // Posición aproximada donde debería ir la firma (ajustar según el PDF)
-          // En el PDF que veo, la firma está cerca de la parte inferior
-          firstPage.drawImage(firmaImage, {
-            x: 50,
-            y: 130,
-            width: firmaDims.width,
-            height: firmaDims.height,
-          })
-
-          console.log('Firma incrustada en el PDF')
+          const targetPage = pages[firmaPageIndex] ?? pages[0]
+          drawFirmaOnPage(targetPage, firmaImage, firmaRectData)
+          console.log(
+            `Firma incrustada en página ${firmaPageIndex + 1} del PDF (campo FIRMA)`
+          )
+        } else {
+          console.warn('No se pudieron cargar los bytes de la firma')
         }
       } catch (error) {
         console.error('Error al incrustar la firma:', error)
       }
     }
-
-    // Aplanar el formulario para que los campos no sean editables
-    form.flatten()
 
     // Guardar el PDF
     const pdfBytes = await pdfDoc.save()
@@ -153,7 +360,7 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
     color: rgb(1, 1, 1),
   })
 
-  page.drawText('Campus de Pascua 2025', {
+  page.drawText('Campus de Verano 2026', {
     x: 50,
     y: yPosition - 25,
     size: 16,
@@ -320,17 +527,23 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
 
   if (inscripcion.firma) {
     try {
-      const firmaPath = join(process.cwd(), 'storage', 'firmas', inscripcion.firma)
-      const firmaBytes = await readFile(firmaPath)
-      const firmaImage = await pdfDoc.embedPng(firmaBytes)
-      const firmaDims = firmaImage.scale(0.5)
-
-      page.drawImage(firmaImage, {
-        x: 50,
-        y: yPosition,
-        width: Math.min(firmaDims.width, width - 100),
-        height: Math.min(firmaDims.height, 60),
-      })
+      const firmaBytes = await loadFirmaBytes(inscripcion.firma)
+      if (firmaBytes) {
+        const firmaImage = await embedFirmaImage(
+          pdfDoc,
+          firmaBytes,
+          inscripcion.firmaMimeType
+        )
+        const firmaDims = firmaImage.scale(0.5)
+        page.drawImage(firmaImage, {
+          x: 50,
+          y: yPosition,
+          width: Math.min(firmaDims.width, width - 100),
+          height: Math.min(firmaDims.height, 60),
+        })
+      } else {
+        throw new Error('Firma no disponible')
+      }
     } catch (error) {
       console.error('No se pudo incrustar la firma, se dibuja un recuadro vacío:', error)
       page.drawRectangle({
@@ -380,7 +593,7 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
   })
 
   // Pie de página
-  page.drawText('Campus de Pascua 2025 – Club Deportivo Onda', {
+  page.drawText('Campus de Verano 2026 – Club Deportivo Onda', {
     x: width / 2 - 150,
     y: 60,
     size: 10,
@@ -388,7 +601,7 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
     color: redColor,
   })
 
-  page.drawText('Del 7 al 10 de Abril 2025', {
+  page.drawText('Vacaciones de verano 2026', {
     x: width / 2 - 95,
     y: 45,
     size: 9,

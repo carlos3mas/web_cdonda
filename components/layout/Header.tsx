@@ -13,8 +13,8 @@ import { LanguageSelector } from './LanguageSelector'
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
-  const isCampusPage = pathname?.startsWith('/campus-pascua')
-  const isInscripcionPage = pathname === '/campus-pascua/inscripcion'
+  const isCampusPage = pathname?.startsWith('/campus-verano')
+  const isInscripcionPage = pathname === '/campus-verano/inscripcion'
   const { t } = useI18n()
 
   // Cerrar menú cuando cambia la ruta
@@ -61,10 +61,10 @@ export function Header() {
 
   // Subsecciones del campus
   const campusSubsections = [
-    { href: '/campus-pascua#campus-incluye', label: t('campus.queIncluyeSub') },
-    { href: '/campus-pascua#campus-info', label: t('campus.informacionPractica') },
-    { href: '/campus-pascua#campus-horario', label: t('campus.horarioDiario') },
-    { href: '/campus-pascua#campus-cta', label: t('campus.inscrbete') },
+    { href: '/campus-verano#campus-incluye', label: t('campus.queIncluyeSub') },
+    { href: '/campus-verano#campus-info', label: t('campus.informacionPractica') },
+    { href: '/campus-verano#campus-horario', label: t('campus.horarioDiario') },
+    { href: '/campus-verano#campus-cta', label: t('campus.inscrbete') },
   ]
 
   // Manejar scroll suave para enlaces de anclaje
@@ -76,7 +76,7 @@ export function Header() {
       const currentPath = pathname || '/'
       
       // Si el hash es para la página del campus y estamos en ella
-      if (hash && isCampusPage && normalizedPath === '/campus-pascua') {
+      if (hash && isCampusPage && normalizedPath === '/campus-verano') {
         setIsMenuOpen(false)
         setTimeout(() => {
           const element = document.getElementById(hash)
@@ -135,7 +135,7 @@ export function Header() {
     { href: '/#equipos', label: t('header.equipos') },
     { href: '/#patrocinadores', label: t('header.patrocinadores') },
     { href: '/#contacto', label: t('header.contacto') },
-    { href: '/campus-pascua', label: t('header.campusNavidad'), highlight: true },
+    { href: '/campus-verano', label: t('header.campusNavidad'), highlight: true },
   ]
 
   return (

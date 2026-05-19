@@ -14,13 +14,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}/campus-navidad`,
+      url: `${baseUrl}/campus-verano`,
       lastModified,
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/campus-navidad/inscripcion`,
+      url: `${baseUrl}/campus-verano/inscripcion`,
       lastModified,
       changeFrequency: 'monthly',
       priority: 0.8,

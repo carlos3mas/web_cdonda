@@ -4,7 +4,12 @@ import { requireAuth } from '@/lib/auth-middleware'
 import { inscripcionRateLimit, apiRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
 import { compressFile, getFileInfo } from '@/lib/file-compression'
-import { z } from 'zod'
+import sharp from 'sharp'
+import {
+  formatValidationIssues,
+  getInscripcionSchema,
+  type InscripcionValidationPayload,
+} from '@/lib/inscripcionValidation'
 
 // Deshabilitar cache para estas rutas
 export const dynamic = 'force-dynamic'
@@ -79,6 +84,11 @@ export async function POST(request: NextRequest) {
     const apellidos = formData.get('apellidos') as string
     const fechaNacimiento = formData.get('fechaNacimiento') as string
     const dni = formData.get('dni') as string
+    const direccion = formData.get('direccion') as string
+    const localidad = formData.get('localidad') as string
+    const codigoPostal = formData.get('codigoPostal') as string
+    const semanasCampus = formData.get('semanasCampus') as string
+    const diasSueltos = formData.get('diasSueltos') as string
     const nombreTutor = formData.get('nombreTutor') as string
     const telefono1 = formData.get('telefono1') as string
     const telefono2 = formData.get('telefono2') as string
@@ -88,31 +98,27 @@ export async function POST(request: NextRequest) {
     const numeroSeguridadSocial = formData.get('numeroSeguridadSocial') as string
     const derechosImagen = formData.get('derechosImagen') as string
     const comentarios = formData.get('comentarios') as string
+    const tallaCamiseta = formData.get('tallaCamiseta') as string
+    const tallaPantalon = formData.get('tallaPantalon') as string
+    const tallaCalcetines = formData.get('tallaCalcetines') as string
     const justificanteFile = formData.get('justificantePago') as File | null
     const firmaFile = formData.get('firmaTutor') as File | null
 
-    const schema = z.object({
-      tipoInscripcion: z.enum(['campus-navidad', 'campus-pascua', 'campus-verano', 'anual']).optional(),
-      nombreJugador: z.string().min(2),
-      apellidos: z.string().min(2),
-      fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-      dni: z.string().min(8).max(20),
-      nombreTutor: z.string().min(2),
-      telefono1: z.string().min(9).max(20),
-      telefono2: z.string().optional().refine((v) => !v || (v.length >= 9 && v.length <= 20)),
-      enfermedad: z.string().optional(),
-      medicacion: z.string().optional(),
-      alergico: z.string().optional(),
-      numeroSeguridadSocial: z.string().optional(),
-      derechosImagen: z.string().optional(),
-      comentarios: z.string().optional()
-    })
-    const payload = {
-      tipoInscripcion,
+    const tipo = tipoInscripcion || 'campus-verano'
+    const isCampusVerano = tipo === 'campus-verano'
+
+    const schema = getInscripcionSchema(isCampusVerano)
+    const payload: InscripcionValidationPayload = {
+      tipoInscripcion: tipo,
       nombreJugador,
       apellidos,
       fechaNacimiento,
       dni,
+      direccion: direccion || undefined,
+      localidad: localidad || undefined,
+      codigoPostal: codigoPostal || undefined,
+      semanasCampus: semanasCampus || undefined,
+      diasSueltos: diasSueltos || undefined,
       nombreTutor,
       telefono1,
       telefono2: telefono2 || undefined,
@@ -120,6 +126,9 @@ export async function POST(request: NextRequest) {
       medicacion: medicacion || undefined,
       alergico: alergico || undefined,
       numeroSeguridadSocial: numeroSeguridadSocial || undefined,
+      tallaCamiseta: tallaCamiseta || undefined,
+      tallaPantalon: tallaPantalon || undefined,
+      tallaCalcetines: tallaCalcetines || undefined,
       derechosImagen: derechosImagen || undefined,
       comentarios: comentarios || undefined
     }
@@ -129,9 +138,16 @@ export async function POST(request: NextRequest) {
 
     const parsed = schema.safeParse(payload)
     if (!parsed.success) {
-      console.error('❌ Error de validación:', JSON.stringify(parsed.error.issues, null, 2))
+      const issues = parsed.error.issues.map((i) => ({
+        path: i.path,
+        message: i.message,
+      }))
+      console.error('❌ Error de validación:', JSON.stringify(issues, null, 2))
       return NextResponse.json(
-        { error: 'Datos inválidos', issues: parsed.error.issues.map(i => ({ path: i.path, message: i.message })) },
+        {
+          error: formatValidationIssues(issues),
+          issues,
+        },
         { status: 400 }
       )
     }
@@ -204,10 +220,12 @@ export async function POST(request: NextRequest) {
       const originalInfo = getFileInfo(buffer, 'firma.png')
       console.log(`✍️  Firma original: ${originalInfo.sizeFormatted}`)
 
-      // Comprimir firma (las firmas suelen ser PNG grandes)
-      const firmaCompressResult = await compressFile(buffer, 'image/png', 200)
-      buffer = firmaCompressResult.buffer
-      firmaMimeType = firmaCompressResult.mimeType
+      // Comprimir firma en PNG (pdf-lib no soporta WebP)
+      buffer = await sharp(buffer)
+        .png({ compressionLevel: 9 })
+        .resize(800, 400, { fit: 'inside', withoutEnlargement: true })
+        .toBuffer()
+      firmaMimeType = 'image/png'
 
       // Convertir a base64
       firmaBase64 = buffer.toString('base64')
@@ -238,6 +256,14 @@ export async function POST(request: NextRequest) {
           apellidos,
           fechaNacimiento: new Date(fechaNacimiento),
           dni,
+          direccion: direccion || null,
+          localidad: localidad || null,
+          codigoPostal: codigoPostal || null,
+          semanasCampus: semanasCampus || null,
+          diasSueltos: diasSueltos || null,
+          tallaCamiseta: tallaCamiseta || null,
+          tallaPantalon: tallaPantalon || null,
+          tallaCalcetines: tallaCalcetines || null,
           nombreTutor,
           telefono1,
           telefono2: telefono2 || null,

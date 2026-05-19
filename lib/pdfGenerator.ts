@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, PDFImage, rgb, StandardFonts } from 'pdf-lib'
 import sharp from 'sharp'
 import { Inscripcion } from '@/types'
 import { formatDate } from './utils'
@@ -146,7 +146,7 @@ async function embedFirmaImage(
 
 function drawFirmaOnPage(
   page: ReturnType<PDFDocument['getPages']>[number],
-  firmaImage: { width: number; height: number },
+  firmaImage: PDFImage,
   firmaRect: FirmaRect | null
 ) {
   if (firmaRect) {

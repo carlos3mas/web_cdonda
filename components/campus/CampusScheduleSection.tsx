@@ -2,18 +2,18 @@
 
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
-import { Clock } from 'lucide-react'
+import { Clock, Waves } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 
 export function CampusScheduleSection() {
   const { t } = useI18n()
   
   const schedule = [
-    { time: '9:00 - 9:30', activity: t('campusSchedule.recepcion'), description: t('campusSchedule.recepcionDesc') },
-    { time: '9:30 - 11:00', activity: t('campusSchedule.entrenamientoTecnico'), description: t('campusSchedule.entrenamientoTecnicoDesc') },
-    { time: '11:00 - 11:30', activity: t('campusSchedule.almuerzo'), description: t('campusSchedule.almuerzoDesc') },
-    { time: '11:30 - 12:30', activity: t('campusSchedule.partidos'), description: t('campusSchedule.partidosDesc') },
-    { time: '12:30 - 13:00', activity: t('campusSchedule.actividades'), description: t('campusSchedule.actividadesDesc') },
+    { time: '9:00 - 9:30',   icon: Clock,  activity: t('campusSchedule.recepcion'),          description: t('campusSchedule.recepcionDesc') },
+    { time: '9:30 - 10:45',  icon: Clock,  activity: t('campusSchedule.entrenamientoTecnico'), description: t('campusSchedule.entrenamientoTecnicoDesc') },
+    { time: '10:45 - 11:15', icon: Clock,  activity: t('campusSchedule.almuerzo'),            description: t('campusSchedule.almuerzoDesc') },
+    { time: '11:15 - 12:00', icon: Clock,  activity: t('campusSchedule.partidos'),            description: t('campusSchedule.partidosDesc') },
+    { time: '12:00 - 13:00', icon: Waves,  activity: t('campusSchedule.piscina'),             description: t('campusSchedule.piscinaDesc') },
   ]
 
   return (
@@ -49,7 +49,7 @@ export function CampusScheduleSection() {
                   <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 md:gap-6">
                     <div className="flex-shrink-0">
                       <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center">
-                        <Clock className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-blue-600" />
+                        <item.icon className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-blue-600" />
                       </div>
                     </div>
                     <div className="flex-1 w-full min-w-0">

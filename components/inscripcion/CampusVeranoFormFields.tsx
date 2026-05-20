@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import {
   CAMPUS_VERANO_EDADES,
   CAMPUS_VERANO_EQUIPACION,
+  CAMPUS_VERANO_MATINERA_PRECIO,
   CAMPUS_VERANO_MESES,
   CAMPUS_VERANO_PRECIOS,
   CAMPUS_VERANO_SEMANAS,
@@ -295,6 +296,14 @@ export function CampusVeranoFormFields({
                 <span className="font-semibold">{item.precio}€</span>
               </li>
             ))}
+            <li className="flex justify-between gap-4 border-t border-gray-100 pt-1 mt-1">
+              <span>Día suelto</span>
+              <span className="font-semibold">15€</span>
+            </li>
+            <li className="flex justify-between gap-4">
+              <span>Matinera (por semana)</span>
+              <span className="font-semibold">{CAMPUS_VERANO_MATINERA_PRECIO}€</span>
+            </li>
           </ul>
         </div>
       </div>

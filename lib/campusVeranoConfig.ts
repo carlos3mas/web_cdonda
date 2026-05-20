@@ -49,7 +49,10 @@ export const CAMPUS_VERANO_PRECIOS = [
   { semanas: 2, label: '2 semanas', precio: 80 },
   { semanas: 3, label: '3 semanas', precio: 120 },
   { semanas: 4, label: '4 semanas', precio: 160 },
+  { semanas: 5, label: '5 semanas', precio: 200 },
 ] as const
+
+export const CAMPUS_VERANO_MATINERA_PRECIO = 10 // €/semana
 
 export const CAMPUS_VERANO_EQUIPACION = {
   unaSemana:

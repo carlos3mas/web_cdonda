@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, Clock, Users, Trophy, Shield } from 'lucide-react'
+import { Calendar, Clock, Users, Trophy, Waves, UtensilsCrossed } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 
 export function CampusInfoSection() {
@@ -25,7 +25,7 @@ export function CampusInfoSection() {
       description: t('campus.planificacionDesc')
     },
     {
-      icon: Shield,
+      icon: Waves,
       title: t('campus.seguro'),
       description: t('campus.seguroDesc')
     },
@@ -33,6 +33,11 @@ export function CampusInfoSection() {
       icon: Clock,
       title: t('campus.atencion'),
       description: t('campus.atencionDesc')
+    },
+    {
+      icon: UtensilsCrossed,
+      title: t('campus.almuerzo'),
+      description: t('campus.almuerzoDesc')
     }
   ]
 

@@ -19,10 +19,10 @@ export function HeroSection() {
           muted
           playsInline
           preload="none"
-          poster="/images/campus/cartel-campus.webp"
+          poster="/images/campus/cartel-verano.jpeg"
           className="absolute inset-0 w-full h-full object-cover blur-[4px] sm:blur-[3px] md:blur-[2px]"
         >
-          <source src="/images/campus/hero-video.mp4" type="video/mp4" />
+          <source src="/images/campus/video-hero-verano.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-[#0f0f0f]/70 to-black/60" />
       </div>
@@ -38,7 +38,7 @@ export function HeroSection() {
             <div className="absolute -inset-4 sm:-inset-5 md:-inset-6 rounded-2xl sm:rounded-3xl bg-black/20 blur-2xl hidden lg:block" aria-hidden />
             <div className="relative rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] sm:shadow-[0_25px_60px_rgba(0,0,0,0.5)] md:shadow-[0_30px_70px_rgba(0,0,0,0.55)] bg-gray-900">
               <Image
-                src="/images/campus/cartel-campus.webp"
+                src="/images/campus/cartel-verano.jpeg"
                 alt="Cartel Campus de Verano"
                 width={800}
                 height={1067}

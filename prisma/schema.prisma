@@ -41,6 +41,15 @@ model Inscripcion {
   nombreArchivoFirma        String?  // Nombre original del archivo de firma
   derechosImagen            Boolean  @default(false)
   comentarios               String?
+  // Campos exclusivos de inscripción anual
+  email                     String?
+  sexo                      String?  // M / F
+  categoria                 String?  // anual-querubines-chupetin | anual-futbol-8 | anual-futbol-11
+  modalidadPago             String?  // mensual | trimestral | anual
+  dniFrontalEncriptado      String?  // AES-256-GCM base64 (foto frontal DNI)
+  dniFrontalMimeType        String?
+  dniReversoEncriptado      String?  // AES-256-GCM base64 (foto reverso DNI)
+  dniReversoMimeType        String?
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
 

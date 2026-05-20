@@ -5,7 +5,8 @@
 const REQUIRED_ENV_VARS = [
   'DATABASE_URL',
   'NEXTAUTH_SECRET',
-  'NEXTAUTH_URL'
+  'NEXTAUTH_URL',
+  'DNI_ENCRYPTION_KEY',
 ]
 
 export function validateEnv() {

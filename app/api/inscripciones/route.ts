@@ -160,12 +160,17 @@ export async function POST(request: NextRequest) {
       const justBytes = await justificanteFile.arrayBuffer()
       let justBuffer = Buffer.from(justBytes)
       const justCompress = await compressFile(justBuffer, justFileValidation.type || justificanteFile.type, 800)
-      justBuffer = justCompress.buffer
+      justBuffer = Buffer.from(justCompress.buffer)
 
       // Procesar firma
       const firmaBytes = await firmaFile.arrayBuffer()
       let firmaBuffer = Buffer.from(firmaBytes)
-      firmaBuffer = await sharp(firmaBuffer).png({ compressionLevel: 9 }).resize(800, 400, { fit: 'inside', withoutEnlargement: true }).toBuffer()
+      firmaBuffer = Buffer.from(
+        await sharp(firmaBuffer)
+          .png({ compressionLevel: 9 })
+          .resize(800, 400, { fit: 'inside', withoutEnlargement: true })
+          .toBuffer()
+      )
 
       // Procesar y cifrar fotos DNI
       let dniFrontalEncriptado: string | null = null
@@ -200,7 +205,7 @@ export async function POST(request: NextRequest) {
         let dniBuffer = Buffer.from(dniBytes)
         if (dniValidation.type?.startsWith('image/')) {
           const compressed = await compressFile(dniBuffer, dniValidation.type, 1200)
-          dniBuffer = compressed.buffer
+          dniBuffer = Buffer.from(compressed.buffer)
           dniFrontalMimeType = compressed.mimeType
         } else {
           dniFrontalMimeType = dniValidation.type || dniFrontalFile.type
@@ -218,7 +223,7 @@ export async function POST(request: NextRequest) {
         let dniBuffer = Buffer.from(dniBytes)
         if (dniValidation.type?.startsWith('image/')) {
           const compressed = await compressFile(dniBuffer, dniValidation.type, 1200)
-          dniBuffer = compressed.buffer
+          dniBuffer = Buffer.from(compressed.buffer)
           dniReversoMimeType = compressed.mimeType
         } else {
           dniReversoMimeType = dniValidation.type || dniReversoFile.type
@@ -362,7 +367,7 @@ export async function POST(request: NextRequest) {
 
       // Comprimir archivo si es imagen (el tipo prioritario es el detectado por magic numbers o el del formData)
       const compressResult = await compressFile(buffer, fileValidation.type || justificanteFile.type, 800)
-      buffer = compressResult.buffer
+      buffer = Buffer.from(compressResult.buffer)
       justificanteMimeType = compressResult.mimeType
 
       // Convertir a base64
@@ -384,10 +389,12 @@ export async function POST(request: NextRequest) {
       console.log(`✍️  Firma original: ${originalInfo.sizeFormatted}`)
 
       // Comprimir firma en PNG (pdf-lib no soporta WebP)
-      buffer = await sharp(buffer)
-        .png({ compressionLevel: 9 })
-        .resize(800, 400, { fit: 'inside', withoutEnlargement: true })
-        .toBuffer()
+      buffer = Buffer.from(
+        await sharp(buffer)
+          .png({ compressionLevel: 9 })
+          .resize(800, 400, { fit: 'inside', withoutEnlargement: true })
+          .toBuffer()
+      )
       firmaMimeType = 'image/png'
 
       // Convertir a base64

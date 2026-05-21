@@ -62,8 +62,9 @@ export async function GET(
     }
 
     const imageBuffer = decrypt(encriptado)
+    const body = new Uint8Array(imageBuffer)
 
-    return new NextResponse(imageBuffer, {
+    return new NextResponse(body, {
       status: 200,
       headers: {
         'Content-Type': mimeType || 'image/jpeg',

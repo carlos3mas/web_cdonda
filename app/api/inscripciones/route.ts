@@ -5,11 +5,14 @@ import { inscripcionRateLimit, apiRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
 import { compressFile, getFileInfo } from '@/lib/file-compression'
 import sharp from 'sharp'
+import { encrypt } from '@/lib/encryption'
 import {
   formatValidationIssues,
   getInscripcionSchema,
+  getInscripcionAnualSchema,
   type InscripcionValidationPayload,
 } from '@/lib/inscripcionValidation'
+
 
 // Deshabilitar cache para estas rutas
 export const dynamic = 'force-dynamic'
@@ -44,12 +47,17 @@ export async function GET(request: NextRequest) {
       ? { tipoInscripcion }
       : {}
 
-    const inscripciones = await prisma.inscripcion.findMany({
+    const rawInscripciones = await prisma.inscripcion.findMany({
       where,
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: { createdAt: 'desc' },
     })
+
+    // Eliminamos los blobs cifrados del DNI y añadimos flags booleanos
+    const inscripciones = rawInscripciones.map(({ dniFrontalEncriptado, dniReversoEncriptado, ...rest }) => ({
+      ...rest,
+      tieneDniFrontal: !!dniFrontalEncriptado,
+      tieneDniReverso: !!dniReversoEncriptado,
+    }))
 
     // Log para diagnóstico en producción
     console.log(`📊 Inscripciones obtenidas: ${inscripciones.length} (tipo: ${tipoInscripcion || 'todos'})`)
@@ -105,7 +113,162 @@ export async function POST(request: NextRequest) {
     const firmaFile = formData.get('firmaTutor') as File | null
 
     const tipo = tipoInscripcion || 'campus-verano'
+    const isAnual = tipo === 'anual'
     const isCampusVerano = tipo === 'campus-verano'
+
+    // ── Rama inscripción anual ────────────────────────────────────────────────
+    if (isAnual) {
+      const email = formData.get('email') as string
+      const sexo = formData.get('sexo') as string
+      const categoria = formData.get('categoria') as string
+      const modalidadPago = formData.get('modalidadPago') as string
+      const relacionTutor = formData.get('relacionTutor') as string
+      const dniFrontalFile = formData.get('dniFrontal') as File | null
+      const dniReversoFile = formData.get('dniReverso') as File | null
+
+      const anualPayload = {
+        nombreJugador, apellidos, fechaNacimiento, sexo, email,
+        direccion: direccion || '', localidad: localidad || '',
+        codigoPostal: codigoPostal || '', categoria,
+        nombreTutor, relacionTutor: relacionTutor || undefined,
+        telefono1, telefono2: telefono2 || undefined,
+        enfermedad: enfermedad || undefined, medicacion: medicacion || undefined,
+        alergico: alergico || undefined,
+        numeroSeguridadSocial: numeroSeguridadSocial || undefined,
+        modalidadPago, derechosImagen: derechosImagen || undefined,
+        comentarios: comentarios || undefined,
+      }
+
+      const parsedAnual = getInscripcionAnualSchema().safeParse(anualPayload)
+      if (!parsedAnual.success) {
+        const issues = parsedAnual.error.issues.map((i) => ({ path: i.path, message: i.message }))
+        return NextResponse.json({ error: formatValidationIssues(issues), issues }, { status: 400 })
+      }
+
+      if (!justificanteFile) {
+        return NextResponse.json({ error: 'Debes adjuntar el justificante de pago' }, { status: 400 })
+      }
+      if (!firmaFile || firmaFile.size === 0) {
+        return NextResponse.json({ error: 'La firma del tutor es obligatoria' }, { status: 400 })
+      }
+
+      // Procesar justificante
+      const justFileValidation = await validateFile(justificanteFile, 10)
+      if (!justFileValidation.valid) {
+        return NextResponse.json({ error: justFileValidation.error || 'Justificante no válido' }, { status: 400 })
+      }
+      const justBytes = await justificanteFile.arrayBuffer()
+      let justBuffer = Buffer.from(justBytes)
+      const justCompress = await compressFile(justBuffer, justFileValidation.type || justificanteFile.type, 800)
+      justBuffer = justCompress.buffer
+
+      // Procesar firma
+      const firmaBytes = await firmaFile.arrayBuffer()
+      let firmaBuffer = Buffer.from(firmaBytes)
+      firmaBuffer = await sharp(firmaBuffer).png({ compressionLevel: 9 }).resize(800, 400, { fit: 'inside', withoutEnlargement: true }).toBuffer()
+
+      // Procesar y cifrar fotos DNI
+      let dniFrontalEncriptado: string | null = null
+      let dniFrontalMimeType: string | null = null
+      let dniReversoEncriptado: string | null = null
+      let dniReversoMimeType: string | null = null
+
+      const needsDniEncryption =
+        (dniFrontalFile && dniFrontalFile.size > 0) ||
+        (dniReversoFile && dniReversoFile.size > 0)
+      if (needsDniEncryption && !process.env.DNI_ENCRYPTION_KEY) {
+        console.error('❌ DNI_ENCRYPTION_KEY no configurada')
+        return NextResponse.json(
+          {
+            error:
+              'El servidor no puede almacenar las fotos del DNI. Contacta con el club.',
+            details:
+              process.env.NODE_ENV === 'production'
+                ? undefined
+                : 'Falta DNI_ENCRYPTION_KEY en las variables de entorno (64 caracteres hex)',
+          },
+          { status: 503 }
+        )
+      }
+
+      if (dniFrontalFile && dniFrontalFile.size > 0) {
+        const dniValidation = await validateFile(dniFrontalFile, 10)
+        if (!dniValidation.valid) {
+          return NextResponse.json({ error: `DNI frontal: ${dniValidation.error}` }, { status: 400 })
+        }
+        const dniBytes = await dniFrontalFile.arrayBuffer()
+        let dniBuffer = Buffer.from(dniBytes)
+        if (dniValidation.type?.startsWith('image/')) {
+          const compressed = await compressFile(dniBuffer, dniValidation.type, 1200)
+          dniBuffer = compressed.buffer
+          dniFrontalMimeType = compressed.mimeType
+        } else {
+          dniFrontalMimeType = dniValidation.type || dniFrontalFile.type
+        }
+        dniFrontalEncriptado = encrypt(dniBuffer)
+        console.log(`🔐 DNI frontal cifrado (${getFileInfo(dniBuffer, 'dni').sizeFormatted})`)
+      }
+
+      if (dniReversoFile && dniReversoFile.size > 0) {
+        const dniValidation = await validateFile(dniReversoFile, 10)
+        if (!dniValidation.valid) {
+          return NextResponse.json({ error: `DNI reverso: ${dniValidation.error}` }, { status: 400 })
+        }
+        const dniBytes = await dniReversoFile.arrayBuffer()
+        let dniBuffer = Buffer.from(dniBytes)
+        if (dniValidation.type?.startsWith('image/')) {
+          const compressed = await compressFile(dniBuffer, dniValidation.type, 1200)
+          dniBuffer = compressed.buffer
+          dniReversoMimeType = compressed.mimeType
+        } else {
+          dniReversoMimeType = dniValidation.type || dniReversoFile.type
+        }
+        dniReversoEncriptado = encrypt(dniBuffer)
+        console.log(`🔐 DNI reverso cifrado (${getFileInfo(dniBuffer, 'dni').sizeFormatted})`)
+      }
+
+      const inscripcionAnual = await prisma.$transaction(async (tx) => {
+        return tx.inscripcion.create({
+          data: {
+            tipoInscripcion: 'anual',
+            nombreJugador, apellidos,
+            fechaNacimiento: new Date(fechaNacimiento),
+            dni: '', // no aplica en anual (se usa foto)
+            email: email || null,
+            sexo: sexo || null,
+            categoria: categoria || null,
+            modalidadPago: modalidadPago || null,
+            direccion: direccion || null,
+            localidad: localidad || null,
+            codigoPostal: codigoPostal || null,
+            nombreTutor,
+            telefono1,
+            telefono2: telefono2 || null,
+            enfermedad: enfermedad || null,
+            medicacion: medicacion || null,
+            alergico: alergico || null,
+            numeroSeguridadSocial: numeroSeguridadSocial || null,
+            pagada: false,
+            justificantePago: justBuffer.toString('base64'),
+            justificantePagoMimeType: justCompress.mimeType,
+            nombreArchivoJustificante: justificanteFile.name,
+            firma: firmaBuffer.toString('base64'),
+            firmaMimeType: 'image/png',
+            nombreArchivoFirma: 'firma.png',
+            derechosImagen: derechosImagen === 'true',
+            comentarios: comentarios || null,
+            dniFrontalEncriptado,
+            dniFrontalMimeType,
+            dniReversoEncriptado,
+            dniReversoMimeType,
+          },
+        })
+      })
+
+      console.log('✅ Inscripción anual guardada:', inscripcionAnual.id)
+      return NextResponse.json({ success: true, inscripcionId: inscripcionAnual.id, message: 'Inscripción anual creada correctamente' })
+    }
+    // ── Fin rama anual ────────────────────────────────────────────────────────
 
     const schema = getInscripcionSchema(isCampusVerano)
     const payload: InscripcionValidationPayload = {
@@ -288,7 +451,8 @@ export async function POST(request: NextRequest) {
       // Verificar que la inscripción se creó correctamente
       console.log('🔍 [INSCRIPCIÓN] Verificando que el registro se guardó correctamente...')
       const verificacion = await tx.inscripcion.findUnique({
-        where: { id: nuevaInscripcion.id }
+        where: { id: nuevaInscripcion.id },
+        select: { id: true },
       })
 
       if (!verificacion) {

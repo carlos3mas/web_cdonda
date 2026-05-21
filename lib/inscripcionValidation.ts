@@ -212,6 +212,73 @@ export function buildInscripcionValidationPayload(
   }
 }
 
+// ─── Schema para inscripción anual ───────────────────────────────────────────
+
+export type InscripcionAnualPayload = {
+  nombreJugador: string
+  apellidos: string
+  fechaNacimiento: string
+  sexo: string
+  email: string
+  direccion: string
+  localidad: string
+  codigoPostal: string
+  categoria: string
+  nombreTutor: string
+  relacionTutor?: string
+  telefono1: string
+  telefono2?: string
+  enfermedad?: string
+  medicacion?: string
+  alergico?: string
+  numeroSeguridadSocial?: string
+  modalidadPago: string
+  derechosImagen?: string
+  comentarios?: string
+}
+
+export function getInscripcionAnualSchema() {
+  return z.object({
+    nombreJugador: z.string().min(2, 'Introduce al menos 2 caracteres'),
+    apellidos: z.string().min(2, 'Introduce al menos 2 caracteres'),
+    fechaNacimiento: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Selecciona una fecha de nacimiento válida'),
+    sexo: z.enum(['M', 'F'], { errorMap: () => ({ message: 'Selecciona el sexo' }) }),
+    email: z.string().email('Introduce un email válido'),
+    direccion: z.string().min(3, 'Indica la dirección completa'),
+    localidad: z.string().min(2, 'Indica la localidad'),
+    codigoPostal: z
+      .string()
+      .min(4, 'El código postal debe tener al menos 4 caracteres')
+      .max(10, 'Código postal demasiado largo'),
+    categoria: z.enum(
+      ['querubines-chupetin', 'futbol-8', 'futbol-11'],
+      { errorMap: () => ({ message: 'Selecciona una categoría válida' }) }
+    ),
+    nombreTutor: z.string().min(2, 'Introduce el nombre del tutor/a'),
+    relacionTutor: z.string().optional(),
+    telefono1: z
+      .string()
+      .min(9, 'El teléfono debe tener al menos 9 dígitos')
+      .max(20, 'Teléfono demasiado largo'),
+    telefono2: z.preprocess(
+      emptyToUndefined,
+      z.string().min(9, 'El teléfono 2 debe tener al menos 9 dígitos').max(20).optional()
+    ),
+    enfermedad: z.string().optional(),
+    medicacion: z.string().optional(),
+    alergico: z.string().optional(),
+    numeroSeguridadSocial: z.string().optional(),
+    modalidadPago: z.enum(
+      ['mensual', 'trimestral', 'anual'],
+      { errorMap: () => ({ message: 'Selecciona una modalidad de pago' }) }
+    ),
+    derechosImagen: z.string().optional(),
+    comentarios: z.string().optional(),
+  })
+}
+
 export function scrollToField(fieldId: string) {
   if (typeof document === 'undefined') return
   const el = document.getElementById(fieldId)

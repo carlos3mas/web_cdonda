@@ -56,6 +56,38 @@ const MIGRATIONS: { name: string; sql: string }[] = [
     name: '20260518130000_add_tallaCalcetines',
     sql: 'ALTER TABLE inscripciones ADD COLUMN tallaCalcetines TEXT;',
   },
+  {
+    name: '20260521120000_add_inscripcion_anual_email',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN email TEXT;',
+  },
+  {
+    name: '20260521120000_add_inscripcion_anual_sexo',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN sexo TEXT;',
+  },
+  {
+    name: '20260521120000_add_inscripcion_anual_categoria',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN categoria TEXT;',
+  },
+  {
+    name: '20260521120000_add_inscripcion_anual_modalidadPago',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN modalidadPago TEXT;',
+  },
+  {
+    name: '20260521120000_add_inscripcion_anual_dniFrontalEncriptado',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN dniFrontalEncriptado TEXT;',
+  },
+  {
+    name: '20260521120000_add_inscripcion_anual_dniFrontalMimeType',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN dniFrontalMimeType TEXT;',
+  },
+  {
+    name: '20260521120000_add_inscripcion_anual_dniReversoEncriptado',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN dniReversoEncriptado TEXT;',
+  },
+  {
+    name: '20260521120000_add_inscripcion_anual_dniReversoMimeType',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN dniReversoMimeType TEXT;',
+  },
 ]
 
 const EXPECTED_COLUMNS = [
@@ -89,6 +121,14 @@ const EXPECTED_COLUMNS = [
   'nombreArchivoFirma',
   'derechosImagen',
   'comentarios',
+  'email',
+  'sexo',
+  'categoria',
+  'modalidadPago',
+  'dniFrontalEncriptado',
+  'dniFrontalMimeType',
+  'dniReversoEncriptado',
+  'dniReversoMimeType',
   'createdAt',
   'updatedAt',
 ]

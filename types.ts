@@ -30,6 +30,14 @@ export interface Inscripcion {
   nombreArchivoFirma?: string | null;
   derechosImagen: boolean;
   comentarios?: string | null;
+  // Campos exclusivos inscripción anual
+  email?: string | null;
+  sexo?: string | null;
+  categoria?: string | null;
+  modalidadPago?: string | null;
+  // Los campos cifrados del DNI nunca se exponen al cliente
+  tieneDniFrontal?: boolean;
+  tieneDniReverso?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

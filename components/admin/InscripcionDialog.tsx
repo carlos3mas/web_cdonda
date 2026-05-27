@@ -166,7 +166,7 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
           </div>
 
           {/* Justificante de Pago */}
-          {inscripcion.justificantePago && (
+          {inscripcion.nombreArchivoJustificante && (
             <div>
               <h3 className="text-lg font-semibold mb-3 text-red-600">Justificante de Pago</h3>
               <div className="bg-gray-50 border rounded-lg p-4">

@@ -20,6 +20,8 @@ const tiposInscripcion = [
   { value: 'anual', label: 'Inscripción Anual', icon: '📅' }
 ]
 
+const ADMIN_PAGE_SIZE = 200
+
 export default function AdminDashboardPage() {
   const { status } = useSession()
   const router = useRouter()
@@ -35,56 +37,62 @@ export default function AdminDashboardPage() {
   }, [status, router])
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      loadAllData()
+    if (status !== 'authenticated') return
+
+    let cancelled = false
+
+    const loadInitial = async () => {
+      try {
+        setIsLoading(true)
+
+        // 1) Stats son ligeras: prefetchar todos los tipos (solo counts).
+        const tipos = ['todos', 'campus-navidad', 'campus-pascua', 'campus-verano', 'anual']
+        const statsResults = await Promise.all(
+          tipos.map(async (tipo) => {
+            const res = await fetch(`/api/inscripciones/stats?tipo=${tipo}`)
+            return { tipo, stats: (await res.json()) as DashboardStats }
+          })
+        )
+
+        if (!cancelled) {
+          const statsMap: Record<string, DashboardStats> = {}
+          statsResults.forEach(({ tipo, stats }) => {
+            statsMap[tipo] = stats
+          })
+          setStats(statsMap)
+        }
+
+        // 2) Listado: cargar SOLO el tab activo, limitado.
+        await loadDataForTab(activeTab, { force: true })
+      } catch (error) {
+        console.error('Error al cargar datos:', error)
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
     }
+
+    loadInitial()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
   useEffect(() => {
     if (status === 'authenticated' && activeTab) {
       loadDataForTab(activeTab)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, status])
 
-  const loadAllData = async () => {
+  const loadDataForTab = async (tipo: string, opts?: { force?: boolean }) => {
     try {
-      // Cargar datos para todos los tipos
-      const tipos = ['todos', 'campus-navidad', 'campus-pascua', 'campus-verano', 'anual']
-      const promises = tipos.map(async (tipo) => {
-        const [statsRes, inscripcionesRes] = await Promise.all([
-          fetch(`/api/inscripciones/stats?tipo=${tipo}`),
-          fetch(`/api/inscripciones?tipo=${tipo}`)
-        ])
-        return {
-          tipo,
-          stats: await statsRes.json(),
-          inscripciones: await inscripcionesRes.json()
-        }
-      })
-
-      const results = await Promise.all(promises)
-      const statsMap: Record<string, DashboardStats> = {}
-      const inscripcionesMap: Record<string, Inscripcion[]> = {}
-
-      results.forEach(({ tipo, stats, inscripciones }) => {
-        statsMap[tipo] = stats
-        inscripcionesMap[tipo] = inscripciones
-      })
-
-      setStats(statsMap)
-      setInscripciones(inscripcionesMap)
-    } catch (error) {
-      console.error('Error al cargar datos:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const loadDataForTab = async (tipo: string) => {
-    try {
+      if (!opts?.force && inscripciones[tipo]?.length) {
+        return
+      }
       const [statsRes, inscripcionesRes] = await Promise.all([
         fetch(`/api/inscripciones/stats?tipo=${tipo}`),
-        fetch(`/api/inscripciones?tipo=${tipo}`)
+        fetch(`/api/inscripciones?tipo=${tipo}&limit=${ADMIN_PAGE_SIZE}`)
       ])
 
       const statsData = await statsRes.json()
@@ -98,9 +106,9 @@ export default function AdminDashboardPage() {
   }
 
   const handleUpdate = () => {
-    loadDataForTab(activeTab)
+    loadDataForTab(activeTab, { force: true })
     // También actualizar el tab "todos" para mantener consistencia
-    loadDataForTab('todos')
+    loadDataForTab('todos', { force: true })
   }
 
   if (status === 'loading' || isLoading) {

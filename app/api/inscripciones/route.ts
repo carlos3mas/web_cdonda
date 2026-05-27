@@ -42,14 +42,57 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const tipoInscripcion = searchParams.get('tipo')
+    const limitParam = searchParams.get('limit')
+    const limit = limitParam ? Math.max(1, Math.min(500, Number(limitParam))) : 200
 
     const where = tipoInscripcion && tipoInscripcion !== 'todos'
       ? { tipoInscripcion }
       : {}
 
+    // Importante: para el panel admin NO devolvemos blobs base64 (justificante/firma),
+    // solo metadatos y campos de tabla. Esto reduce muchísimo el tiempo de respuesta.
     const rawInscripciones = await prisma.inscripcion.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        tipoInscripcion: true,
+        nombreJugador: true,
+        apellidos: true,
+        fechaNacimiento: true,
+        dni: true,
+        direccion: true,
+        localidad: true,
+        codigoPostal: true,
+        semanasCampus: true,
+        diasSueltos: true,
+        tallaCamiseta: true,
+        tallaPantalon: true,
+        tallaCalcetines: true,
+        nombreTutor: true,
+        telefono1: true,
+        telefono2: true,
+        enfermedad: true,
+        medicacion: true,
+        alergico: true,
+        numeroSeguridadSocial: true,
+        pagada: true,
+        nombreArchivoJustificante: true,
+        justificantePagoMimeType: true,
+        firmaMimeType: true,
+        nombreArchivoFirma: true,
+        derechosImagen: true,
+        comentarios: true,
+        email: true,
+        sexo: true,
+        categoria: true,
+        modalidadPago: true,
+        dniFrontalEncriptado: true,
+        dniReversoEncriptado: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     })
 
     // Eliminamos los blobs cifrados del DNI y añadimos flags booleanos
@@ -60,7 +103,7 @@ export async function GET(request: NextRequest) {
     }))
 
     // Log para diagnóstico en producción
-    console.log(`📊 Inscripciones obtenidas: ${inscripciones.length} (tipo: ${tipoInscripcion || 'todos'})`)
+    console.log(`📊 Inscripciones obtenidas: ${inscripciones.length} (tipo: ${tipoInscripcion || 'todos'}, limit: ${limit})`)
 
     return NextResponse.json(inscripciones, { headers })
   } catch (error) {

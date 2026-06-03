@@ -8,6 +8,7 @@ import { AlertCircle, CheckCircle, ChevronLeft, Download, Loader2 } from 'lucide
 import SignaturePad from 'signature_pad'
 import { InscripcionAnualStep1 } from './InscripcionAnualStep1'
 import { InscripcionAnualStep2, type AnualFormData } from './InscripcionAnualStep2'
+import { InscripcionAnualCuotas } from './InscripcionAnualCuotas'
 import { type TipoAnualId, getTipoAnual } from '@/lib/anualConfig'
 import {
   getInscripcionAnualSchema,
@@ -18,9 +19,10 @@ import {
 const FORM_INICIAL: AnualFormData = {
   nombreJugador: '', apellidos: '', fechaNacimiento: '', sexo: '', email: '',
   direccion: '', localidad: '', codigoPostal: '',
-  nombreTutor: '', relacionTutor: '', telefono1: '', telefono2: '',
+  nombreTutor: '', dni: '', relacionTutor: '', telefono1: '', telefono2: '',
   enfermedad: '', medicacion: '', alergico: '', numeroSeguridadSocial: '',
-  modalidadPago: '', derechosImagen: false, lopd: false, comentarios: '',
+  tallaCamiseta: '', tallaPantalon: '', tallaCalcetines: '',
+  modalidadPago: '', descuentoHermanos: 'no', derechosImagen: false, lopd: false, comentarios: '',
 }
 
 function ProgressBar({ step }: { step: 1 | 2 }) {
@@ -47,6 +49,7 @@ function ProgressBar({ step }: { step: 1 | 2 }) {
 }
 
 export function InscripcionAnualForm() {
+  const [mode, setMode] = useState<'inscripcion' | 'cuotas'>('inscripcion')
   const [step, setStep] = useState<1 | 2>(1)
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoAnualId | null>(null)
   const [formData, setFormData] = useState<AnualFormData>(FORM_INICIAL)
@@ -183,7 +186,7 @@ export function InscripcionAnualForm() {
     }
   }
 
-  if (submitStatus === 'success') {
+  if (mode === 'inscripcion' && submitStatus === 'success') {
     const tipo = tipoSeleccionado ? getTipoAnual(tipoSeleccionado) : null
     return (
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
@@ -205,6 +208,28 @@ export function InscripcionAnualForm() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <div className="mb-4 flex flex-col sm:flex-row gap-2">
+        <Button
+          type="button"
+          variant={mode === 'inscripcion' ? 'default' : 'outline'}
+          className={mode === 'inscripcion' ? 'bg-red-600 hover:bg-red-700' : ''}
+          onClick={() => setMode('inscripcion')}
+        >
+          Nueva inscripción anual
+        </Button>
+        <Button
+          type="button"
+          variant={mode === 'cuotas' ? 'default' : 'outline'}
+          className={mode === 'cuotas' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+          onClick={() => setMode('cuotas')}
+        >
+          Añadir justificantes de cuotas
+        </Button>
+      </div>
+
+      {mode === 'cuotas' ? (
+        <InscripcionAnualCuotas />
+      ) : (
       <Card className="border border-red-100">
         <CardHeader className="p-4 sm:p-6">
           <CardTitle className="text-xl sm:text-2xl font-semibold text-red-600">
@@ -242,7 +267,7 @@ export function InscripcionAnualForm() {
                         <div>
                           <p className="text-xs uppercase tracking-wider opacity-80">Categoría seleccionada</p>
                           <p className="font-bold text-lg">{tipo.label}</p>
-                          <p className="text-sm opacity-90">{tipo.edades}</p>
+                          <p className="text-sm opacity-90">{tipo.descripcion}</p>
                         </div>
                         <Button type="button" variant="ghost" size="sm"
                           className="text-white hover:bg-white/20 text-xs"
@@ -256,6 +281,7 @@ export function InscripcionAnualForm() {
                   <InscripcionAnualStep2
                     formData={formData}
                     onChange={handleChange}
+                    categoriaSeleccionada={tipoSeleccionado}
                     dniFrontal={dniFrontal}
                     dniReverso={dniReverso}
                     justificante={justificante}
@@ -298,6 +324,7 @@ export function InscripcionAnualForm() {
           </form>
         </CardContent>
       </Card>
+      )}
     </motion.div>
   )
 }

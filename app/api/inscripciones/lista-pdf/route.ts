@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const tipoInscripcion = searchParams.get('tipo')
     const estado = searchParams.get('estado') // 'pagados' o 'pendientes'
-    const tipoFiltro = searchParams.get('tipoFiltro') // Tipo específico si hay filtro adicional
     const busqueda = searchParams.get('busqueda') // Búsqueda de texto
+    const ids = searchParams.get('ids')
 
     // Construir el objeto where con todos los filtros
     const where: Prisma.InscripcionWhereInput = {}
@@ -24,11 +24,6 @@ export async function GET(request: NextRequest) {
       where.tipoInscripcion = tipoInscripcion
     }
 
-    // Filtro por tipo específico si existe (cuando showTipoFilter está activado)
-    if (tipoFiltro && tipoFiltro !== 'todos') {
-      where.tipoInscripcion = tipoFiltro
-    }
-
     // Filtro por estado de pago
     if (estado === 'pagados') {
       where.pagada = true
@@ -36,7 +31,13 @@ export async function GET(request: NextRequest) {
       where.pagada = false
     }
 
-    // Obtener todas las inscripciones que coincidan con los filtros
+    if (ids) {
+      const list = ids.split(',').map((id) => id.trim()).filter(Boolean)
+      if (list.length > 0) {
+        where.id = { in: list }
+      }
+    }
+
     let inscripciones = await prisma.inscripcion.findMany({
       where,
       orderBy: {
@@ -47,12 +48,17 @@ export async function GET(request: NextRequest) {
     // Aplicar filtro de búsqueda si existe (búsqueda en memoria porque es más flexible)
     if (busqueda && busqueda.trim()) {
       const query = busqueda.toLowerCase().trim()
+      const isYear = /^\d{4}$/.test(query)
       inscripciones = inscripciones.filter((inscripcion) => {
+        if (isYear) {
+          return new Date(inscripcion.fechaNacimiento).getFullYear() === Number(query)
+        }
         return (
           inscripcion.nombreJugador.toLowerCase().includes(query) ||
           inscripcion.apellidos.toLowerCase().includes(query) ||
           inscripcion.dni.toLowerCase().includes(query) ||
           inscripcion.nombreTutor.toLowerCase().includes(query) ||
+          (inscripcion.email && inscripcion.email.toLowerCase().includes(query)) ||
           inscripcion.telefono1.toLowerCase().includes(query) ||
           (inscripcion.telefono2 && inscripcion.telefono2.toLowerCase().includes(query))
         )

@@ -13,11 +13,11 @@ const FIELD_ALIASES: Record<string, string[]> = {
   nombreJugador: ['NOMBRE', 'nombre', 'Nombre', 'nombreJugador', 'nombreJugador1'],
   apellidos: ['APELLIDOS', 'apellido', 'Apellidos', 'apellidos', 'mas iserte'],
   fechaNacimiento: ['FECHA NACIMIENTO', 'fechaNacimiento', 'Fecha Nacimiento', 'fechaNacimiento1'],
-  dni: ['DNI_TUTOR', 'DNI', 'dni'],
+  dni: ['DNI_TUTOR', 'DNI', 'dni', 'D.N.I.', 'D.N.I', 'DNI tutor', 'dni tutor'],
   direccion: ['DIRECCIÓN', 'DIRECCION', 'direccion', 'Dirección'],
-  localidad: ['LOCALIDAD', 'localidad', 'Localidad'],
+  localidad: ['LOCALIDAD', 'localidad', 'Localidad', 'Población', 'Poblacion', 'población', 'poblacion'],
   codigoPostal: ['CP', 'C.P.', 'C.P', 'codigoPostal', 'Código Postal'],
-  nombreTutor: ['NOMBRE_TUTOR', 'NOMBRE PADRE/MADRE', 'NOMBRE JUGADOR', 'NOMBRE PADRE / MADRE', 'tutor', 'tutor del jugador', 'nombreTutor', 'madrePadreTutor'],
+  nombreTutor: ['NOMBRE_TUTOR', 'NOMBRE PADRE/MADRE', 'NOMBRE JUGADOR', 'NOMBRE PADRE / MADRE', 'tutor', 'tutor del jugador', 'tutor del jugador/a', 'nombreTutor', 'madrePadreTutor', 'D.', 'D'],
   telefono1: [
     'TELEFONOS DE CONTACT1',
     'TELEFONOS DE CONTACT',
@@ -45,7 +45,7 @@ const FIELD_ALIASES: Record<string, string[]> = {
   diasSueltos: ['DIAS SUELTOS', 'diasSueltos', 'COMENTARIOS', 'comentarios'],
   tallaCamiseta: ['TALLA CAMISETA', 'CAMISETA', 'tallaCamiseta'],
   tallaPantalon: ['TALLA PANTALON', 'PANTALON', 'tallaPantalon'],
-  tallaCalcetines: ['TALLA CALCETINES', 'CALCETINES', 'tallaCalcetines'],
+  tallaCalcetines: ['TALLA CALCETINES', 'CALCETINES', 'TALLA CALZAS', 'CALZAS', 'tallaCalcetines', 'tallaCalzas'],
   numeroSeguridadSocial: [
     'SIP',
     'Nº seguridad social del niñ@',
@@ -57,9 +57,18 @@ const FIELD_ALIASES: Record<string, string[]> = {
     'seguridadSocial',
     'sip'
   ],
+  email: ['email', 'EMAIL', 'Correo Electrónico'],
+  lugarNacimiento: ['Lugar', 'LUGAR'],
+  nombreDelJugador: ['Nombre del jugador', 'NOMBRE DEL JUGADOR'],
+  nombreTelefonoMadre: ['Nombre y Teléf madre'],
+  nombreTelefonoPadre: ['Nombre y Teléf padre'],
+  telefonoWhatsApp: ['Indicar teléfono para grupo de whatsapp'],
+  telefonoSolo: ['teléfono', 'Telefono'],
+  autorizacionDni: ['con DNI', 'con D.N.I', 'con D.N.I.'],
+  tipoProcede: ['MARCAR SI PROCEDE'],
   fechaInscripcion: ['fechaInscripcion'],
   idInscripcion: ['idInscripcion'],
-  firma: ['FIRMA', 'firma', 'Firma']
+  firma: ['FIRMA', 'firma', 'Firma', 'firma jugador', 'firma tutor']
 }
 
 type FirmaRect = { x: number; y: number; width: number; height: number }
@@ -191,7 +200,7 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
     console.log(`Plantilla cargada. Campos disponibles: ${fields.length}`)
 
     // Función auxiliar para rellenar campo de texto de forma segura
-    const fillTextField = (aliasKey: keyof typeof FIELD_ALIASES, value: string) => {
+    const fillTextField = (aliasKey: string, value: string) => {
       if (!value) return
       const candidates = FIELD_ALIASES[aliasKey] ?? [aliasKey]
       for (const candidate of candidates) {
@@ -222,6 +231,7 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
     fillTextField('localidad', inscripcion.localidad || '')
     fillTextField('codigoPostal', inscripcion.codigoPostal || '')
     fillTextField('numeroSeguridadSocial', inscripcion.numeroSeguridadSocial || '')
+    fillTextField('email', inscripcion.email || '')
     fillTextField('telefono1', inscripcion.telefono1 || '')
     fillTextField('telefono2', inscripcion.telefono2 || '')
     // Plantillas antiguas con un solo campo de teléfonos
@@ -240,6 +250,23 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
     fillTextField('alergico', inscripcion.alergico || '')
     fillTextField('nombreTutor', inscripcion.nombreTutor)
     fillTextField('dni', inscripcion.dni)
+    fillTextField('lugarNacimiento', '')
+
+    if (inscripcion.tipoInscripcion === 'anual') {
+      const nombreCompletoJugador = `${inscripcion.nombreJugador} ${inscripcion.apellidos}`.trim()
+      const madreConTelefono = [inscripcion.nombreTutor, inscripcion.telefono1]
+        .filter(Boolean)
+        .join(' - ')
+      const padreConTelefono = inscripcion.telefono2 || ''
+
+      fillTextField('nombreDelJugador', nombreCompletoJugador)
+      fillTextField('nombreTelefonoMadre', madreConTelefono)
+      fillTextField('nombreTelefonoPadre', padreConTelefono)
+      fillTextField('telefonoWhatsApp', inscripcion.telefono1 || inscripcion.telefono2 || '')
+      fillTextField('telefonoSolo', inscripcion.telefono1 || inscripcion.telefono2 || '')
+      fillTextField('autorizacionDni', inscripcion.dni || '')
+      fillTextField('tipoProcede', inscripcion.derechosImagen ? 'SI' : '')
+    }
 
     const semanasLabels = formatSemanasCampus(inscripcion.semanasCampus)
     if (inscripcion.semanasCampus) {
@@ -625,16 +652,29 @@ export async function generateInscripcionPDF(inscripcion: Inscripcion): Promise<
 // Función principal que decide si usar plantilla o generar desde cero
 export async function generatePDFForInscripcion(inscripcion: Inscripcion): Promise<Uint8Array> {
   try {
-    // Intentar cargar la plantilla para el tipo de inscripción
-    const templatePath = join(process.cwd(), 'public', 'templates', `${inscripcion.tipoInscripcion}.pdf`)
+    const templateCandidates: string[] = []
 
-    if (existsSync(templatePath)) {
-      console.log(`Usando plantilla para ${inscripcion.tipoInscripcion}`)
-      return await fillPDFTemplate(templatePath, inscripcion)
-    } else {
-      console.log(`No se encontró plantilla para ${inscripcion.tipoInscripcion}, generando PDF por defecto`)
-      return await generateInscripcionPDF(inscripcion)
+    if (inscripcion.tipoInscripcion === 'anual') {
+      const categoria = (inscripcion.categoria || '').toLowerCase()
+      if (categoria === 'chupetines') templateCandidates.push('inscripcion-chupetines.pdf')
+      if (categoria === 'querubines') templateCandidates.push('inscripcion-querubines.pdf')
+      if (categoria === 'futbol-8') templateCandidates.push('inscripcion-f8.pdf')
+      if (categoria === 'futbol-11') templateCandidates.push('inscripcion-f11.pdf')
+      templateCandidates.push('anual.pdf')
     }
+
+    templateCandidates.push(`${inscripcion.tipoInscripcion}.pdf`)
+
+    for (const candidate of templateCandidates) {
+      const templatePath = join(process.cwd(), 'public', 'templates', candidate)
+      if (existsSync(templatePath)) {
+        console.log(`Usando plantilla ${candidate} para ${inscripcion.tipoInscripcion}`)
+        return await fillPDFTemplate(templatePath, inscripcion)
+      }
+    }
+
+    console.log(`No se encontró plantilla para ${inscripcion.tipoInscripcion}, generando PDF por defecto`)
+    return await generateInscripcionPDF(inscripcion)
   } catch (error) {
     console.error('Error al generar PDF, usando generador por defecto:', error)
     return await generateInscripcionPDF(inscripcion)
@@ -671,7 +711,7 @@ function truncateText(text: string, maxWidth: number): string {
 // Función para generar PDF con lista completa de inscripciones en formato tabla
 export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create()
-  const page = pdfDoc.addPage([595, 842]) // A4 size
+  const page = pdfDoc.addPage([842, 595]) // A4 apaisado
   const { width, height } = page.getSize()
 
   // Cargar fuentes
@@ -684,10 +724,10 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
   const grayColor = rgb(0.4, 0.4, 0.4)
   const lightGrayColor = rgb(0.9, 0.9, 0.9)
 
-  let yPosition = height - 50
+  let yPosition = height - 40
   const margin = 40
   const tableWidth = width - (margin * 2) // 595 - 80 = 515 puntos disponibles
-  const rowHeight = 20
+  const rowHeight = 19
   const headerHeight = 30
 
   // Cargar logo del equipo
@@ -703,7 +743,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
   }
 
   // Encabezado - fondo rojo más alto para que no corte el texto
-  const headerHeightTotal = 85
+  const headerHeightTotal = 74
   page.drawRectangle({
     x: 0,
     y: yPosition - 20,
@@ -715,7 +755,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
   // Dibujar logo si existe - ajustado para mejor visualización
   let textStartX = margin
   if (logoImage) {
-    const logoSize = 45
+    const logoSize = 38
     const logoX = margin + 5
     const logoY = yPosition - 15
     page.drawImage(logoImage, {
@@ -729,23 +769,23 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
 
   page.drawText('CLUB DEPORTIVO ONDA', {
     x: textStartX,
-    y: yPosition + 18,
-    size: 20,
+    y: yPosition + 10,
+    size: 18,
     font: fontBold,
     color: rgb(1, 1, 1),
   })
 
   page.drawText('Lista de Inscripciones', {
     x: textStartX,
-    y: yPosition - 2,
-    size: 14,
+    y: yPosition - 6,
+    size: 12,
     font: font,
     color: rgb(1, 1, 1),
   })
 
   page.drawText(`Total: ${inscripciones.length} inscripciones`, {
     x: textStartX,
-    y: yPosition - 18,
+    y: yPosition - 20,
     size: 10,
     font: font,
     color: rgb(1, 1, 1),
@@ -756,13 +796,14 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
   // Definir columnas de la tabla - ajustadas para que quepan en el ancho disponible
   // Ancho total disponible: 515 puntos
   const columns = [
-    { label: 'Nº', width: 25 },
-    { label: 'Jugador', width: 95 },
+    { label: 'Nº', width: 24 },
+    { label: 'Jugador', width: 125 },
     { label: 'DNI', width: 70 },
-    { label: 'Tutor', width: 95 },
-    { label: 'Teléfono', width: 80 },
-    { label: 'Fecha Nac.', width: 75 },
-    { label: 'Estado', width: 65 },
+    { label: 'Tutor', width: 115 },
+    { label: 'Teléfono', width: 75 },
+    { label: 'Fecha Nac.', width: 64 },
+    { label: 'Tallas', width: 130 },
+    { label: 'Estado', width: 50 },
   ]
 
   // Verificar que las columnas quepan
@@ -813,11 +854,11 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
   inscripciones.forEach((inscripcion, index) => {
     // Si no hay espacio, crear nueva página
     if (yPosition < 100) {
-      const newPage = pdfDoc.addPage([595, 842])
-      yPosition = height - 50
+      const newPage = pdfDoc.addPage([842, 595])
+      yPosition = height - 40
 
       // Repetir encabezado completo en nueva página
-      const headerHeightTotal = 85
+      const headerHeightTotal = 74
       newPage.drawRectangle({
         x: 0,
         y: yPosition - 20,
@@ -829,7 +870,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       // Dibujar logo en nueva página si existe
       let textStartXNew = margin
       if (logoImage) {
-        const logoSize = 45
+        const logoSize = 38
         const logoX = margin + 5
         const logoY = yPosition - 15
         newPage.drawImage(logoImage, {
@@ -843,23 +884,23 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
 
       newPage.drawText('CLUB DEPORTIVO ONDA', {
         x: textStartXNew,
-        y: yPosition + 18,
-        size: 20,
+        y: yPosition + 10,
+        size: 18,
         font: fontBold,
         color: rgb(1, 1, 1),
       })
 
       newPage.drawText('Lista de Inscripciones', {
         x: textStartXNew,
-        y: yPosition - 2,
-        size: 14,
+        y: yPosition - 6,
+        size: 12,
         font: font,
         color: rgb(1, 1, 1),
       })
 
       newPage.drawText(`Total: ${inscripciones.length} inscripciones`, {
         x: textStartXNew,
-        y: yPosition - 18,
+        y: yPosition - 20,
         size: 10,
         font: font,
         color: rgb(1, 1, 1),
@@ -919,6 +960,14 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
     const tutor = truncateText(inscripcion.nombreTutor, columns[3].width - 10)
     const telefono = truncateText(inscripcion.telefono1, columns[4].width - 10)
     const fechaNac = formatDate(inscripcion.fechaNacimiento).substring(0, 10)
+    const tallasRaw = [
+      inscripcion.tallaCamiseta ? `C:${inscripcion.tallaCamiseta}` : '',
+      inscripcion.tallaPantalon ? `P:${inscripcion.tallaPantalon}` : '',
+      inscripcion.tallaCalcetines
+        ? `${inscripcion.tipoInscripcion === 'anual' ? 'Calzas' : 'Ca'}:${inscripcion.tallaCalcetines}`
+        : '',
+    ].filter(Boolean).join(' | ')
+    const tallas = truncateText(tallasRaw || '—', columns[6].width - 10)
     const estado = inscripcion.pagada ? 'Paga' : 'Pendi'
 
     currentPage.drawText(numero, {
@@ -969,8 +1018,16 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       color: blackColor,
     })
 
-    currentPage.drawText(estado, {
+    currentPage.drawText(tallas, {
       x: columnPositions[6] + 3,
+      y: yPosition - 15,
+      size: 8,
+      font: font,
+      color: blackColor,
+    })
+
+    currentPage.drawText(estado, {
+      x: columnPositions[7] + 3,
       y: yPosition - 15,
       size: 8,
       font: font,

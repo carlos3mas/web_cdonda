@@ -1,25 +1,30 @@
 export const TIPOS_INSCRIPCION_ANUAL = [
   {
-    id: 'querubines-chupetin',
-    label: 'Querubines / Chupetín',
-    descripcion: 'Iniciación al fútbol para los más pequeños del club',
-    edades: '3 - 6 años',
+    id: 'chupetines',
+    label: 'Chupetines',
+    descripcion: 'Nacidos en 2022',
     precio: null, // pendiente confirmar
     color: 'from-yellow-400 to-orange-400',
   },
   {
+    id: 'querubines',
+    label: 'Querubines',
+    descripcion: 'Nacidos en 2021',
+    precio: null, // pendiente confirmar
+    color: 'from-amber-500 to-orange-600',
+  },
+  {
     id: 'futbol-8',
     label: 'Fútbol 8',
-    descripcion: 'Categorías prebenjamín y benjamín',
-    edades: '7 - 10 años',
+    descripcion:
+      'Categorías prebenjamín, benjamín, alevín de primer año y alevín femenino',
     precio: null, // pendiente confirmar
     color: 'from-blue-500 to-blue-700',
   },
   {
     id: 'futbol-11',
     label: 'Fútbol 11',
-    descripcion: 'Categorías alevín, infantil, cadete, juvenil y sénior',
-    edades: '11+ años',
+    descripcion: 'Alevín de segundo año, infantil, cadete y juvenil',
     precio: null, // pendiente confirmar
     color: 'from-red-600 to-red-800',
   },
@@ -32,9 +37,8 @@ export function getTipoAnual(id: string) {
 }
 
 export const MODALIDADES_PAGO_ANUAL = [
-  { id: 'mensual', label: 'Mensual', descripcion: 'Pago mes a mes' },
-  { id: 'trimestral', label: 'Trimestral', descripcion: 'Pago cada 3 meses' },
-  { id: 'anual', label: 'Temporada completa', descripcion: 'Pago único por toda la temporada' },
+  { id: 'unico', label: 'Pago único', descripcion: 'Un solo pago de toda la cuota' },
+  { id: 'fraccionado', label: 'Pago fraccionado', descripcion: 'Pago en 2 cuotas (reserva + resto)' },
 ] as const
 
 export type ModalidadPagoId = (typeof MODALIDADES_PAGO_ANUAL)[number]['id']
@@ -52,3 +56,10 @@ export const RELACIONES_TUTOR = [
 
 export const DNI_MIME_TIPOS_VALIDOS = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
 export const DNI_TAMANO_MAX_MB = 10
+
+/** Tallas obligatorias inscripción anual (temporada) */
+export const INSCRIPCION_ANUAL_TALLAS = {
+  camiseta: ['4', '6', '8', '10', '12', '14', 'S', 'M', 'L', 'XL', '2XL'] as const,
+  pantalon: ['0/2', '4/6', '8/10', '12', '14', 'S', 'M', 'L', 'XL', '2XL'] as const,
+  calzas: ['31-34 (S)', '35-39 (M)', '40-44+ (L)'] as const,
+}

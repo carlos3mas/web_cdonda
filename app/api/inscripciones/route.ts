@@ -78,7 +78,12 @@ export async function GET(request: NextRequest) {
         alergico: true,
         numeroSeguridadSocial: true,
         pagada: true,
+        cuota1Pagada: true,
+        cuota2Pagada: true,
+        cuota3Pagada: true,
         nombreArchivoJustificante: true,
+        nombreArchivoJustificanteCuota2: true,
+        nombreArchivoJustificanteCuota3: true,
         justificantePagoMimeType: true,
         firmaMimeType: true,
         nombreArchivoFirma: true,
@@ -88,6 +93,7 @@ export async function GET(request: NextRequest) {
         sexo: true,
         categoria: true,
         modalidadPago: true,
+        descuentoHermanos: true,
         dniFrontalEncriptado: true,
         dniReversoEncriptado: true,
         createdAt: true,
@@ -165,6 +171,7 @@ export async function POST(request: NextRequest) {
       const sexo = formData.get('sexo') as string
       const categoria = formData.get('categoria') as string
       const modalidadPago = formData.get('modalidadPago') as string
+      const descuentoHermanos = formData.get('descuentoHermanos') as string
       const relacionTutor = formData.get('relacionTutor') as string
       const dniFrontalFile = formData.get('dniFrontal') as File | null
       const dniReversoFile = formData.get('dniReverso') as File | null
@@ -173,12 +180,17 @@ export async function POST(request: NextRequest) {
         nombreJugador, apellidos, fechaNacimiento, sexo, email,
         direccion: direccion || '', localidad: localidad || '',
         codigoPostal: codigoPostal || '', categoria,
-        nombreTutor, relacionTutor: relacionTutor || undefined,
+        nombreTutor, dni, relacionTutor: relacionTutor || undefined,
         telefono1, telefono2: telefono2 || undefined,
         enfermedad: enfermedad || undefined, medicacion: medicacion || undefined,
         alergico: alergico || undefined,
         numeroSeguridadSocial: numeroSeguridadSocial || undefined,
-        modalidadPago, derechosImagen: derechosImagen || undefined,
+        tallaCamiseta: tallaCamiseta || '',
+        tallaPantalon: tallaPantalon || '',
+        tallaCalcetines: tallaCalcetines || '',
+        modalidadPago,
+        descuentoHermanos: descuentoHermanos || 'no',
+        derechosImagen: derechosImagen || undefined,
         comentarios: comentarios || undefined,
       }
 
@@ -275,43 +287,68 @@ export async function POST(request: NextRequest) {
         console.log(`🔐 DNI reverso cifrado (${getFileInfo(dniBuffer, 'dni').sizeFormatted})`)
       }
 
-      const inscripcionAnual = await prisma.$transaction(async (tx) => {
-        return tx.inscripcion.create({
+      const baseData = {
+        tipoInscripcion: 'anual' as const,
+        nombreJugador,
+        apellidos,
+        fechaNacimiento: new Date(fechaNacimiento),
+        dni: dni || '',
+        email: email || null,
+        sexo: sexo || null,
+        categoria: categoria || null,
+        modalidadPago: modalidadPago || null,
+        direccion: direccion || null,
+        localidad: localidad || null,
+        codigoPostal: codigoPostal || null,
+        nombreTutor,
+        telefono1,
+        telefono2: telefono2 || null,
+        enfermedad: enfermedad || null,
+        medicacion: medicacion || null,
+        alergico: alergico || null,
+        numeroSeguridadSocial: numeroSeguridadSocial || null,
+        tallaCamiseta: tallaCamiseta || null,
+        tallaPantalon: tallaPantalon || null,
+        tallaCalcetines: tallaCalcetines || null,
+        pagada: modalidadPago === 'unico',
+        justificantePago: justBuffer.toString('base64'),
+        justificantePagoMimeType: justCompress.mimeType,
+        nombreArchivoJustificante: justificanteFile.name,
+        firma: firmaBuffer.toString('base64'),
+        firmaMimeType: 'image/png',
+        nombreArchivoFirma: 'firma.png',
+        derechosImagen: derechosImagen === 'true',
+        comentarios: comentarios || null,
+        dniFrontalEncriptado,
+        dniFrontalMimeType,
+        dniReversoEncriptado,
+        dniReversoMimeType,
+      }
+
+      let inscripcionAnual
+      try {
+        inscripcionAnual = await prisma.inscripcion.create({
           data: {
-            tipoInscripcion: 'anual',
-            nombreJugador, apellidos,
-            fechaNacimiento: new Date(fechaNacimiento),
-            dni: '', // no aplica en anual (se usa foto)
-            email: email || null,
-            sexo: sexo || null,
-            categoria: categoria || null,
-            modalidadPago: modalidadPago || null,
-            direccion: direccion || null,
-            localidad: localidad || null,
-            codigoPostal: codigoPostal || null,
-            nombreTutor,
-            telefono1,
-            telefono2: telefono2 || null,
-            enfermedad: enfermedad || null,
-            medicacion: medicacion || null,
-            alergico: alergico || null,
-            numeroSeguridadSocial: numeroSeguridadSocial || null,
-            pagada: false,
-            justificantePago: justBuffer.toString('base64'),
-            justificantePagoMimeType: justCompress.mimeType,
-            nombreArchivoJustificante: justificanteFile.name,
-            firma: firmaBuffer.toString('base64'),
-            firmaMimeType: 'image/png',
-            nombreArchivoFirma: 'firma.png',
-            derechosImagen: derechosImagen === 'true',
-            comentarios: comentarios || null,
-            dniFrontalEncriptado,
-            dniFrontalMimeType,
-            dniReversoEncriptado,
-            dniReversoMimeType,
-          },
+            ...baseData,
+            descuentoHermanos: descuentoHermanos || 'no',
+            cuota1Pagada: true,
+            cuota2Pagada: false,
+            cuota3Pagada: false,
+          } as any,
         })
-      })
+      } catch (error) {
+        // Compatibilidad temporal: si el cliente/BD aún no tienen columnas nuevas, guarda sin ellas.
+        const message = error instanceof Error ? error.message : String(error)
+        const canFallback =
+          message.includes('Unknown argument') ||
+          message.includes('no such column') ||
+          message.includes('column')
+
+        if (!canFallback) throw error
+
+        console.warn('⚠️ Guardado anual en modo compatibilidad (faltan columnas nuevas):', message)
+        inscripcionAnual = await prisma.inscripcion.create({ data: baseData as any })
+      }
 
       console.log('✅ Inscripción anual guardada:', inscripcionAnual.id)
       return NextResponse.json({ success: true, inscripcionId: inscripcionAnual.id, message: 'Inscripción anual creada correctamente' })

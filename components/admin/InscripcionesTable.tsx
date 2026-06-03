@@ -1,17 +1,17 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Inscripcion } from '@/types'
 import { formatDate } from '@/lib/utils'
-import { Download, Eye, Trash2, CheckCircle, XCircle, Search, X, Filter, ArrowUpDown, Calendar, User, FileDown } from 'lucide-react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { InscripcionDialog } from './InscripcionDialog'
+import { CheckCircle, Download, Eye, FileDown, Filter, Search, Trash2, X, XCircle } from 'lucide-react'
 import { DeleteConfirmDialog } from './DeleteConfirmDialog'
+import { InscripcionDialog } from './InscripcionDialog'
 
 interface InscripcionesTableProps {
   inscripciones: Inscripcion[]
@@ -26,66 +26,61 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
   const [dialogOpen, setDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [tipoFilter, setTipoFilter] = useState<string>('todos')
-  const [sortBy, setSortBy] = useState<'alfabetico' | 'fechaNacimiento' | 'fechaInscripcion'>('fechaInscripcion')
   const [estadoFilter, setEstadoFilter] = useState<'todos' | 'pagados' | 'pendientes'>('todos')
+  const [sexoFilter, setSexoFilter] = useState<'todos' | 'M' | 'F'>('todos')
 
-  // Obtener tipos únicos de inscripciones
-  const tiposInscripcion = useMemo(() => {
-    if (!Array.isArray(inscripciones)) return []
-    const tipos = new Set(inscripciones.map(i => i.tipoInscripcion))
-    return Array.from(tipos).sort()
-  }, [inscripciones])
+  const getAnnualPaidStatus = (inscripcion: Inscripcion) => {
+    const modalidad = inscripcion.modalidadPago
+    if (modalidad === 'unico' || modalidad === 'anual') {
+      return !!inscripcion.cuota1Pagada
+    }
+    return !!inscripcion.cuota1Pagada && !!inscripcion.cuota2Pagada
+  }
 
-  // Filtrar y ordenar inscripciones
   const filteredInscripciones = useMemo(() => {
     if (!Array.isArray(inscripciones)) return []
     let filtered = [...inscripciones]
 
-    // Filtrar por tipo solo si showTipoFilter está activado
-    if (showTipoFilter && tipoFilter !== 'todos') {
-      filtered = filtered.filter(inscripcion => inscripcion.tipoInscripcion === tipoFilter)
-    }
-
     // Filtrar por estado de pago
     if (estadoFilter === 'pagados') {
-      filtered = filtered.filter(inscripcion => inscripcion.pagada)
+      filtered = filtered.filter((inscripcion) =>
+        inscripcion.tipoInscripcion === 'anual'
+          ? getAnnualPaidStatus(inscripcion)
+          : !!inscripcion.pagada
+      )
     } else if (estadoFilter === 'pendientes') {
-      filtered = filtered.filter(inscripcion => !inscripcion.pagada)
+      filtered = filtered.filter((inscripcion) =>
+        inscripcion.tipoInscripcion === 'anual'
+          ? !getAnnualPaidStatus(inscripcion)
+          : !inscripcion.pagada
+      )
     }
 
-    // Filtrar por búsqueda
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
+      const isYearSearch = /^\d{4}$/.test(query)
       filtered = filtered.filter((inscripcion) => {
+        if (isYearSearch) {
+          return new Date(inscripcion.fechaNacimiento).getFullYear() === Number(query)
+        }
         return (
           inscripcion.nombreJugador.toLowerCase().includes(query) ||
           inscripcion.apellidos.toLowerCase().includes(query) ||
           inscripcion.dni.toLowerCase().includes(query) ||
           inscripcion.nombreTutor.toLowerCase().includes(query) ||
+          (inscripcion.email && inscripcion.email.toLowerCase().includes(query)) ||
           inscripcion.telefono1.toLowerCase().includes(query) ||
           (inscripcion.telefono2 && inscripcion.telefono2.toLowerCase().includes(query))
         )
       })
     }
 
-    // Ordenar
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'alfabetico':
-          const nombreA = `${a.nombreJugador} ${a.apellidos}`.toLowerCase()
-          const nombreB = `${b.nombreJugador} ${b.apellidos}`.toLowerCase()
-          return nombreA.localeCompare(nombreB)
-        case 'fechaNacimiento':
-          return new Date(a.fechaNacimiento).getTime() - new Date(b.fechaNacimiento).getTime()
-        case 'fechaInscripcion':
-        default:
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      }
-    })
-
+    // Filtro por sexo (solo para la vista anual)
+    if (tipoInscripcion === 'anual' && sexoFilter !== 'todos') {
+      filtered = filtered.filter((inscripcion) => inscripcion.sexo === sexoFilter)
+    }
     return filtered
-  }, [inscripciones, searchQuery, tipoFilter, showTipoFilter, estadoFilter, sortBy])
+  }, [inscripciones, searchQuery, estadoFilter, sexoFilter, tipoInscripcion])
 
   const handleTogglePagada = async (inscripcion: Inscripcion) => {
     try {
@@ -97,6 +92,30 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
       onUpdate()
     } catch (error) {
       console.error('Error al actualizar inscripción:', error)
+    }
+  }
+
+  const handleToggleCuota = async (inscripcion: Inscripcion, cuota: 1 | 2) => {
+    const next1 = cuota === 1 ? !inscripcion.cuota1Pagada : !!inscripcion.cuota1Pagada
+    const next2 = cuota === 2 ? !inscripcion.cuota2Pagada : !!inscripcion.cuota2Pagada
+    const next3 = !!inscripcion.cuota3Pagada
+    const modalidad = inscripcion.modalidadPago
+    const annualPaid = modalidad === 'unico' ? next1 : next1 && next2
+
+    try {
+      await fetch(`/api/inscripciones/${inscripcion.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cuota1Pagada: next1,
+          cuota2Pagada: next2,
+          cuota3Pagada: next3,
+          pagada: annualPaid,
+        }),
+      })
+      onUpdate()
+    } catch (error) {
+      console.error('Error al actualizar cuota:', error)
     }
   }
 
@@ -144,21 +163,14 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
 
   const handleDownloadListaPDF = async () => {
     try {
-      // Construir URL con todos los filtros aplicados
       const params = new URLSearchParams()
       params.append('tipo', tipoInscripcion)
-      
-      // Añadir filtro de estado si no es "todos"
+      params.append('ids', filteredInscripciones.map((i) => i.id).join(','))
+
       if (estadoFilter !== 'todos') {
         params.append('estado', estadoFilter)
       }
-      
-      // Añadir filtro de tipo específico si showTipoFilter está activado
-      if (showTipoFilter && tipoFilter !== 'todos') {
-        params.append('tipoFiltro', tipoFilter)
-      }
-      
-      // Añadir búsqueda si existe
+
       if (searchQuery.trim()) {
         params.append('busqueda', searchQuery.trim())
       }
@@ -175,13 +187,9 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
       const a = document.createElement('a')
       a.href = urlBlob
       
-      // Nombre del archivo con información de filtros
       let tipoLabel = tipoInscripcion !== 'todos' ? tipoInscripcion.replace('-', '_') : 'todas'
       if (estadoFilter !== 'todos') {
         tipoLabel += `_${estadoFilter}`
-      }
-      if (showTipoFilter && tipoFilter !== 'todos') {
-        tipoLabel += `_${tipoFilter.replace('-', '_')}`
       }
       a.download = `lista_inscripciones_${tipoLabel}_${new Date().toISOString().split('T')[0]}.pdf`
       
@@ -229,7 +237,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Buscar por nombre, DNI, tutor, teléfono o email..."
+                placeholder="Buscar por nombre, DNI, tutor, email, teléfono o año (ej. 2015)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-10"
@@ -244,28 +252,6 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              {showTipoFilter && (
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-gray-400" />
-                  <Select value={tipoFilter} onValueChange={setTipoFilter}>
-                    <SelectTrigger className="w-[180px] sm:w-[200px]">
-                      <SelectValue placeholder="Filtrar por tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos los tipos</SelectItem>
-                      {tiposInscripcion.map((tipo) => (
-                        <SelectItem key={tipo} value={tipo}>
-                          {tipo === 'campus-navidad' ? 'Campus de Navidad' :
-                           tipo === 'campus-pascua' ? 'Campus de Pascua' :
-                           tipo === 'campus-verano' ? 'Campus de Verano' :
-                           tipo === 'anual' ? 'Inscripción Anual' :
-                           tipo}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-gray-400" />
                 <Select value={estadoFilter} onValueChange={(v) => setEstadoFilter(v as 'todos' | 'pagados' | 'pendientes')}>
@@ -279,34 +265,21 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center gap-2">
-                <ArrowUpDown className="h-4 w-4 text-gray-400" />
-                <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'alfabetico' | 'fechaNacimiento' | 'fechaInscripcion')}>
-                  <SelectTrigger className="w-[180px] sm:w-[200px]">
-                    <SelectValue placeholder="Ordenar por" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fechaInscripcion">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>Fecha de inscripción</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="alfabetico">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span>Alfabético</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="fechaNacimiento">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>Fecha de nacimiento</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {tipoInscripcion === 'anual' && (
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-gray-400" />
+                  <Select value={sexoFilter} onValueChange={(v) => setSexoFilter(v as 'todos' | 'M' | 'F')}>
+                    <SelectTrigger className="w-[180px] sm:w-[200px]">
+                      <SelectValue placeholder="Filtrar por sexo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos los sexos</SelectItem>
+                      <SelectItem value="M">Masculino</SelectItem>
+                      <SelectItem value="F">Femenino</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -370,23 +343,41 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                         {formatDate(inscripcion.createdAt)}
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <Badge 
-                          variant={inscripcion.pagada ? "default" : "secondary"}
-                          className="cursor-pointer"
-                          onClick={() => handleTogglePagada(inscripcion)}
-                        >
-                          {inscripcion.pagada ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Pagada
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Pendiente
-                            </>
-                          )}
-                        </Badge>
+                        {inscripcion.tipoInscripcion === 'anual' ? (
+                          <div className="flex items-center justify-center gap-1">
+                            {((inscripcion.modalidadPago === 'unico' || inscripcion.modalidadPago === 'anual') ? [1] : [1, 2]).map((cuota) => {
+                              const ok = cuota === 1 ? !!inscripcion.cuota1Pagada : !!inscripcion.cuota2Pagada
+                              return (
+                                <Badge
+                                  key={cuota}
+                                  variant={ok ? 'default' : 'secondary'}
+                                  className="cursor-pointer text-[10px] px-2"
+                                  onClick={() => handleToggleCuota(inscripcion, cuota as 1 | 2)}
+                                >
+                                  {(inscripcion.modalidadPago === 'unico' || inscripcion.modalidadPago === 'anual') ? 'Único' : `C${cuota}`}
+                                </Badge>
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <Badge
+                            variant={inscripcion.pagada ? "default" : "secondary"}
+                            className="cursor-pointer"
+                            onClick={() => handleTogglePagada(inscripcion)}
+                          >
+                            {inscripcion.pagada ? (
+                              <>
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Pagada
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="h-3 w-3 mr-1" />
+                                Pendiente
+                              </>
+                            )}
+                          </Badge>
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-end gap-2">
@@ -453,23 +444,41 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                         <p className="text-sm text-gray-500">Nacimiento: {formatDate(inscripcion.fechaNacimiento)}</p>
                         <p className="text-sm text-gray-500">{formatDate(inscripcion.createdAt)}</p>
                       </div>
-                      <Badge
-                        variant={inscripcion.pagada ? 'default' : 'secondary'}
-                        className="cursor-pointer text-xs"
-                        onClick={() => handleTogglePagada(inscripcion)}
-                      >
-                        {inscripcion.pagada ? (
-                          <>
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Pagada
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Pendiente
-                          </>
-                        )}
-                      </Badge>
+                      {inscripcion.tipoInscripcion === 'anual' ? (
+                        <div className="flex items-center gap-1">
+                          {((inscripcion.modalidadPago === 'unico' || inscripcion.modalidadPago === 'anual') ? [1] : [1, 2]).map((cuota) => {
+                            const ok = cuota === 1 ? !!inscripcion.cuota1Pagada : !!inscripcion.cuota2Pagada
+                            return (
+                              <Badge
+                                key={cuota}
+                                variant={ok ? 'default' : 'secondary'}
+                                className="cursor-pointer text-[10px] px-2"
+                                onClick={() => handleToggleCuota(inscripcion, cuota as 1 | 2)}
+                              >
+                                {(inscripcion.modalidadPago === 'unico' || inscripcion.modalidadPago === 'anual') ? 'Único' : `C${cuota}`}
+                              </Badge>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <Badge
+                          variant={inscripcion.pagada ? 'default' : 'secondary'}
+                          className="cursor-pointer text-xs"
+                          onClick={() => handleTogglePagada(inscripcion)}
+                        >
+                          {inscripcion.pagada ? (
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Pagada
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Pendiente
+                            </>
+                          )}
+                        </Badge>
+                      )}
                     </div>
                     {showTipoFilter && (
                         <Badge variant="outline" className="text-xs mt-2">

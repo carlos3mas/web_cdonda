@@ -23,8 +23,13 @@ export interface Inscripcion {
   alergico?: string | null;
   numeroSeguridadSocial?: string | null;
   pagada: boolean;
+  cuota1Pagada?: boolean | null;
+  cuota2Pagada?: boolean | null;
+  cuota3Pagada?: boolean | null;
   justificantePago?: string | null;
   nombreArchivoJustificante?: string | null;
+  nombreArchivoJustificanteCuota2?: string | null;
+  nombreArchivoJustificanteCuota3?: string | null;
   firma?: string | null;
   firmaMimeType?: string | null;
   nombreArchivoFirma?: string | null;
@@ -35,6 +40,7 @@ export interface Inscripcion {
   sexo?: string | null;
   categoria?: string | null;
   modalidadPago?: string | null;
+  descuentoHermanos?: string | null;
   // Los campos cifrados del DNI nunca se exponen al cliente
   tieneDniFrontal?: boolean;
   tieneDniReverso?: boolean;

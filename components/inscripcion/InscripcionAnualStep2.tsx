@@ -13,7 +13,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { AlertCircle, Upload, FileText, CheckCircle, ShieldCheck, X } from 'lucide-react'
-import { SEXOS_ANUAL, MODALIDADES_PAGO_ANUAL, RELACIONES_TUTOR } from '@/lib/anualConfig'
+import {
+  SEXOS_ANUAL,
+  MODALIDADES_PAGO_ANUAL,
+  RELACIONES_TUTOR,
+  INSCRIPCION_ANUAL_TALLAS,
+} from '@/lib/anualConfig'
 import { cn } from '@/lib/utils'
 import SignaturePad from 'signature_pad'
 
@@ -27,6 +32,7 @@ export interface AnualFormData {
   localidad: string
   codigoPostal: string
   nombreTutor: string
+  dni: string
   relacionTutor: string
   telefono1: string
   telefono2: string
@@ -34,7 +40,11 @@ export interface AnualFormData {
   medicacion: string
   alergico: string
   numeroSeguridadSocial: string
+  tallaCamiseta: string
+  tallaPantalon: string
+  tallaCalcetines: string
   modalidadPago: string
+  descuentoHermanos: string
   derechosImagen: boolean
   lopd: boolean
   comentarios: string
@@ -43,6 +53,7 @@ export interface AnualFormData {
 interface InscripcionAnualStep2Props {
   formData: AnualFormData
   onChange: (field: keyof AnualFormData, value: string | boolean) => void
+  categoriaSeleccionada?: string | null
   dniFrontal: File | null
   dniReverso: File | null
   justificante: File | null
@@ -65,6 +76,49 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
   return <p className="text-xs text-red-600 mt-1">{message}</p>
+}
+
+function TallaSelect({
+  id,
+  label,
+  value,
+  options,
+  onChange,
+  error,
+}: {
+  id: string
+  label: string
+  value: string
+  options: readonly string[]
+  onChange: (value: string) => void
+  error?: string
+}) {
+  return (
+    <div>
+      <Label htmlFor={id} className="text-sm">
+        {label} <span className="text-red-600">*</span>
+      </Label>
+      <Select value={value || undefined} onValueChange={onChange}>
+        <SelectTrigger
+          id={id}
+          className={cn(
+            'text-sm sm:text-base',
+            error && 'border-red-500 focus:ring-red-500'
+          )}
+        >
+          <SelectValue placeholder="Seleccionar talla" />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((opt) => (
+            <SelectItem key={opt} value={opt}>
+              {opt}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FieldError message={error} />
+    </div>
+  )
 }
 
 function FileUploadZone({
@@ -142,6 +196,7 @@ function FileUploadZone({
 export function InscripcionAnualStep2({
   formData,
   onChange,
+  categoriaSeleccionada,
   dniFrontal,
   dniReverso,
   justificante,
@@ -269,12 +324,6 @@ export function InscripcionAnualStep2({
       {/* B – Fotos DNI */}
       <div className="space-y-4">
         <SectionTitle>Documento de identidad (DNI / NIE)</SectionTitle>
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 flex gap-3">
-          <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <p className="text-xs sm:text-sm text-blue-800">
-            Las imágenes del DNI se almacenan <strong>cifradas con AES-256</strong> y solo son accesibles por el personal autorizado del club. Nunca se comparten con terceros.
-          </p>
-        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FileUploadZone
             id="dniFrontal"
@@ -302,6 +351,15 @@ export function InscripcionAnualStep2({
               className={ic('nombreTutor')} placeholder="Nombre y apellidos" />
             <FieldError message={err('nombreTutor')} />
           </div>
+          <div>
+            <Label htmlFor="dni" className="text-sm">DNI/NIE del tutor/a *</Label>
+            <Input id="dni" value={formData.dni}
+              onChange={(e) => onChange('dni', e.target.value)}
+              className={ic('dni')} placeholder="12345678A" />
+            <FieldError message={err('dni')} />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <Label htmlFor="relacionTutor" className="text-sm">Relación con el jugador/a</Label>
             <Select value={formData.relacionTutor || undefined} onValueChange={(v) => onChange('relacionTutor', v)}>
@@ -334,7 +392,41 @@ export function InscripcionAnualStep2({
         </div>
       </div>
 
-      {/* D – Datos médicos */}
+      {/* D – Equipación */}
+      <div className="space-y-4">
+        <SectionTitle>Equipación de temporada</SectionTitle>
+        <p className="text-sm text-gray-600">
+          Indica las tallas para la equipación incluida en la inscripción anual.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <TallaSelect
+            id="tallaCamiseta"
+            label="Talla camiseta"
+            value={formData.tallaCamiseta}
+            options={INSCRIPCION_ANUAL_TALLAS.camiseta}
+            onChange={(v) => onChange('tallaCamiseta', v)}
+            error={err('tallaCamiseta')}
+          />
+          <TallaSelect
+            id="tallaPantalon"
+            label="Talla pantalón"
+            value={formData.tallaPantalon}
+            options={INSCRIPCION_ANUAL_TALLAS.pantalon}
+            onChange={(v) => onChange('tallaPantalon', v)}
+            error={err('tallaPantalon')}
+          />
+          <TallaSelect
+            id="tallaCalcetines"
+            label="Talla calzas"
+            value={formData.tallaCalcetines}
+            options={INSCRIPCION_ANUAL_TALLAS.calzas}
+            onChange={(v) => onChange('tallaCalcetines', v)}
+            error={err('tallaCalcetines')}
+          />
+        </div>
+      </div>
+
+      {/* E – Datos médicos */}
       <div className="space-y-4">
         <SectionTitle>Información médica</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -367,9 +459,82 @@ export function InscripcionAnualStep2({
         </div>
       </div>
 
-      {/* E – Pago */}
+      {/* F – Pago */}
       <div className="space-y-4">
         <SectionTitle>Modalidad de pago</SectionTitle>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+          <p className="text-sm font-semibold text-red-700">
+            Para formalizar la inscripción es obligatorio adjuntar el justificante del primer pago (cuota 1).
+          </p>
+        </div>
+        {categoriaSeleccionada === 'chupetines' && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 space-y-3">
+            <p className="font-semibold underline">Modalidades de pago (Chupetines):</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>
+                <strong>Pago único: 250€</strong> antes del 30 de septiembre de 2026.
+              </li>
+              <li>
+                <strong>Pago fraccionado:</strong>
+                <ul className="list-none mt-1 space-y-1 pl-1">
+                  <li>- 1er pago 150€ antes del 30 junio 2026 (imprescindible para reservar plaza).</li>
+                  <li>- 2º pago 100€ antes del 30 de septiembre 2026.</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        )}
+        {categoriaSeleccionada === 'querubines' && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 space-y-3">
+            <p className="font-semibold underline">Modalidades de pago (Querubines):</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>
+                <strong>Pago único: 300€</strong> antes del 30 de septiembre de 2026.
+              </li>
+              <li>
+                <strong>Pago fraccionado:</strong>
+                <ul className="list-none mt-1 space-y-1 pl-1">
+                  <li>- 1er pago 200€ antes del 30 junio 2026 (imprescindible para reservar plaza).</li>
+                  <li>- 2º pago 100€ antes del 30 de septiembre 2026.</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        )}
+        {categoriaSeleccionada === 'futbol-8' && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 space-y-3">
+            <p>
+              <strong>Cuota anual: 400€.</strong> (Camiseta, pantalón y calzas de competición)
+            </p>
+            <p className="font-semibold underline">Modalidades de pago:</p>
+            <ul className="list-none space-y-2 pl-1">
+              <li>- <strong>Pago único de 400€</strong> antes del 5 de agosto 2026.</li>
+              <li>- <strong>Pago fraccionado:</strong></li>
+              <li className="pl-3">- 1er pago 250€ antes del 30 junio 2026 (imprescindible para reservar plaza).</li>
+              <li className="pl-3">- 2º pago 150€ antes del 30 de septiembre 2026 (imprescindible para tramitar ficha y reserva de equipación “camiseta, pantalón y calzas de competición”).</li>
+              <li>- <strong>Descuento por hermanos en el club:</strong></li>
+              <li className="pl-3">• Cuota 2 hermanos: 375€ por jugador.</li>
+              <li className="pl-3">• Cuota 3 hermanos: 350€ por jugador.</li>
+            </ul>
+          </div>
+        )}
+        {categoriaSeleccionada === 'futbol-11' && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 space-y-3">
+            <p>
+              <strong>Cuota anual: 450€.</strong> (Camiseta, pantalón y calzas de competición)
+            </p>
+            <p className="font-semibold underline">Modalidades de pago:</p>
+            <ul className="list-none space-y-2 pl-1">
+              <li>- <strong>Pago único de 450€</strong> antes del 5 de agosto 2026.</li>
+              <li>- <strong>Pago fraccionado:</strong></li>
+              <li className="pl-3">- 1er pago 300€ antes del 30 junio 2026 (imprescindible para reservar plaza).</li>
+              <li className="pl-3">- 2º pago 150€ antes del 30 de septiembre 2026 (imprescindible para tramitar ficha y reserva de equipación “camiseta, pantalón y calzas de competición”).</li>
+              <li>- <strong>Descuento por hermanos en el club:</strong></li>
+              <li className="pl-3">• Cuota 2 hermanos: 425€ por jugador.</li>
+              <li className="pl-3">• Cuota 3 hermanos: 400€ por jugador.</li>
+            </ul>
+          </div>
+        )}
         <div>
           <Label htmlFor="modalidadPago" className="text-sm">Modalidad *</Label>
           <Select value={formData.modalidadPago || undefined} onValueChange={(v) => onChange('modalidadPago', v)}>
@@ -385,6 +550,26 @@ export function InscripcionAnualStep2({
             </SelectContent>
           </Select>
           <FieldError message={err('modalidadPago')} />
+        </div>
+
+        <div>
+          <Label htmlFor="descuentoHermanos" className="text-sm">Descuento por hermanos</Label>
+          <Select
+            value={formData.descuentoHermanos || 'no'}
+            onValueChange={(v) => onChange('descuentoHermanos', v)}
+          >
+            <SelectTrigger id="descuentoHermanos" className="text-sm sm:text-base">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="no">Sin descuento</SelectItem>
+              <SelectItem value="2-hermanos">2 hermanos</SelectItem>
+              <SelectItem value="3-hermanos">3 hermanos</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            Si no aplica, deja seleccionada la opción “Sin descuento”.
+          </p>
         </div>
 
         <div className="rounded-lg bg-blue-50 border-2 border-blue-300 p-4">
@@ -403,7 +588,7 @@ export function InscripcionAnualStep2({
 
         <FileUploadZone
           id="justificante"
-          label="Justificante de pago"
+          label="Justificante de pago (cuota 1)"
           file={justificante}
           onFile={onJustificante}
           required
@@ -411,7 +596,7 @@ export function InscripcionAnualStep2({
         <FieldError message={err('justificante')} />
       </div>
 
-      {/* F – Firma */}
+      {/* G – Firma */}
       <div className="space-y-3" id="firmaTutor">
         <SectionTitle>Firma del tutor/a</SectionTitle>
         <p className="text-sm font-semibold text-red-600">Firma aquí *</p>
@@ -460,6 +645,7 @@ export function InscripcionAnualStep2({
               </p>
             </label>
           </div>
+          <FieldError message={err('derechosImagen')} />
         </div>
 
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">

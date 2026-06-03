@@ -48,25 +48,11 @@ export function InscripcionAnualStep1({
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
-                  <div
-                    className={cn(
-                      'h-12 w-12 flex-shrink-0 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-black text-lg shadow-sm',
-                      tipo.color
-                    )}
-                  >
-                    {tipo.id === 'querubines-chupetin' ? '⭐' : tipo.id === 'futbol-8' ? '8' : '11'}
-                  </div>
                   <div className="min-w-0">
                     <p className={cn('font-bold text-base sm:text-lg', seleccionado ? 'text-red-700' : 'text-gray-900')}>
                       {tipo.label}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5">{tipo.descripcion}</p>
-                    <span className={cn(
-                      'inline-block mt-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                      seleccionado ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
-                    )}>
-                      {tipo.edades}
-                    </span>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1 leading-snug">{tipo.descripcion}</p>
                   </div>
                 </div>
                 <div className="flex-shrink-0">

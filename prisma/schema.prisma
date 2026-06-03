@@ -33,9 +33,18 @@ model Inscripcion {
   alergico                  String?
   numeroSeguridadSocial     String?
   pagada                    Boolean  @default(false)
+  cuota1Pagada              Boolean  @default(false)
+  cuota2Pagada              Boolean  @default(false)
+  cuota3Pagada              Boolean  @default(false)
   justificantePago          String?  // Base64 del justificante de pago
   justificantePagoMimeType  String?  // Tipo MIME del justificante (image/jpeg, application/pdf, etc.)
   nombreArchivoJustificante String?  // Nombre original del archivo
+  justificantePagoCuota2    String?
+  justificantePagoCuota2MimeType String?
+  nombreArchivoJustificanteCuota2 String?
+  justificantePagoCuota3    String?
+  justificantePagoCuota3MimeType String?
+  nombreArchivoJustificanteCuota3 String?
   firma                     String?  // Base64 de la firma del tutor
   firmaMimeType             String?  // Tipo MIME de la firma
   nombreArchivoFirma        String?  // Nombre original del archivo de firma
@@ -44,8 +53,9 @@ model Inscripcion {
   // Campos exclusivos de inscripción anual
   email                     String?
   sexo                      String?  // M / F
-  categoria                 String?  // anual-querubines-chupetin | anual-futbol-8 | anual-futbol-11
-  modalidadPago             String?  // mensual | trimestral | anual
+  categoria                 String?  // chupetines | querubines | futbol-8 | futbol-11
+  modalidadPago             String?  // unico | fraccionado
+  descuentoHermanos         String?  // no | 2-hermanos | 3-hermanos
   dniFrontalEncriptado      String?  // AES-256-GCM base64 (foto frontal DNI)
   dniFrontalMimeType        String?
   dniReversoEncriptado      String?  // AES-256-GCM base64 (foto reverso DNI)

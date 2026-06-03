@@ -225,6 +225,7 @@ export type InscripcionAnualPayload = {
   codigoPostal: string
   categoria: string
   nombreTutor: string
+  dni: string
   relacionTutor?: string
   telefono1: string
   telefono2?: string
@@ -232,8 +233,12 @@ export type InscripcionAnualPayload = {
   medicacion?: string
   alergico?: string
   numeroSeguridadSocial?: string
+  tallaCamiseta: string
+  tallaPantalon: string
+  tallaCalcetines: string
   modalidadPago: string
-  derechosImagen?: string
+  descuentoHermanos?: string
+  derechosImagen?: string | boolean
   comentarios?: string
 }
 
@@ -253,10 +258,14 @@ export function getInscripcionAnualSchema() {
       .min(4, 'El código postal debe tener al menos 4 caracteres')
       .max(10, 'Código postal demasiado largo'),
     categoria: z.enum(
-      ['querubines-chupetin', 'futbol-8', 'futbol-11'],
+      ['chupetines', 'querubines', 'futbol-8', 'futbol-11'],
       { errorMap: () => ({ message: 'Selecciona una categoría válida' }) }
     ),
     nombreTutor: z.string().min(2, 'Introduce el nombre del tutor/a'),
+    dni: z
+      .string()
+      .min(8, 'El DNI/NIE del tutor debe tener al menos 8 caracteres')
+      .max(20, 'El DNI/NIE del tutor es demasiado largo'),
     relacionTutor: z.string().optional(),
     telefono1: z
       .string()
@@ -270,11 +279,22 @@ export function getInscripcionAnualSchema() {
     medicacion: z.string().optional(),
     alergico: z.string().optional(),
     numeroSeguridadSocial: z.string().optional(),
+    tallaCamiseta: z.string().min(1, 'Selecciona la talla de camiseta'),
+    tallaPantalon: z.string().min(1, 'Selecciona la talla de pantalón'),
+    tallaCalcetines: z.string().min(1, 'Selecciona la talla de calzas'),
     modalidadPago: z.enum(
-      ['mensual', 'trimestral', 'anual'],
+      ['unico', 'fraccionado'],
       { errorMap: () => ({ message: 'Selecciona una modalidad de pago' }) }
     ),
-    derechosImagen: z.string().optional(),
+    descuentoHermanos: z.enum(['no', '2-hermanos', '3-hermanos']).optional(),
+    derechosImagen: z.preprocess(
+      (value) => {
+        if (value === true || value === 'true') return true
+        if (value === false || value === 'false') return false
+        return value
+      },
+      z.boolean().refine((v) => v, 'Debes aceptar la autorización de derechos de imagen')
+    ),
     comentarios: z.string().optional(),
   })
 }

@@ -16,6 +16,7 @@ export async function GET(
   
   try {
     const { filename } = params
+    const cuota = new URL(request.url).searchParams.get('cuota') || '1'
     
     // El filename es el ID de la inscripción
     const inscripcionId = filename
@@ -27,22 +28,51 @@ export async function GET(
         justificantePago: true,
         justificantePagoMimeType: true,
         nombreArchivoJustificante: true,
+        justificantePagoCuota2: true,
+        justificantePagoCuota2MimeType: true,
+        nombreArchivoJustificanteCuota2: true,
+        justificantePagoCuota3: true,
+        justificantePagoCuota3MimeType: true,
+        nombreArchivoJustificanteCuota3: true,
       },
     })
     
-    if (!inscripcion || !inscripcion.justificantePago) {
+    if (!inscripcion) {
       return NextResponse.json(
         { error: 'Justificante no encontrado' },
         { status: 404 }
       )
     }
-    
-    // Convertir base64 a buffer
-    const fileBuffer = Buffer.from(inscripcion.justificantePago, 'base64')
-    
-    // Usar el MIME type guardado en la BD
-    const contentType = inscripcion.justificantePagoMimeType || 'application/octet-stream'
-    const originalFilename = inscripcion.nombreArchivoJustificante || 'justificante'
+
+    const payload =
+      cuota === '2'
+        ? {
+            file: inscripcion.justificantePagoCuota2,
+            mime: inscripcion.justificantePagoCuota2MimeType,
+            name: inscripcion.nombreArchivoJustificanteCuota2,
+          }
+        : cuota === '3'
+          ? {
+              file: inscripcion.justificantePagoCuota3,
+              mime: inscripcion.justificantePagoCuota3MimeType,
+              name: inscripcion.nombreArchivoJustificanteCuota3,
+            }
+          : {
+              file: inscripcion.justificantePago,
+              mime: inscripcion.justificantePagoMimeType,
+              name: inscripcion.nombreArchivoJustificante,
+            }
+
+    if (!payload.file) {
+      return NextResponse.json(
+        { error: `Justificante de cuota ${cuota} no encontrado` },
+        { status: 404 }
+      )
+    }
+
+    const fileBuffer = Buffer.from(payload.file, 'base64')
+    const contentType = payload.mime || 'application/octet-stream'
+    const originalFilename = payload.name || `justificante-cuota-${cuota}`
     
     // Devolver el archivo con headers apropiados
     return new NextResponse(fileBuffer, {

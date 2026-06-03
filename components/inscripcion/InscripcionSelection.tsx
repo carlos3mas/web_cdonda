@@ -60,16 +60,15 @@ export function InscripcionSelection() {
       title: t('inscripcionSelection.anual'),
       description: t('inscripcionSelection.anualDesc'),
       icon: GraduationCap,
-      available: false,
-      href: '#',
+      available: true,
+      href: '/inscripcion-anual',
       features: [
-        t('inscripcionSelection.proximamente'),
         t('inscripcionSelection.anualFeature1'),
         t('inscripcionSelection.anualFeature2'),
         t('inscripcionSelection.anualFeature3'),
         t('inscripcionSelection.anualFeature4')
       ],
-      badge: t('inscripcionSelection.proximamente')
+      badge: t('inscripcionSelection.disponible')
     }
   ]
 

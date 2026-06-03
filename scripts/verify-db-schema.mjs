@@ -10,9 +10,12 @@ const EXPECTED_COLUMNS = [
   'tallaCamiseta', 'tallaPantalon', 'tallaCalcetines',
   'nombreTutor', 'telefono1', 'telefono2',
   'enfermedad', 'medicacion', 'alergico', 'numeroSeguridadSocial',
-  'pagada', 'justificantePago', 'justificantePagoMimeType', 'nombreArchivoJustificante',
+  'pagada', 'cuota1Pagada', 'cuota2Pagada', 'cuota3Pagada',
+  'justificantePago', 'justificantePagoMimeType', 'nombreArchivoJustificante',
+  'justificantePagoCuota2', 'justificantePagoCuota2MimeType', 'nombreArchivoJustificanteCuota2',
+  'justificantePagoCuota3', 'justificantePagoCuota3MimeType', 'nombreArchivoJustificanteCuota3',
   'firma', 'firmaMimeType', 'nombreArchivoFirma',
-  'derechosImagen', 'comentarios', 'createdAt', 'updatedAt',
+  'derechosImagen', 'comentarios', 'descuentoHermanos', 'createdAt', 'updatedAt',
 ]
 
 const client = createClient({

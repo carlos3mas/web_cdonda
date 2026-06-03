@@ -73,6 +73,10 @@ const MIGRATIONS: { name: string; sql: string }[] = [
     sql: 'ALTER TABLE inscripciones ADD COLUMN modalidadPago TEXT;',
   },
   {
+    name: '20260602102000_add_inscripcion_anual_descuentoHermanos',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN descuentoHermanos TEXT;',
+  },
+  {
     name: '20260521120000_add_inscripcion_anual_dniFrontalEncriptado',
     sql: 'ALTER TABLE inscripciones ADD COLUMN dniFrontalEncriptado TEXT;',
   },
@@ -87,6 +91,42 @@ const MIGRATIONS: { name: string; sql: string }[] = [
   {
     name: '20260521120000_add_inscripcion_anual_dniReversoMimeType',
     sql: 'ALTER TABLE inscripciones ADD COLUMN dniReversoMimeType TEXT;',
+  },
+  {
+    name: '20260602100000_add_cuota1Pagada',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN cuota1Pagada INTEGER NOT NULL DEFAULT 0;',
+  },
+  {
+    name: '20260602100000_add_cuota2Pagada',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN cuota2Pagada INTEGER NOT NULL DEFAULT 0;',
+  },
+  {
+    name: '20260602100000_add_cuota3Pagada',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN cuota3Pagada INTEGER NOT NULL DEFAULT 0;',
+  },
+  {
+    name: '20260602100000_add_justificantePagoCuota2',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN justificantePagoCuota2 TEXT;',
+  },
+  {
+    name: '20260602100000_add_justificantePagoCuota2MimeType',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN justificantePagoCuota2MimeType TEXT;',
+  },
+  {
+    name: '20260602100000_add_nombreArchivoJustificanteCuota2',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN nombreArchivoJustificanteCuota2 TEXT;',
+  },
+  {
+    name: '20260602100000_add_justificantePagoCuota3',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN justificantePagoCuota3 TEXT;',
+  },
+  {
+    name: '20260602100000_add_justificantePagoCuota3MimeType',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN justificantePagoCuota3MimeType TEXT;',
+  },
+  {
+    name: '20260602100000_add_nombreArchivoJustificanteCuota3',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN nombreArchivoJustificanteCuota3 TEXT;',
   },
 ]
 
@@ -113,9 +153,18 @@ const EXPECTED_COLUMNS = [
   'alergico',
   'numeroSeguridadSocial',
   'pagada',
+  'cuota1Pagada',
+  'cuota2Pagada',
+  'cuota3Pagada',
   'justificantePago',
   'justificantePagoMimeType',
   'nombreArchivoJustificante',
+  'justificantePagoCuota2',
+  'justificantePagoCuota2MimeType',
+  'nombreArchivoJustificanteCuota2',
+  'justificantePagoCuota3',
+  'justificantePagoCuota3MimeType',
+  'nombreArchivoJustificanteCuota3',
   'firma',
   'firmaMimeType',
   'nombreArchivoFirma',
@@ -125,6 +174,7 @@ const EXPECTED_COLUMNS = [
   'sexo',
   'categoria',
   'modalidadPago',
+  'descuentoHermanos',
   'dniFrontalEncriptado',
   'dniFrontalMimeType',
   'dniReversoEncriptado',

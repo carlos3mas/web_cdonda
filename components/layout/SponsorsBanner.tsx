@@ -24,7 +24,7 @@ const sponsors = [
   'LOGILOP.webp',
   'Marplac.webp',
   'MOZ-TILES.webp',
-  'pura-magia.webp',
+  'PURA-MAGIA.webp',
   'tiles-cut.webp',
   'rotulos.webp',
   'sara-blazquez.webp',

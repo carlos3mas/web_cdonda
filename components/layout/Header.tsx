@@ -10,56 +10,18 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useI18n } from '@/lib/i18n/context'
 import { LanguageSelector } from './LanguageSelector'
 
+const SUB_NAV_OFFSET = 112
+const DEFAULT_SCROLL_OFFSET = 80
+const PRIMER_EQUIPO_ENABLED = process.env.NEXT_PUBLIC_ENABLE_PRIMER_EQUIPO === 'true'
+
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
   const isCampusPage = pathname?.startsWith('/campus-verano')
+  const isPrimerEquipoPage = PRIMER_EQUIPO_ENABLED && pathname?.startsWith('/primer-equipo')
   const isInscripcionPage = pathname === '/campus-verano/inscripcion'
   const { t } = useI18n()
 
-  // Cerrar menú cuando cambia la ruta
-  useEffect(() => {
-    setIsMenuOpen(false)
-    
-    // Manejar scroll a hash guardado después de navegar
-    const scrollToHash = sessionStorage.getItem('scrollToHash')
-    if (scrollToHash) {
-      sessionStorage.removeItem('scrollToHash')
-      setTimeout(() => {
-        const element = document.getElementById(scrollToHash)
-        if (element) {
-          const headerOffset = 80
-          const elementPosition = element.getBoundingClientRect().top
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          })
-        }
-      }, 300)
-    }
-    
-    // Manejar hash en la URL actual
-    if (pathname === '/' && window.location.hash) {
-      const hash = window.location.hash.substring(1)
-      setTimeout(() => {
-        const element = document.getElementById(hash)
-        if (element) {
-          const headerOffset = 80
-          const elementPosition = element.getBoundingClientRect().top
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          })
-        }
-      }, 300)
-    }
-  }, [pathname])
-
-  // Subsecciones del campus
   const campusSubsections = [
     { href: '/campus-verano#campus-incluye', label: t('campus.queIncluyeSub') },
     { href: '/campus-verano#campus-info', label: t('campus.informacionPractica') },
@@ -67,57 +29,104 @@ export function Header() {
     { href: '/campus-verano#campus-cta', label: t('campus.inscrbete') },
   ]
 
-  // Manejar scroll suave para enlaces de anclaje
+  const primerEquipoSubsections = [
+    { href: '/primer-equipo#primer-equipo-partidos', label: t('primerEquipo.proximosEnfrentamientos') },
+    { href: '/primer-equipo#primer-equipo-clasificacion', label: t('primerEquipo.clasificacion') },
+    { href: '/primer-equipo#primer-equipo-plantilla', label: t('primerEquipo.plantilla') },
+    { href: '/primer-equipo#primer-equipo-patrocinadores', label: t('primerEquipo.patrocinadores') },
+    { href: '/primer-equipo#primer-equipo-noticias', label: t('primerEquipo.noticias') },
+  ]
+
+  const activeSubNav = isCampusPage && !isInscripcionPage
+    ? { path: '/campus-verano', label: t('header.campusNavidad'), subsections: campusSubsections }
+    : isPrimerEquipoPage
+      ? { path: '/primer-equipo', label: t('header.primerEquipo'), subsections: primerEquipoSubsections }
+      : null
+
+  const scrollOffset = activeSubNav ? SUB_NAV_OFFSET : DEFAULT_SCROLL_OFFSET
+
+  // Cerrar menú cuando cambia la ruta
+  useEffect(() => {
+    setIsMenuOpen(false)
+
+    const scrollToHash = sessionStorage.getItem('scrollToHash')
+    if (scrollToHash) {
+      sessionStorage.removeItem('scrollToHash')
+      setTimeout(() => {
+        const element = document.getElementById(scrollToHash)
+        if (element) {
+          const elementPosition = element.getBoundingClientRect().top
+          const offsetPosition = elementPosition + window.pageYOffset - scrollOffset
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth',
+          })
+        }
+      }, 300)
+    }
+
+    if (pathname === '/' && window.location.hash) {
+      const hash = window.location.hash.substring(1)
+      setTimeout(() => {
+        const element = document.getElementById(hash)
+        if (element) {
+          const elementPosition = element.getBoundingClientRect().top
+          const offsetPosition = elementPosition + window.pageYOffset - DEFAULT_SCROLL_OFFSET
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth',
+          })
+        }
+      }, 300)
+    }
+  }, [pathname, scrollOffset])
+
   const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.includes('#')) {
       e.preventDefault()
       const [path, hash] = href.split('#')
       const normalizedPath = path || '/'
       const currentPath = pathname || '/'
-      
-      // Si el hash es para la página del campus y estamos en ella
-      if (hash && isCampusPage && normalizedPath === '/campus-verano') {
+
+      if (hash && activeSubNav && normalizedPath === activeSubNav.path) {
         setIsMenuOpen(false)
         setTimeout(() => {
           const element = document.getElementById(hash)
           if (element) {
-            // Header (64px) + Sub-navbar (48px) = 112px
-            const headerOffset = 112
             const elementPosition = element.getBoundingClientRect().top
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+            const offsetPosition = elementPosition + window.pageYOffset - SUB_NAV_OFFSET
 
             window.scrollTo({
               top: offsetPosition,
-              behavior: 'smooth'
+              behavior: 'smooth',
             })
           }
         }, 100)
         return
       }
-      
-      // Si estamos en otra página, navegar primero y luego hacer scroll
+
       if (currentPath !== normalizedPath) {
         setIsMenuOpen(false)
-        // Guardar el hash para hacer scroll después de navegar
         if (hash) {
           sessionStorage.setItem('scrollToHash', hash)
         }
         window.location.href = href
         return
       }
-      
-      // Si estamos en la página correcta, hacer scroll suave
+
       setIsMenuOpen(false)
       setTimeout(() => {
         const element = document.getElementById(hash)
         if (element) {
-          const headerOffset = 80
+          const offset = activeSubNav ? SUB_NAV_OFFSET : DEFAULT_SCROLL_OFFSET
           const elementPosition = element.getBoundingClientRect().top
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+          const offsetPosition = elementPosition + window.pageYOffset - offset
 
           window.scrollTo({
             top: offsetPosition,
-            behavior: 'smooth'
+            behavior: 'smooth',
           })
         }
       }, 100)
@@ -135,6 +144,9 @@ export function Header() {
     { href: '/#equipos', label: t('header.equipos') },
     { href: '/#patrocinadores', label: t('header.patrocinadores') },
     { href: '/#contacto', label: t('header.contacto') },
+    ...(PRIMER_EQUIPO_ENABLED
+      ? [{ href: '/primer-equipo', label: t('header.primerEquipo'), highlight: true as const }]
+      : []),
     { href: '/campus-verano', label: t('header.campusNavidad'), highlight: true },
   ]
 
@@ -142,7 +154,6 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
       <nav className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group z-50 min-w-0">
             <div className="relative w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 transition-transform group-hover:scale-110 flex-shrink-0">
               <Image
@@ -159,7 +170,6 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-4">
             {navLinks.map((link) => (
               <Link
@@ -182,7 +192,6 @@ export function Header() {
             <LanguageSelector />
           </div>
 
-          {/* Mobile/Tablet Menu Button */}
           <button
             className="lg:hidden p-1.5 sm:p-2 hover:bg-gray-100 rounded-md transition-colors z-50 relative flex-shrink-0"
             onClick={(e) => {
@@ -200,7 +209,6 @@ export function Header() {
           </button>
         </div>
 
-        {/* Mobile/Tablet Navigation */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
@@ -209,59 +217,57 @@ export function Header() {
               exit={{ opacity: 0, height: 0 }}
               className="lg:hidden border-t bg-white"
             >
-            <div className="py-3 sm:py-4 space-y-1 max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-4rem)] overflow-y-auto">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => {
-                    handleAnchorClick(e, link.href)
-                  }}
-                  className={`block px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-medium transition-colors hover:bg-gray-50 active:bg-gray-100 ${
-                    link.highlight ? 'text-red-600' : 'text-gray-700'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              {/* Subsecciones del campus en móvil (solo si no estamos en la página de inscripción) */}
-              {isCampusPage && !isInscripcionPage && (
-                <>
-                  <div className="px-3 sm:px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-t border-gray-200 mt-2 pt-3 sm:pt-4">
-                    {t('header.campusNavidad')}
+              <div className="py-3 sm:py-4 space-y-1 max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-4rem)] overflow-y-auto">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={(e) => {
+                      handleAnchorClick(e, link.href)
+                    }}
+                    className={`block px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-medium transition-colors hover:bg-gray-50 active:bg-gray-100 ${
+                      link.highlight ? 'text-red-600' : 'text-gray-700'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                {activeSubNav && (
+                  <>
+                    <div className="px-3 sm:px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-t border-gray-200 mt-2 pt-3 sm:pt-4">
+                      {activeSubNav.label}
+                    </div>
+                    {activeSubNav.subsections.map((sub) => (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={(e) => {
+                          handleAnchorClick(e, sub.href)
+                        }}
+                        className="block px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-gray-600 hover:bg-gray-100 hover:text-red-600 transition-colors active:bg-gray-200"
+                      >
+                        {sub.label}
+                      </Link>
+                    ))}
+                  </>
+                )}
+                <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2 space-y-2">
+                  <Link href="/inscripcion" onClick={() => setIsMenuOpen(false)} className="block">
+                    <Button size="lg" className="w-full bg-red-600 hover:bg-red-700 text-sm sm:text-base py-5 sm:py-6">
+                      {t('header.inscrbete')}
+                    </Button>
+                  </Link>
+                  <div className="flex justify-center">
+                    <LanguageSelector />
                   </div>
-                  {campusSubsections.map((sub) => (
-                    <Link
-                      key={sub.href}
-                      href={sub.href}
-                      onClick={(e) => {
-                        handleAnchorClick(e, sub.href)
-                      }}
-                      className="block px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-gray-600 hover:bg-gray-100 hover:text-red-600 transition-colors active:bg-gray-200"
-                    >
-                      {sub.label}
-                    </Link>
-                  ))}
-                </>
-              )}
-              <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2 space-y-2">
-                <Link href="/inscripcion" onClick={() => setIsMenuOpen(false)} className="block">
-                  <Button size="lg" className="w-full bg-red-600 hover:bg-red-700 text-sm sm:text-base py-5 sm:py-6">
-                    {t('header.inscrbete')}
-                  </Button>
-                </Link>
-                <div className="flex justify-center">
-                  <LanguageSelector />
                 </div>
               </div>
-            </div>
             </motion.div>
           )}
         </AnimatePresence>
       </nav>
 
-      {/* Sub-navbar para el campus (solo si no estamos en la página de inscripción) */}
-      {isCampusPage && !isInscripcionPage && (
+      {activeSubNav && (
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -269,13 +275,13 @@ export function Header() {
           className="hidden lg:block border-t border-gray-200 bg-white/98 backdrop-blur-sm"
         >
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-end gap-4 h-12">
-              {campusSubsections.map((sub) => (
+            <div className="flex items-center justify-end gap-4 h-12 overflow-x-auto">
+              {activeSubNav.subsections.map((sub) => (
                 <Link
                   key={sub.href}
                   href={sub.href}
                   onClick={(e) => handleAnchorClick(e, sub.href)}
-                  className="text-xs font-medium text-gray-700 hover:text-red-600 transition-colors whitespace-nowrap relative group"
+                  className="text-xs font-medium text-gray-700 hover:text-red-600 transition-colors whitespace-nowrap relative group shrink-0"
                 >
                   {sub.label}
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 transition-all group-hover:w-full"></span>
@@ -288,4 +294,3 @@ export function Header() {
     </header>
   )
 }
-

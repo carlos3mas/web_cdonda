@@ -32,7 +32,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/admin/login')
+      router.replace('/admin/login')
     }
   }, [status, router])
 
@@ -120,7 +120,11 @@ export default function AdminDashboardPage() {
   }
 
   if (status === 'unauthenticated') {
-    return null
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+      </div>
+    )
   }
 
   return (

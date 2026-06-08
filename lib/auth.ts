@@ -3,43 +3,54 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 
+const useSecureCookies =
+  process.env.NEXTAUTH_URL?.startsWith('https://') ?? process.env.NODE_ENV === 'production'
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null
         }
 
-        const admin = await prisma.admin.findUnique({
-          where: { email: credentials.email }
-        })
+        const email = credentials.email.trim().toLowerCase()
 
-        if (!admin) {
+        try {
+          const admin = await prisma.admin.findUnique({
+            where: { email },
+          })
+
+          if (!admin) {
+            return null
+          }
+
+          const passwordMatch = await bcrypt.compare(credentials.password, admin.password)
+
+          if (!passwordMatch) {
+            return null
+          }
+
+          return {
+            id: admin.id,
+            email: admin.email,
+            name: admin.nombre,
+          }
+        } catch (error) {
+          console.error('[auth] Error al verificar credenciales:', error)
           return null
         }
-
-        const passwordMatch = await bcrypt.compare(credentials.password, admin.password)
-
-        if (!passwordMatch) {
-          return null
-        }
-
-        return {
-          id: admin.id,
-          email: admin.email,
-          name: admin.nombre,
-        }
-      }
-    })
+      },
+    }),
   ],
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
+    maxAge: 60 * 60 * 8,
   },
   pages: {
     signIn: '/admin/login',
@@ -56,8 +67,21 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
       }
       return session
-    }
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  useSecureCookies,
+  cookies: useSecureCookies
+    ? {
+        sessionToken: {
+          name: '__Secure-next-auth.session-token',
+          options: {
+            httpOnly: true,
+            sameSite: 'lax',
+            path: '/',
+            secure: true,
+          },
+        },
+      }
+    : undefined,
 }
-

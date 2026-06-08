@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
+import Link from 'next/link'
 import {
   Users,
   Baby,
@@ -17,6 +18,8 @@ import {
   Crown
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
+
+const PRIMER_EQUIPO_ENABLED = process.env.NEXT_PUBLIC_ENABLE_PRIMER_EQUIPO === 'true'
 
 export function ClubTeamsSection() {
   const { t } = useI18n()
@@ -93,15 +96,13 @@ export function ClubTeamsSection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
               {teams.map((team, index) => {
                 const Icon = team.icon
-                return (
-                  <motion.div
-                    key={team.title}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: index * 0.05 }}
-                    className="flex flex-col gap-2 p-3 md:p-4 rounded-lg bg-white/80 backdrop-blur-sm hover:bg-white transition-colors shadow-sm"
-                  >
+                const isPrimerEquipo = PRIMER_EQUIPO_ENABLED && team.title === t('teams.primerEquipo')
+                const cardClassName =
+                  'flex flex-col gap-2 p-3 md:p-4 rounded-lg bg-white/80 backdrop-blur-sm hover:bg-white transition-colors shadow-sm' +
+                  (isPrimerEquipo ? ' hover:ring-2 hover:ring-red-200' : '')
+
+                const cardContent = (
+                  <>
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center shadow-sm">
                         <Icon className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
@@ -118,6 +119,25 @@ export function ClubTeamsSection() {
                     <p className="text-xs sm:text-sm text-gray-600 leading-relaxed pl-0 sm:pl-14">
                       {team.description}
                     </p>
+                  </>
+                )
+
+                return (
+                  <motion.div
+                    key={team.title}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    className={cardClassName}
+                  >
+                    {isPrimerEquipo ? (
+                      <Link href="/primer-equipo" className="flex flex-col gap-2">
+                        {cardContent}
+                      </Link>
+                    ) : (
+                      cardContent
+                    )}
                   </motion.div>
                 )
               })}

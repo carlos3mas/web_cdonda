@@ -6,10 +6,24 @@ import bcrypt from 'bcryptjs'
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
 function createPrismaClient() {
-  // Configurar cliente Turso/LibSQL
+  const databaseUrl = process.env.DATABASE_URL
+  if (!databaseUrl) {
+    throw new Error('[prisma] DATABASE_URL no está configurada')
+  }
+
+  const isRemoteTurso =
+    databaseUrl.includes('turso.io') || databaseUrl.startsWith('libsql://')
+  const authToken = process.env.TURSO_AUTH_TOKEN
+
+  if (isRemoteTurso && !authToken) {
+    console.error(
+      '[prisma] TURSO_AUTH_TOKEN no está configurado. Las consultas fallarán (fetch failed).'
+    )
+  }
+
   const libsql = createClient({
-    url: process.env.DATABASE_URL!,
-    authToken: process.env.TURSO_AUTH_TOKEN,
+    url: databaseUrl,
+    authToken: authToken || undefined,
   })
   
   const adapter = new PrismaLibSQL(libsql)

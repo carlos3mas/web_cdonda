@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,7 +10,6 @@ import { Label } from '@/components/ui/label'
 import { AlertCircle, Loader2, Shield, Eye, EyeOff } from 'lucide-react'
 
 export default function AdminLoginPage() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -27,15 +25,20 @@ export default function AdminLoginPage() {
 
     try {
       const result = await signIn('credentials', {
-        email: formData.email,
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
         redirect: false,
+        callbackUrl: '/admin/dashboard',
       })
 
       if (result?.error) {
-        setError('Credenciales inválidas')
+        setError('Credenciales inválidas. Comprueba email y contraseña.')
+      } else if (result?.ok) {
+        // Navegación completa para que el middleware lea la cookie de sesión
+        window.location.assign('/admin/dashboard')
+        return
       } else {
-        router.push('/admin/dashboard')
+        setError('No se pudo iniciar sesión. Inténtalo de nuevo.')
       }
     } catch {
       setError('Error al iniciar sesión')

@@ -1,12 +1,11 @@
 import { MetadataRoute } from 'next'
+import { isPrimerEquipoEnabled } from '@/lib/feature-flags'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://cdonda.es'
-  
-  // Fecha de última modificación
   const lastModified = new Date()
 
-  return [
+  const entries: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified,
@@ -50,5 +49,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
   ]
+
+  if (isPrimerEquipoEnabled()) {
+    entries.splice(1, 0, {
+      url: `${baseUrl}/primer-equipo`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    })
+  }
+
+  return entries
 }
 

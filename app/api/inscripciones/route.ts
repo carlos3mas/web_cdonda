@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-middleware'
 import { inscripcionRateLimit, apiRateLimit } from '@/lib/rate-limit'
@@ -94,18 +95,40 @@ export async function GET(request: NextRequest) {
         categoria: true,
         modalidadPago: true,
         descuentoHermanos: true,
-        dniFrontalEncriptado: true,
-        dniReversoEncriptado: true,
         createdAt: true,
         updatedAt: true,
       },
     })
 
-    // Eliminamos los blobs cifrados del DNI y añadimos flags booleanos
-    const inscripciones = rawInscripciones.map(({ dniFrontalEncriptado, dniReversoEncriptado, ...rest }) => ({
-      ...rest,
-      tieneDniFrontal: !!dniFrontalEncriptado,
-      tieneDniReverso: !!dniReversoEncriptado,
+    const anualIds = rawInscripciones
+      .filter((row) => row.tipoInscripcion === 'anual')
+      .map((row) => row.id)
+
+    const dniFlagsById = new Map<string, { tieneDniFrontal: boolean; tieneDniReverso: boolean }>()
+
+    if (anualIds.length > 0) {
+      const flagRows = await prisma.$queryRaw<
+        { id: string; tieneDniFrontal: number; tieneDniReverso: number }[]
+      >`
+        SELECT id,
+          (dniFrontalEncriptado IS NOT NULL AND length(dniFrontalEncriptado) > 0) AS tieneDniFrontal,
+          (dniReversoEncriptado IS NOT NULL AND length(dniReversoEncriptado) > 0) AS tieneDniReverso
+        FROM inscripciones
+        WHERE id IN (${Prisma.join(anualIds)})
+      `
+
+      for (const row of flagRows) {
+        dniFlagsById.set(row.id, {
+          tieneDniFrontal: Boolean(row.tieneDniFrontal),
+          tieneDniReverso: Boolean(row.tieneDniReverso),
+        })
+      }
+    }
+
+    const inscripciones = rawInscripciones.map((row) => ({
+      ...row,
+      tieneDniFrontal: dniFlagsById.get(row.id)?.tieneDniFrontal ?? false,
+      tieneDniReverso: dniFlagsById.get(row.id)?.tieneDniReverso ?? false,
     }))
 
     // Log para diagnóstico en producción

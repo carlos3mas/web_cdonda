@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-middleware'
 import { apiRateLimit } from '@/lib/rate-limit'
-import {
-  getInscripcionStats,
-  getInscripcionesForAdminList,
-} from '@/lib/inscripciones-admin'
+import { getAdminTabData } from '@/lib/inscripciones-admin'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -30,18 +27,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const tipo = searchParams.get('tipo')
     const limitParam = searchParams.get('limit')
-    const limit = limitParam ? Math.max(1, Math.min(200, Number(limitParam))) : 50
+    const offsetParam = searchParams.get('offset')
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : 50
+    const offset = offsetParam ? Math.max(0, Number(offsetParam)) : 0
 
-    const [stats, inscripciones] = await Promise.all([
-      getInscripcionStats(tipo),
-      getInscripcionesForAdminList(tipo, limit),
-    ])
+    const data = await getAdminTabData(tipo, limit, offset)
 
     console.log(
-      `📊 Dashboard: ${inscripciones.length} inscripciones (tipo: ${tipo || 'todos'}, limit: ${limit})`
+      `📊 Dashboard [${tipo || 'todos'}]: ${data.inscripciones.length} filas (offset ${offset}, total ${data.pagination.total})`
     )
 
-    return NextResponse.json({ stats, inscripciones }, { headers })
+    return NextResponse.json(data, { headers })
   } catch (error) {
     console.error('Error al cargar dashboard de inscripciones:', error)
     return NextResponse.json(

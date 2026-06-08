@@ -68,14 +68,23 @@ export const ADMIN_DETAIL_SELECT = {
   dniReversoMimeType: true,
   createdAt: true,
   updatedAt: true,
-  dniFrontalEncriptado: true,
-  dniReversoEncriptado: true,
 } satisfies Prisma.InscripcionSelect
 
 type StatsRow = {
   totalInscripciones: bigint | number
   inscripcionesPagadas: bigint | number
   inscripcionesPendientes: bigint | number
+}
+
+export type AdminListResult = {
+  inscripciones: Inscripcion[]
+  stats: DashboardStats
+  pagination: {
+    offset: number
+    limit: number
+    total: number
+    hasMore: boolean
+  }
 }
 
 function toStats(row: StatsRow | undefined): DashboardStats {
@@ -109,9 +118,19 @@ export async function getInscripcionStats(tipo?: string | null): Promise<Dashboa
   return toStats(row)
 }
 
+function mapListRow(row: Prisma.InscripcionGetPayload<{ select: typeof ADMIN_LIST_SELECT }>): Inscripcion {
+  return {
+    ...row,
+    tieneDniFrontal: false,
+    tieneDniReverso: false,
+    updatedAt: row.createdAt,
+  } as Inscripcion
+}
+
 export async function getInscripcionesForAdminList(
   tipo?: string | null,
-  limit = 50
+  limit = 50,
+  offset = 0
 ): Promise<Inscripcion[]> {
   const where =
     tipo && tipo !== 'todos' ? { tipoInscripcion: tipo } : {}
@@ -120,24 +139,58 @@ export async function getInscripcionesForAdminList(
     where,
     orderBy: { createdAt: 'desc' },
     take: limit,
+    skip: offset,
     select: ADMIN_LIST_SELECT,
   })
 
-  return rows.map((row) => ({
-    ...row,
-    tieneDniFrontal: false,
-    tieneDniReverso: false,
-    updatedAt: row.createdAt,
-  })) as Inscripcion[]
+  return rows.map(mapListRow)
 }
 
-type DetailRow = Prisma.InscripcionGetPayload<{ select: typeof ADMIN_DETAIL_SELECT }>
+export async function getAdminTabData(
+  tipo?: string | null,
+  limit = 50,
+  offset = 0
+): Promise<AdminListResult> {
+  const [stats, inscripciones] = await Promise.all([
+    getInscripcionStats(tipo),
+    getInscripcionesForAdminList(tipo, limit, offset),
+  ])
 
-export function mapInscripcionDetail(row: DetailRow): Inscripcion {
-  const { dniFrontalEncriptado, dniReversoEncriptado, ...rest } = row
+  const total = stats.totalInscripciones
+
   return {
-    ...rest,
-    tieneDniFrontal: Boolean(dniFrontalEncriptado),
-    tieneDniReverso: Boolean(dniReversoEncriptado),
+    stats,
+    inscripciones,
+    pagination: {
+      offset,
+      limit,
+      total,
+      hasMore: offset + inscripciones.length < total,
+    },
+  }
+}
+
+export async function getInscripcionDetail(id: string): Promise<Inscripcion | null> {
+  const row = await prisma.inscripcion.findUnique({
+    where: { id },
+    select: ADMIN_DETAIL_SELECT,
+  })
+
+  if (!row) return null
+
+  const [flags] = await prisma.$queryRaw<
+    { tieneDniFrontal: number; tieneDniReverso: number }[]
+  >`
+    SELECT
+      (dniFrontalEncriptado IS NOT NULL) AS tieneDniFrontal,
+      (dniReversoEncriptado IS NOT NULL) AS tieneDniReverso
+    FROM inscripciones
+    WHERE id = ${id}
+  `
+
+  return {
+    ...row,
+    tieneDniFrontal: Boolean(flags?.tieneDniFrontal),
+    tieneDniReverso: Boolean(flags?.tieneDniReverso),
   } as Inscripcion
 }

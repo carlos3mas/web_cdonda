@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-middleware'
 import { apiRateLimit } from '@/lib/rate-limit'
-import { ADMIN_DETAIL_SELECT, mapInscripcionDetail } from '@/lib/inscripciones-admin'
+import { getInscripcionDetail } from '@/lib/inscripciones-admin'
 
 // GET - Obtener una inscripción específica
 export async function GET(
@@ -23,10 +23,7 @@ export async function GET(
   }
   
   try {
-    const inscripcion = await prisma.inscripcion.findUnique({
-      where: { id: params.id },
-      select: ADMIN_DETAIL_SELECT,
-    })
+    const inscripcion = await getInscripcionDetail(params.id)
 
     if (!inscripcion) {
       return NextResponse.json(
@@ -35,7 +32,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(mapInscripcionDetail(inscripcion))
+    return NextResponse.json(inscripcion)
   } catch (error) {
     console.error('Error al obtener inscripción:', error)
     return NextResponse.json(

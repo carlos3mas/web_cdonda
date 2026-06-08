@@ -44,9 +44,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const tipoInscripcion = searchParams.get('tipo')
     const limitParam = searchParams.get('limit')
-    const limit = limitParam ? Math.max(1, Math.min(200, Number(limitParam))) : 50
+    const offsetParam = searchParams.get('offset')
+    const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : 50
+    const offset = offsetParam ? Math.max(0, Number(offsetParam)) : 0
 
-    const inscripciones = await getInscripcionesForAdminList(tipoInscripcion, limit)
+    const inscripciones = await getInscripcionesForAdminList(tipoInscripcion, limit, offset)
 
     // Log para diagnóstico en producción
     console.log(`📊 Inscripciones obtenidas: ${inscripciones.length} (tipo: ${tipoInscripcion || 'todos'}, limit: ${limit})`)

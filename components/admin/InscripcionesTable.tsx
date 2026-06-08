@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Inscripcion } from '@/types'
 import { formatDate } from '@/lib/utils'
-import { CheckCircle, Download, Eye, FileDown, Filter, Search, Trash2, X, XCircle } from 'lucide-react'
+import { CheckCircle, ChevronLeft, ChevronRight, Download, Eye, FileDown, Filter, Search, Trash2, X, XCircle } from 'lucide-react'
 import { DeleteConfirmDialog } from './DeleteConfirmDialog'
 import { InscripcionDialog } from './InscripcionDialog'
 
@@ -18,9 +17,24 @@ interface InscripcionesTableProps {
   onUpdate: () => void
   showTipoFilter?: boolean
   tipoInscripcion?: string
+  totalCount?: number
+  page?: number
+  pageSize?: number
+  onPageChange?: (page: number) => void
+  isLoading?: boolean
 }
 
-export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = false, tipoInscripcion = 'todos' }: InscripcionesTableProps) {
+export function InscripcionesTable({
+  inscripciones,
+  onUpdate,
+  showTipoFilter = false,
+  tipoInscripcion = 'todos',
+  totalCount,
+  page = 0,
+  pageSize = 50,
+  onPageChange,
+  isLoading = false,
+}: InscripcionesTableProps) {
   const [selectedInscripcion, setSelectedInscripcion] = useState<Inscripcion | null>(null)
   const [deleteInscripcionId, setDeleteInscripcionId] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -176,11 +190,13 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
     setDeleteDialogOpen(true)
   }
 
+  const totalPages = totalCount != null ? Math.max(1, Math.ceil(totalCount / pageSize)) : 1
+  const showPagination = totalCount != null && totalCount > pageSize && onPageChange
+
   const handleDownloadListaPDF = async () => {
     try {
       const params = new URLSearchParams()
       params.append('tipo', tipoInscripcion)
-      params.append('ids', filteredInscripciones.map((i) => i.id).join(','))
 
       if (estadoFilter !== 'todos') {
         params.append('estado', estadoFilter)
@@ -226,7 +242,9 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
             <div>
               <CardTitle>Inscripciones</CardTitle>
               <CardDescription>
-                Gestiona todas las inscripciones del Campus de Navidad 2025
+                {showPagination
+                  ? `Mostrando ${pageSize} por página. La búsqueda filtra la página actual.`
+                  : 'Gestiona las inscripciones del club'}
               </CardDescription>
             </div>
             <div className="flex items-center gap-3">
@@ -327,12 +345,9 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                     </td>
                   </tr>
                 ) : (
-                  filteredInscripciones.map((inscripcion, index) => (
-                    <motion.tr
+                  filteredInscripciones.map((inscripcion) => (
+                    <tr
                       key={inscripcion.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.05 }}
                       className="border-b hover:bg-gray-50"
                     >
                       {showTipoFilter && (
@@ -430,7 +445,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                           </Button>
                         </div>
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))
                 )}
               </tbody>
@@ -446,12 +461,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
               </div>
             ) : (
               filteredInscripciones.map((inscripcion) => (
-                <motion.div
-                  key={inscripcion.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
+                <div key={inscripcion.id}>
                   <div className="bg-white rounded-lg border p-4">
                     <div className="flex justify-between items-start">
                       <div>
@@ -527,10 +537,41 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
                       </Button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))
             )}
           </div>
+
+          {showPagination && (
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 border-t pt-4">
+              <p className="text-sm text-gray-600">
+                Página {page + 1} de {totalPages}
+                <span className="text-gray-400"> · {totalCount} inscripciones en total</span>
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 0 || isLoading}
+                  onClick={() => onPageChange(page - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Anterior
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages - 1 || isLoading}
+                  onClick={() => onPageChange(page + 1)}
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

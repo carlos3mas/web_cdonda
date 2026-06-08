@@ -24,6 +24,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
   const [selectedInscripcion, setSelectedInscripcion] = useState<Inscripcion | null>(null)
   const [deleteInscripcionId, setDeleteInscripcionId] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [detailLoading, setDetailLoading] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [estadoFilter, setEstadoFilter] = useState<'todos' | 'pagados' | 'pendientes'>('todos')
@@ -151,9 +152,23 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
     }
   }
 
-  const handleViewDetails = (inscripcion: Inscripcion) => {
+  const handleViewDetails = async (inscripcion: Inscripcion) => {
     setSelectedInscripcion(inscripcion)
     setDialogOpen(true)
+    setDetailLoading(true)
+
+    try {
+      const response = await fetch(`/api/inscripciones/${inscripcion.id}`, {
+        credentials: 'include',
+      })
+      if (response.ok) {
+        setSelectedInscripcion((await response.json()) as Inscripcion)
+      }
+    } catch (error) {
+      console.error('Error al cargar detalle:', error)
+    } finally {
+      setDetailLoading(false)
+    }
   }
 
   const handleDeleteClick = (inscripcionId: string) => {
@@ -523,6 +538,7 @@ export function InscripcionesTable({ inscripciones, onUpdate, showTipoFilter = f
         inscripcion={selectedInscripcion}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        isLoading={detailLoading}
       />
 
       <DeleteConfirmDialog

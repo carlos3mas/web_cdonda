@@ -27,6 +27,7 @@ interface InscripcionDialogProps {
   inscripcion: Inscripcion | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  isLoading?: boolean
 }
 
 function TipoBadge({ tipo }: { tipo: string }) {
@@ -128,7 +129,7 @@ function SectionCard({
   )
 }
 
-export function InscripcionDialog({ inscripcion, open, onOpenChange }: InscripcionDialogProps) {
+export function InscripcionDialog({ inscripcion, open, onOpenChange, isLoading }: InscripcionDialogProps) {
   if (!inscripcion) return null
 
   const isAnual = inscripcion.tipoInscripcion === 'anual'
@@ -142,6 +143,11 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange }: Inscripci
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-0">
+        {isLoading && (
+          <p className="px-5 py-2 text-xs text-slate-500 bg-slate-50 border-b border-slate-100">
+            Cargando detalle completo…
+          </p>
+        )}
         <DialogHeader>
           <div className="px-5 sm:px-6 pt-6 pb-5 border-b border-slate-200 bg-gradient-to-b from-white to-slate-50">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">

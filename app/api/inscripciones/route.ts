@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-middleware'
 import { inscripcionRateLimit, apiRateLimit } from '@/lib/rate-limit'
+import { getInscripcionesForAdminList } from '@/lib/inscripciones-admin'
 import { validateFile } from '@/lib/file-validation'
 import { compressFile, getFileInfo } from '@/lib/file-compression'
 import sharp from 'sharp'
@@ -44,92 +44,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const tipoInscripcion = searchParams.get('tipo')
     const limitParam = searchParams.get('limit')
-    const limit = limitParam ? Math.max(1, Math.min(500, Number(limitParam))) : 200
+    const limit = limitParam ? Math.max(1, Math.min(200, Number(limitParam))) : 50
 
-    const where = tipoInscripcion && tipoInscripcion !== 'todos'
-      ? { tipoInscripcion }
-      : {}
-
-    // Importante: para el panel admin NO devolvemos blobs base64 (justificante/firma),
-    // solo metadatos y campos de tabla. Esto reduce muchísimo el tiempo de respuesta.
-    const rawInscripciones = await prisma.inscripcion.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      select: {
-        id: true,
-        tipoInscripcion: true,
-        nombreJugador: true,
-        apellidos: true,
-        fechaNacimiento: true,
-        dni: true,
-        direccion: true,
-        localidad: true,
-        codigoPostal: true,
-        semanasCampus: true,
-        diasSueltos: true,
-        tallaCamiseta: true,
-        tallaPantalon: true,
-        tallaCalcetines: true,
-        nombreTutor: true,
-        telefono1: true,
-        telefono2: true,
-        enfermedad: true,
-        medicacion: true,
-        alergico: true,
-        numeroSeguridadSocial: true,
-        pagada: true,
-        cuota1Pagada: true,
-        cuota2Pagada: true,
-        cuota3Pagada: true,
-        nombreArchivoJustificante: true,
-        nombreArchivoJustificanteCuota2: true,
-        nombreArchivoJustificanteCuota3: true,
-        justificantePagoMimeType: true,
-        firmaMimeType: true,
-        nombreArchivoFirma: true,
-        derechosImagen: true,
-        comentarios: true,
-        email: true,
-        sexo: true,
-        categoria: true,
-        modalidadPago: true,
-        descuentoHermanos: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    })
-
-    const anualIds = rawInscripciones
-      .filter((row) => row.tipoInscripcion === 'anual')
-      .map((row) => row.id)
-
-    const dniFlagsById = new Map<string, { tieneDniFrontal: boolean; tieneDniReverso: boolean }>()
-
-    if (anualIds.length > 0) {
-      const flagRows = await prisma.$queryRaw<
-        { id: string; tieneDniFrontal: number; tieneDniReverso: number }[]
-      >`
-        SELECT id,
-          (dniFrontalEncriptado IS NOT NULL AND length(dniFrontalEncriptado) > 0) AS tieneDniFrontal,
-          (dniReversoEncriptado IS NOT NULL AND length(dniReversoEncriptado) > 0) AS tieneDniReverso
-        FROM inscripciones
-        WHERE id IN (${Prisma.join(anualIds)})
-      `
-
-      for (const row of flagRows) {
-        dniFlagsById.set(row.id, {
-          tieneDniFrontal: Boolean(row.tieneDniFrontal),
-          tieneDniReverso: Boolean(row.tieneDniReverso),
-        })
-      }
-    }
-
-    const inscripciones = rawInscripciones.map((row) => ({
-      ...row,
-      tieneDniFrontal: dniFlagsById.get(row.id)?.tieneDniFrontal ?? false,
-      tieneDniReverso: dniFlagsById.get(row.id)?.tieneDniReverso ?? false,
-    }))
+    const inscripciones = await getInscripcionesForAdminList(tipoInscripcion, limit)
 
     // Log para diagnóstico en producción
     console.log(`📊 Inscripciones obtenidas: ${inscripciones.length} (tipo: ${tipoInscripcion || 'todos'}, limit: ${limit})`)

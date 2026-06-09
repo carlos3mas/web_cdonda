@@ -15,6 +15,8 @@
     "db:migrate": "prisma migrate dev",
     "seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts",
     "db:apply-migrations": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/apply-db-migrations.ts",
+    "db:verify-clausula": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/verify-clausula-anual.ts",
+    "pdf:list-fields": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/list-pdf-fields.ts",
     "db:migrate-campus-verano": "npm run db:apply-migrations",
     "db:verify-schema": "node scripts/verify-db-schema.mjs",
     "db:check": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/check-database.ts",

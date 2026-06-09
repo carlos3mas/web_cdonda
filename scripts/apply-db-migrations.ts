@@ -128,6 +128,22 @@ const MIGRATIONS: { name: string; sql: string }[] = [
     name: '20260602100000_add_nombreArchivoJustificanteCuota3',
     sql: 'ALTER TABLE inscripciones ADD COLUMN nombreArchivoJustificanteCuota3 TEXT;',
   },
+  {
+    name: '20260609103000_add_documentoDerechosImagen',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN documentoDerechosImagen TEXT;',
+  },
+  {
+    name: '20260609103000_add_documentoDerechosImagenMimeType',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN documentoDerechosImagenMimeType TEXT;',
+  },
+  {
+    name: '20260609103000_add_nombreArchivoDerechosImagen',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN nombreArchivoDerechosImagen TEXT;',
+  },
+  {
+    name: '20260609120000_add_dniJugador',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN dniJugador TEXT;',
+  },
 ]
 
 const EXPECTED_COLUMNS = [
@@ -179,6 +195,10 @@ const EXPECTED_COLUMNS = [
   'dniFrontalMimeType',
   'dniReversoEncriptado',
   'dniReversoMimeType',
+  'dniJugador',
+  'documentoDerechosImagen',
+  'documentoDerechosImagenMimeType',
+  'nombreArchivoDerechosImagen',
   'createdAt',
   'updatedAt',
 ]

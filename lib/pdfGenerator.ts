@@ -1061,3 +1061,107 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
   return pdfBytes
 }
 
+export type ClausulaDerechosImagenInput = {
+  nombreJugador: string
+  apellidos: string
+  nombreTutor: string
+  dniJugador: string
+  dniTutor: string
+  /** Fecha de la inscripción (por defecto: hoy). */
+  fechaInscripcion?: string | Date
+  derechosImagen: boolean
+  firmaPngBuffer?: Buffer | Uint8Array | null
+}
+
+/** Rellena la plantilla de cláusula de derechos de imagen (inscripción anual). */
+export async function generateClausulaDerechosImagenPdf(
+  input: ClausulaDerechosImagenInput
+): Promise<Uint8Array> {
+  const templatePath = join(
+    process.cwd(),
+    'public',
+    'templates',
+    'clausula-derechos-imagen-menores.pdf'
+  )
+
+  if (!existsSync(templatePath)) {
+    throw new Error('Plantilla de cláusula de derechos de imagen no encontrada')
+  }
+
+  const templateBytes = await readFile(templatePath)
+  const pdfDoc = await PDFDocument.load(templateBytes)
+  const form = pdfDoc.getForm()
+
+  const fillText = (fieldName: string, value: string) => {
+    if (!value) return
+    try {
+      form.getTextField(fieldName).setText(value)
+    } catch {
+      console.warn(`[cláusula] Campo de texto no encontrado: ${fieldName}`)
+    }
+  }
+
+  const setCheckbox = (fieldName: string, checked: boolean) => {
+    try {
+      const box = form.getCheckBox(fieldName)
+      if (checked) box.check()
+      else box.uncheck()
+    } catch {
+      console.warn(`[cláusula] Checkbox no encontrado: ${fieldName}`)
+    }
+  }
+
+  const inscripcionDate = new Date(input.fechaInscripcion ?? new Date())
+  if (!Number.isNaN(inscripcionDate.getTime())) {
+    fillText('Día', String(inscripcionDate.getDate()).padStart(2, '0'))
+    fillText('Mes', String(inscripcionDate.getMonth() + 1).padStart(2, '0'))
+    fillText('Año', String(inscripcionDate.getFullYear()))
+  }
+
+  // Check 1 = SÍ autoriza | Check 2 = NO autoriza
+  setCheckbox('Check 1', input.derechosImagen)
+  setCheckbox('Check 2', !input.derechosImagen)
+
+  const nombreMenor = `${input.nombreJugador} ${input.apellidos}`.trim()
+  fillText('Nombre y apellidos del menor', nombreMenor)
+  fillText('Nombre y apellidos del tutor legal', input.nombreTutor.trim())
+  fillText('DNI jugador', input.dniJugador.trim())
+  fillText('DNI tutor', input.dniTutor.trim())
+
+  let firmaRectData: FirmaRect | null = null
+  let firmaPageIndex = 0
+
+  if (input.firmaPngBuffer && input.firmaPngBuffer.length > 0) {
+    try {
+      const field = form.getField('Firma tutor')
+      const widgets = field.acroField.getWidgets()
+      if (widgets.length > 0) {
+        const widget = widgets[0]
+        firmaRectData = widget.getRectangle()
+        firmaPageIndex = getWidgetPageIndex(pdfDoc, widget)
+      }
+    } catch {
+      console.warn('[cláusula] Campo Firma tutor no encontrado')
+    }
+  }
+
+  form.flatten()
+
+  if (input.firmaPngBuffer && input.firmaPngBuffer.length > 0) {
+    try {
+      const firmaImage = await embedFirmaImage(
+        pdfDoc,
+        Uint8Array.from(input.firmaPngBuffer),
+        'image/png'
+      )
+      const pages = pdfDoc.getPages()
+      const targetPage = pages[firmaPageIndex] ?? pages[0]
+      drawFirmaOnPage(targetPage, firmaImage, firmaRectData)
+    } catch (error) {
+      console.error('[cláusula] Error al incrustar la firma:', error)
+    }
+  }
+
+  return pdfDoc.save()
+}
+

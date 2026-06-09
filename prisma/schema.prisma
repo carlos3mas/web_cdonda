@@ -17,6 +17,7 @@ model Inscripcion {
   apellidos                 String
   fechaNacimiento           DateTime
   dni                       String
+  dniJugador                String?  // DNI/NIE del jugador (inscripción anual, texto plano)
   direccion                 String?
   localidad                 String?
   codigoPostal              String?
@@ -60,6 +61,9 @@ model Inscripcion {
   dniFrontalMimeType        String?
   dniReversoEncriptado      String?  // AES-256-GCM base64 (foto reverso DNI)
   dniReversoMimeType        String?
+  documentoDerechosImagen          String?  // PDF cláusula aceptada (base64)
+  documentoDerechosImagenMimeType  String?
+  nombreArchivoDerechosImagen      String?
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
 

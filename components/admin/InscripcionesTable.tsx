@@ -82,6 +82,7 @@ export function InscripcionesTable({
           inscripcion.nombreJugador.toLowerCase().includes(query) ||
           inscripcion.apellidos.toLowerCase().includes(query) ||
           inscripcion.dni.toLowerCase().includes(query) ||
+          (inscripcion.dniJugador && inscripcion.dniJugador.toLowerCase().includes(query)) ||
           inscripcion.nombreTutor.toLowerCase().includes(query) ||
           (inscripcion.email && inscripcion.email.toLowerCase().includes(query)) ||
           inscripcion.telefono1.toLowerCase().includes(query) ||
@@ -366,7 +367,11 @@ export function InscripcionesTable({
                         <div className="text-sm text-gray-500">{inscripcion.apellidos}</div>
                       </td>
                       <td className="py-3 px-4 text-sm">{formatDate(inscripcion.fechaNacimiento)}</td>
-                      <td className="py-3 px-4 text-sm">{inscripcion.dni}</td>
+                      <td className="py-3 px-4 text-sm">
+                        {inscripcion.tipoInscripcion === 'anual'
+                          ? (inscripcion.dniJugador || '—')
+                          : inscripcion.dni}
+                      </td>
                       <td className="py-3 px-4 text-sm">{inscripcion.nombreTutor}</td>
                       <td className="py-3 px-4 text-sm">{inscripcion.telefono1}</td>
                       <td className="py-3 px-4 text-sm">

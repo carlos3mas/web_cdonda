@@ -246,6 +246,10 @@ export function getInscripcionAnualSchema() {
   return z.object({
     nombreJugador: z.string().min(2, 'Introduce al menos 2 caracteres'),
     apellidos: z.string().min(2, 'Introduce al menos 2 caracteres'),
+    dniJugador: z
+      .string()
+      .min(8, 'El DNI/NIE del jugador/a debe tener al menos 8 caracteres')
+      .max(20, 'El DNI/NIE del jugador/a es demasiado largo'),
     fechaNacimiento: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, 'Selecciona una fecha de nacimiento válida'),

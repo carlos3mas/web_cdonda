@@ -204,14 +204,17 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange, isLoading }
                 <Field icon={<Calendar className="h-4 w-4" />} label="Fecha de nacimiento" value={formatDate(inscripcion.fechaNacimiento)} />
                 <Field
                   icon={<CreditCard className="h-4 w-4" />}
-                  label={isAnual ? 'DNI (foto cifrada)' : 'DNI'}
-                  value={isAnual ? <span className="text-slate-500 font-medium">No se guarda en texto</span> : (inscripcion.dni || '—')}
+                  label="DNI"
+                  value={isAnual ? (inscripcion.dniJugador || '—') : (inscripcion.dni || '—')}
                 />
               </div>
             </SectionCard>
 
             <SectionCard title="Tutor/a" icon={<User className="h-4 w-4" />}>
               <Field icon={<User className="h-4 w-4" />} label="Nombre" value={inscripcion.nombreTutor} />
+              {isAnual ? (
+                <Field icon={<CreditCard className="h-4 w-4" />} label="DNI tutor" value={inscripcion.dni || '—'} />
+              ) : null}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field icon={<Phone className="h-4 w-4" />} label="Teléfono 1" value={inscripcion.telefono1} />
                 <Field icon={<Phone className="h-4 w-4" />} label="Teléfono 2" value={inscripcion.telefono2 || '—'} />
@@ -308,6 +311,38 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange, isLoading }
 
           <SectionCard title="Documentos" icon={<FileText className="h-4 w-4" />}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {isAnual && inscripcion.nombreArchivoDerechosImagen ? (
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">
+                    Cláusula derechos de imagen
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900 truncate">
+                    {inscripcion.nombreArchivoDerechosImagen}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <a
+                      href={`/api/inscripciones/${inscripcion.id}/clausula-derechos-imagen`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button size="sm" variant="outline">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Ver
+                      </Button>
+                    </a>
+                    <a
+                      href={`/api/inscripciones/${inscripcion.id}/clausula-derechos-imagen`}
+                      download={inscripcion.nombreArchivoDerechosImagen}
+                    >
+                      <Button size="sm" variant="outline">
+                        <Download className="h-4 w-4 mr-2" />
+                        Descargar
+                      </Button>
+                    </a>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                 <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">
                   Justificante

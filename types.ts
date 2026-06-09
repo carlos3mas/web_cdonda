@@ -7,6 +7,7 @@ export interface Inscripcion {
   apellidos: string;
   fechaNacimiento: Date;
   dni: string;
+  dniJugador?: string | null;
   direccion?: string | null;
   localidad?: string | null;
   codigoPostal?: string | null;
@@ -34,6 +35,7 @@ export interface Inscripcion {
   firmaMimeType?: string | null;
   nombreArchivoFirma?: string | null;
   derechosImagen: boolean;
+  nombreArchivoDerechosImagen?: string | null;
   comentarios?: string | null;
   // Campos exclusivos inscripción anual
   email?: string | null;

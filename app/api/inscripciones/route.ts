@@ -13,7 +13,42 @@ import {
   getInscripcionAnualSchema,
   type InscripcionValidationPayload,
 } from '@/lib/inscripcionValidation'
+import { generateClausulaDerechosImagenDocument } from '@/lib/anualDocuments'
 
+const ANUAL_OPTIONAL_SCHEMA_FIELDS = [
+  'dniJugador',
+  'documentoDerechosImagen',
+  'documentoDerechosImagenMimeType',
+  'nombreArchivoDerechosImagen',
+] as const
+
+function stripAnualOptionalFields<T extends Record<string, unknown>>(data: T) {
+  const result = { ...data }
+  for (const key of ANUAL_OPTIONAL_SCHEMA_FIELDS) {
+    delete result[key]
+  }
+  return result
+}
+
+function isPrismaSchemaMismatch(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return (
+    (error instanceof Error && error.name === 'PrismaClientValidationError') ||
+    message.includes('Unknown argument') ||
+    message.includes('no such column') ||
+    message.includes('SQLITE_ERROR')
+  )
+}
+
+function shortenPrismaErrorMessage(message: string): string {
+  return message
+    .replace(/justificantePago:\s*"[^"]{100,}"/g, 'justificantePago: "<truncado>"')
+    .replace(/firma:\s*"[^"]{100,}"/g, 'firma: "<truncado>"')
+    .replace(/documentoDerechosImagen:\s*"[^"]{100,}"/g, 'documentoDerechosImagen: "<truncado>"')
+    .replace(/dniFrontalEncriptado:\s*"[^"]{100,}"/g, 'dniFrontalEncriptado: "<truncado>"')
+    .replace(/dniReversoEncriptado:\s*"[^"]{100,}"/g, 'dniReversoEncriptado: "<truncado>"')
+    .slice(0, 1500)
+}
 
 // Deshabilitar cache para estas rutas
 export const dynamic = 'force-dynamic'
@@ -115,11 +150,12 @@ export async function POST(request: NextRequest) {
       const modalidadPago = formData.get('modalidadPago') as string
       const descuentoHermanos = formData.get('descuentoHermanos') as string
       const relacionTutor = formData.get('relacionTutor') as string
+      const dniJugador = (formData.get('dniJugador') as string) || ''
       const dniFrontalFile = formData.get('dniFrontal') as File | null
       const dniReversoFile = formData.get('dniReverso') as File | null
 
       const anualPayload = {
-        nombreJugador, apellidos, fechaNacimiento, sexo, email,
+        nombreJugador, apellidos, dniJugador, fechaNacimiento, sexo, email,
         direccion: direccion || '', localidad: localidad || '',
         codigoPostal: codigoPostal || '', categoria,
         nombreTutor, dni, relacionTutor: relacionTutor || undefined,
@@ -168,6 +204,35 @@ export async function POST(request: NextRequest) {
           .resize(800, 400, { fit: 'inside', withoutEnlargement: true })
           .toBuffer()
       )
+
+      let documentoDerechosImagen: string | null = null
+      let documentoDerechosImagenMimeType: string | null = null
+      let nombreArchivoDerechosImagen: string | null = null
+
+      try {
+        const clausula = await generateClausulaDerechosImagenDocument({
+          nombreJugador,
+          apellidos,
+          nombreTutor,
+          dniJugador: dniJugador || '',
+          dniTutor: dni || '',
+          fechaInscripcion: new Date(),
+          derechosImagen: derechosImagen === 'true',
+          firmaPngBuffer: firmaBuffer,
+        })
+        documentoDerechosImagen = clausula.base64
+        documentoDerechosImagenMimeType = clausula.mimeType
+        nombreArchivoDerechosImagen = clausula.fileName
+      } catch (error) {
+        console.error('Error al generar cláusula de derechos de imagen:', error)
+        return NextResponse.json(
+          {
+            error:
+              'No se pudo generar la cláusula de derechos de imagen. Contacta con el club.',
+          },
+          { status: 503 }
+        )
+      }
 
       // Procesar y cifrar fotos DNI
       let dniFrontalEncriptado: string | null = null
@@ -235,6 +300,7 @@ export async function POST(request: NextRequest) {
         apellidos,
         fechaNacimiento: new Date(fechaNacimiento),
         dni: dni || '',
+        dniJugador: dniJugador || null,
         email: email || null,
         sexo: sexo || null,
         categoria: categoria || null,
@@ -265,31 +331,35 @@ export async function POST(request: NextRequest) {
         dniFrontalMimeType,
         dniReversoEncriptado,
         dniReversoMimeType,
+        documentoDerechosImagen,
+        documentoDerechosImagenMimeType,
+        nombreArchivoDerechosImagen,
+      }
+
+      const createData = {
+        ...baseData,
+        descuentoHermanos: descuentoHermanos || 'no',
+        cuota1Pagada: true,
+        cuota2Pagada: false,
+        cuota3Pagada: false,
       }
 
       let inscripcionAnual
       try {
-        inscripcionAnual = await prisma.inscripcion.create({
-          data: {
-            ...baseData,
-            descuentoHermanos: descuentoHermanos || 'no',
-            cuota1Pagada: true,
-            cuota2Pagada: false,
-            cuota3Pagada: false,
-          } as any,
-        })
+        inscripcionAnual = await prisma.inscripcion.create({ data: createData })
       } catch (error) {
-        // Compatibilidad temporal: si el cliente/BD aún no tienen columnas nuevas, guarda sin ellas.
-        const message = error instanceof Error ? error.message : String(error)
-        const canFallback =
-          message.includes('Unknown argument') ||
-          message.includes('no such column') ||
-          message.includes('column')
+        if (!isPrismaSchemaMismatch(error)) throw error
 
-        if (!canFallback) throw error
-
-        console.warn('⚠️ Guardado anual en modo compatibilidad (faltan columnas nuevas):', message)
-        inscripcionAnual = await prisma.inscripcion.create({ data: baseData as any })
+        const shortMsg = shortenPrismaErrorMessage(
+          error instanceof Error ? error.message : String(error)
+        )
+        console.warn(
+          '⚠️ Reintentando inscripción anual sin campos nuevos (reinicia el servidor tras migraciones):',
+          shortMsg
+        )
+        inscripcionAnual = await prisma.inscripcion.create({
+          data: stripAnualOptionalFields(createData) as typeof createData,
+        })
       }
 
       console.log('✅ Inscripción anual guardada:', inscripcionAnual.id)
@@ -513,25 +583,28 @@ export async function POST(request: NextRequest) {
       message: 'Inscripción creada correctamente'
     })
   } catch (error) {
-    console.error('❌ Error al crear inscripción:', error)
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-    const errorStack = error instanceof Error ? error.stack : undefined
+    const shortMessage = shortenPrismaErrorMessage(errorMessage)
 
-    // Log detallado para diagnóstico en producción
-    console.error('Detalles del error:', {
-      message: errorMessage,
-      stack: errorStack,
+    console.error('❌ Error al crear inscripción:', {
       name: error instanceof Error ? error.name : undefined,
-      // Log de Prisma si es un error de Prisma
-      ...(error && typeof error === 'object' && 'code' in error ? { prismaCode: error.code } : {})
+      message: shortMessage,
+      ...(error && typeof error === 'object' && 'code' in error ? { prismaCode: error.code } : {}),
     })
+
+    const isStaleClient =
+      shortMessage.includes('Unknown argument') ||
+      (error instanceof Error && error.name === 'PrismaClientValidationError')
 
     return NextResponse.json(
       {
-        error: 'Error al procesar la inscripción',
-        details: process.env.NODE_ENV === 'production'
-          ? 'Error interno del servidor'
-          : errorMessage
+        error: isStaleClient
+          ? 'El servidor necesita reiniciarse tras actualizar la base de datos. Cierra y vuelve a ejecutar npm run dev, o redeploy en producción.'
+          : 'Error al procesar la inscripción',
+        details:
+          process.env.NODE_ENV === 'production' && !isStaleClient
+            ? 'Error interno del servidor'
+            : shortMessage,
       },
       { status: 500 }
     )

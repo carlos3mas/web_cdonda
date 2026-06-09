@@ -17,7 +17,7 @@ import {
 } from '@/lib/inscripcionValidation'
 
 const FORM_INICIAL: AnualFormData = {
-  nombreJugador: '', apellidos: '', fechaNacimiento: '', sexo: '', email: '',
+  nombreJugador: '', apellidos: '', dniJugador: '', fechaNacimiento: '', sexo: '', email: '',
   direccion: '', localidad: '', codigoPostal: '',
   nombreTutor: '', dni: '', relacionTutor: '', telefono1: '', telefono2: '',
   enfermedad: '', medicacion: '', alergico: '', numeroSeguridadSocial: '',
@@ -147,7 +147,13 @@ export function InscripcionAnualForm() {
       if (firmaBlob) fd.append('firmaTutor', firmaBlob, 'firma.png')
 
       const res = await fetch('/api/inscripciones', { method: 'POST', body: fd })
-      const data = await res.json() as { success?: boolean; inscripcionId?: string; error?: string; issues?: { path: (string | number)[]; message: string }[] }
+      const data = await res.json() as {
+        success?: boolean
+        inscripcionId?: string
+        error?: string
+        details?: string
+        issues?: { path: (string | number)[]; message: string }[]
+      }
 
       if (!res.ok) {
         if (data.issues?.length) {
@@ -157,7 +163,7 @@ export function InscripcionAnualForm() {
           setSubmitStatus('error')
           return
         }
-        throw new Error(data.error || 'Error al enviar la inscripción')
+        throw new Error(data.error || data.details || 'Error al enviar la inscripción')
       }
 
       setSubmitStatus('success')

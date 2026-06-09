@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AlertCircle, Upload, FileText, CheckCircle, ShieldCheck, X } from 'lucide-react'
+import { AlertCircle, Upload, FileText, CheckCircle, ShieldCheck, X, ExternalLink } from 'lucide-react'
+import { CLAUSULA_DERECHOS_IMAGEN } from '@/lib/anualDocuments.constants'
 import {
   SEXOS_ANUAL,
   MODALIDADES_PAGO_ANUAL,
@@ -25,6 +26,7 @@ import SignaturePad from 'signature_pad'
 export interface AnualFormData {
   nombreJugador: string
   apellidos: string
+  dniJugador: string
   fechaNacimiento: string
   sexo: string
   email: string
@@ -265,6 +267,13 @@ export function InscripcionAnualStep2({
               className={ic('apellidos')} placeholder="Apellidos" />
             <FieldError message={err('apellidos')} />
           </div>
+        </div>
+        <div>
+          <Label htmlFor="dniJugador" className="text-sm">DNI/NIE del jugador/a *</Label>
+          <Input id="dniJugador" value={formData.dniJugador}
+            onChange={(e) => onChange('dniJugador', e.target.value)}
+            className={ic('dniJugador')} placeholder="12345678A" />
+          <FieldError message={err('dniJugador')} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
@@ -632,16 +641,53 @@ export function InscripcionAnualStep2({
 
       {/* Autorizaciones */}
       <div className="space-y-3 border-t pt-5">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <input type="checkbox" id="derechosImagen"
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+          <div>
+            <p className="font-semibold text-sm text-gray-900">
+              {CLAUSULA_DERECHOS_IMAGEN.displayName} *
+            </p>
+            <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+              Lee el documento antes de aceptar. Al marcar la casilla y enviar la inscripción,
+              quedará guardada una copia en la ficha del club.
+            </p>
+          </div>
+
+          <a
+            href={CLAUSULA_DERECHOS_IMAGEN.publicPath}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-lg border border-blue-300 bg-white px-4 py-3 shadow-sm hover:bg-blue-50/80 transition-colors"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+              <FileText className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-gray-900">
+                Ver {CLAUSULA_DERECHOS_IMAGEN.displayName}
+              </span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                Se abre en una nueva pestaña (PDF)
+              </span>
+            </span>
+            <ExternalLink className="h-4 w-4 shrink-0 text-blue-700" />
+          </a>
+
+          <div className="flex items-start gap-3 pt-1">
+            <input
+              type="checkbox"
+              id="derechosImagen"
               checked={formData.derechosImagen}
               onChange={(e) => onChange('derechosImagen', e.target.checked)}
-              className="mt-1 h-4 w-4 text-red-600 border-gray-300 rounded flex-shrink-0" />
+              className="mt-1 h-4 w-4 text-red-600 border-gray-300 rounded flex-shrink-0"
+            />
             <label htmlFor="derechosImagen" className="cursor-pointer">
-              <span className="font-semibold text-sm text-gray-900 block">Autorización derechos de imagen *</span>
+              <span className="font-semibold text-sm text-gray-900 block">
+                He leído y acepto la cláusula de derechos de imagen *
+              </span>
               <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                Autorizo al CD Onda a utilizar imágenes y vídeos del jugador/a en los que pueda aparecer, con fines deportivos, informativos y de promoción del club, sin contraprestación económica.
+                Autorizo al CD Onda a utilizar imágenes y vídeos del jugador/a en los que pueda
+                aparecer, con fines deportivos, informativos y de promoción del club, conforme al
+                documento enlazado.
               </p>
             </label>
           </div>

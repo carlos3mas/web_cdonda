@@ -13,7 +13,8 @@ const FIELD_ALIASES: Record<string, string[]> = {
   nombreJugador: ['NOMBRE', 'nombre', 'Nombre', 'nombreJugador', 'nombreJugador1'],
   apellidos: ['APELLIDOS', 'apellido', 'Apellidos', 'apellidos', 'mas iserte'],
   fechaNacimiento: ['FECHA NACIMIENTO', 'fechaNacimiento', 'Fecha Nacimiento', 'fechaNacimiento1'],
-  dni: ['DNI_TUTOR', 'DNI', 'dni', 'D.N.I.', 'D.N.I', 'DNI tutor', 'dni tutor'],
+  dniTutor: ['DNI_TUTOR', 'DNI tutor', 'dni tutor'],
+  dniJugador: ['DNI', 'DNI JUGADOR', 'DNI_JUGADOR', 'DNI jugador', 'dni jugador', 'dni', 'D.N.I.', 'D.N.I'],
   direccion: ['DIRECCIÓN', 'DIRECCION', 'direccion', 'Dirección'],
   localidad: ['LOCALIDAD', 'localidad', 'Localidad', 'Población', 'Poblacion', 'población', 'poblacion'],
   codigoPostal: ['CP', 'C.P.', 'C.P', 'codigoPostal', 'Código Postal'],
@@ -249,7 +250,8 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
     fillTextField('medicacion', inscripcion.medicacion || '')
     fillTextField('alergico', inscripcion.alergico || '')
     fillTextField('nombreTutor', inscripcion.nombreTutor)
-    fillTextField('dni', inscripcion.dni)
+    fillTextField('dniTutor', inscripcion.dni)
+    fillTextField('dniJugador', inscripcion.dniJugador || '')
     fillTextField('lugarNacimiento', '')
 
     if (inscripcion.tipoInscripcion === 'anual') {

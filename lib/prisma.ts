@@ -3,21 +3,7 @@ import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 import bcrypt from 'bcryptjs'
 
-const globalForPrisma = global as unknown as {
-  prisma: PrismaClient | undefined
-  rawPrisma: PrismaClient | undefined
-}
-
-function isConnectionError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error)
-  const normalized = message.toLowerCase()
-  return (
-    normalized.includes('terminated') ||
-    normalized.includes('fetch failed') ||
-    normalized.includes('econnreset') ||
-    normalized.includes('socket hang up')
-  )
-}
+const globalForPrisma = global as unknown as { prisma: PrismaClient | undefined }
 
 function createPrismaClient(): PrismaClient {
   const databaseUrl = process.env.DATABASE_URL
@@ -51,89 +37,11 @@ function createPrismaClient(): PrismaClient {
   })
 }
 
-async function resetPrismaClient(): Promise<void> {
-  if (globalForPrisma.rawPrisma) {
-    try {
-      await globalForPrisma.rawPrisma.$disconnect()
-    } catch {
-      /* ya desconectado */
-    }
-  }
-  globalForPrisma.prisma = undefined
-  globalForPrisma.rawPrisma = undefined
+export const prisma = globalForPrisma.prisma ?? createPrismaClient()
+
+if (!globalForPrisma.prisma) {
+  globalForPrisma.prisma = prisma
 }
-
-function getRawPrismaClient(): PrismaClient {
-  if (!globalForPrisma.rawPrisma) {
-    globalForPrisma.rawPrisma = createPrismaClient()
-    globalForPrisma.prisma = wrapWithReconnect(globalForPrisma.rawPrisma)
-  }
-  return globalForPrisma.rawPrisma
-}
-
-async function withReconnect<T>(operation: (client: PrismaClient) => Promise<T>): Promise<T> {
-  try {
-    return await operation(getRawPrismaClient())
-  } catch (error) {
-    if (!isConnectionError(error)) throw error
-    console.warn('[prisma] Conexión perdida con Turso, reconectando...')
-    await resetPrismaClient()
-    return await operation(getRawPrismaClient())
-  }
-}
-
-function wrapWithReconnect(client: PrismaClient): PrismaClient {
-  return new Proxy(client, {
-    get(target, prop) {
-      const value = Reflect.get(target, prop)
-
-      if (typeof value === 'object' && value !== null) {
-        return new Proxy(value, {
-          get(modelTarget, modelProp) {
-            const modelValue = Reflect.get(modelTarget, modelProp)
-            if (typeof modelValue === 'function') {
-              return (...args: unknown[]) =>
-                withReconnect((raw) => {
-                  const model = (raw as unknown as Record<string | symbol, unknown>)[prop]
-                  if (!model || typeof model !== 'object') {
-                    throw new Error(`[prisma] Modelo no encontrado: ${String(prop)}`)
-                  }
-                  const method = (model as Record<string | symbol, unknown>)[modelProp]
-                  if (typeof method !== 'function') {
-                    throw new Error(`[prisma] Método no encontrado: ${String(modelProp)}`)
-                  }
-                  return (method as (...innerArgs: unknown[]) => Promise<unknown>).apply(model, args)
-                })
-            }
-            return modelValue
-          },
-        })
-      }
-
-      if (typeof value === 'function') {
-        return (...args: unknown[]) =>
-          withReconnect((raw) => {
-            const method = (raw as unknown as Record<string | symbol, unknown>)[prop]
-            if (typeof method !== 'function') {
-              throw new Error(`[prisma] Método no encontrado: ${String(prop)}`)
-            }
-            return (method as (...innerArgs: unknown[]) => Promise<unknown>).apply(raw, args)
-          })
-      }
-
-      return value
-    },
-  }) as unknown as PrismaClient
-}
-
-function getPrismaClient(): PrismaClient {
-  if (!globalForPrisma.prisma) {
-    getRawPrismaClient()
-  }
-  return globalForPrisma.prisma!
-}
-
-export const prisma = getPrismaClient()
 
 async function ensureDefaultAdmin() {
   if (!process.env.DATABASE_URL) {

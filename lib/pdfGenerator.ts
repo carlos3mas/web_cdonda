@@ -200,20 +200,25 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
     const fields = form.getFields()
     console.log(`Plantilla cargada. Campos disponibles: ${fields.length}`)
 
-    // Función auxiliar para rellenar campo de texto de forma segura
-    const fillTextField = (aliasKey: string, value: string) => {
-      if (!value) return
+    // Función auxiliar para rellenar campo de texto (incluye vaciar el campo)
+    const setTextField = (aliasKey: string, value: string) => {
       const candidates = FIELD_ALIASES[aliasKey] ?? [aliasKey]
       for (const candidate of candidates) {
         try {
-          const field = form.getTextField(candidate)
-          field.setText(value)
+          form.getTextField(candidate).setText(value)
           return
         } catch {
           continue
         }
       }
-      console.warn(`Campo '${aliasKey}' no encontrado en la plantilla (probados: ${candidates.join(', ')})`)
+      if (value) {
+        console.warn(`Campo '${aliasKey}' no encontrado en la plantilla (probados: ${candidates.join(', ')})`)
+      }
+    }
+
+    const fillTextField = (aliasKey: string, value: string) => {
+      if (!value) return
+      setTextField(aliasKey, value)
     }
 
     const fillCheckBox = (fieldName: string) => {
@@ -252,7 +257,7 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
     fillTextField('nombreTutor', inscripcion.nombreTutor)
     fillTextField('dniTutor', inscripcion.dni)
     fillTextField('dniJugador', inscripcion.dniJugador || '')
-    fillTextField('lugarNacimiento', '')
+    setTextField('lugarNacimiento', '')
 
     if (inscripcion.tipoInscripcion === 'anual') {
       const nombreCompletoJugador = `${inscripcion.nombreJugador} ${inscripcion.apellidos}`.trim()
@@ -267,7 +272,8 @@ export async function fillPDFTemplate(templatePath: string, inscripcion: Inscrip
       fillTextField('telefonoWhatsApp', inscripcion.telefono1 || inscripcion.telefono2 || '')
       fillTextField('telefonoSolo', inscripcion.telefono1 || inscripcion.telefono2 || '')
       fillTextField('autorizacionDni', inscripcion.dni || '')
-      fillTextField('tipoProcede', inscripcion.derechosImagen ? 'SI' : '')
+      // Solo marcar "padres separados" si el tutor lo indica en el formulario
+      setTextField('tipoProcede', inscripcion.padresSeparados ? 'X' : '')
     }
 
     const semanasLabels = formatSemanasCampus(inscripcion.semanasCampus)

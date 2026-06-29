@@ -15,7 +15,7 @@ const EXPECTED_COLUMNS = [
   'justificantePagoCuota2', 'justificantePagoCuota2MimeType', 'nombreArchivoJustificanteCuota2',
   'justificantePagoCuota3', 'justificantePagoCuota3MimeType', 'nombreArchivoJustificanteCuota3',
   'firma', 'firmaMimeType', 'nombreArchivoFirma',
-  'derechosImagen', 'comentarios', 'descuentoHermanos', 'createdAt', 'updatedAt',
+  'derechosImagen', 'padresSeparados', 'comentarios', 'descuentoHermanos', 'createdAt', 'updatedAt',
 ]
 
 const client = createClient({

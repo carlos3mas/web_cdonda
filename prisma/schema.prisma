@@ -50,6 +50,7 @@ model Inscripcion {
   firmaMimeType             String?  // Tipo MIME de la firma
   nombreArchivoFirma        String?  // Nombre original del archivo de firma
   derechosImagen            Boolean  @default(false)
+  padresSeparados           Boolean  @default(false)
   comentarios               String?
   // Campos exclusivos de inscripción anual
   email                     String?

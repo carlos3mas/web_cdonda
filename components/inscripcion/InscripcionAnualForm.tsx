@@ -22,7 +22,7 @@ const FORM_INICIAL: AnualFormData = {
   nombreTutor: '', dni: '', relacionTutor: '', telefono1: '', telefono2: '',
   enfermedad: '', medicacion: '', alergico: '', numeroSeguridadSocial: '',
   tallaCamiseta: '', tallaPantalon: '', tallaCalcetines: '',
-  modalidadPago: '', descuentoHermanos: 'no', derechosImagen: false, lopd: false, comentarios: '',
+  modalidadPago: '', descuentoHermanos: 'no', padresSeparados: false, derechosImagen: false, lopd: false, comentarios: '',
 }
 
 function ProgressBar({ step }: { step: 1 | 2 }) {
@@ -132,7 +132,7 @@ export function InscripcionAnualForm() {
       fd.append('categoria', tipoSeleccionado!)
 
       Object.entries(formData).forEach(([key, value]) => {
-        if (key === 'derechosImagen' || key === 'lopd') {
+        if (key === 'derechosImagen' || key === 'lopd' || key === 'padresSeparados') {
           fd.append(key, String(value))
         } else if (typeof value === 'string' && value.trim()) {
           fd.append(key, value.trim())

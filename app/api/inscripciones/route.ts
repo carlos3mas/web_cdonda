@@ -17,6 +17,7 @@ import { generateClausulaDerechosImagenDocument } from '@/lib/anualDocuments'
 
 const ANUAL_OPTIONAL_SCHEMA_FIELDS = [
   'dniJugador',
+  'padresSeparados',
   'documentoDerechosImagen',
   'documentoDerechosImagenMimeType',
   'nombreArchivoDerechosImagen',
@@ -149,6 +150,7 @@ export async function POST(request: NextRequest) {
       const categoria = formData.get('categoria') as string
       const modalidadPago = formData.get('modalidadPago') as string
       const descuentoHermanos = formData.get('descuentoHermanos') as string
+      const padresSeparados = formData.get('padresSeparados') as string
       const relacionTutor = formData.get('relacionTutor') as string
       const dniJugador = (formData.get('dniJugador') as string) || ''
       const dniFrontalFile = formData.get('dniFrontal') as File | null
@@ -168,6 +170,7 @@ export async function POST(request: NextRequest) {
         tallaCalcetines: tallaCalcetines || '',
         modalidadPago,
         descuentoHermanos: descuentoHermanos || 'no',
+        padresSeparados: padresSeparados || undefined,
         derechosImagen: derechosImagen || undefined,
         comentarios: comentarios || undefined,
       }
@@ -326,6 +329,7 @@ export async function POST(request: NextRequest) {
         firmaMimeType: 'image/png',
         nombreArchivoFirma: 'firma.png',
         derechosImagen: derechosImagen === 'true',
+        padresSeparados: padresSeparados === 'true',
         comentarios: comentarios || null,
         dniFrontalEncriptado,
         dniFrontalMimeType,

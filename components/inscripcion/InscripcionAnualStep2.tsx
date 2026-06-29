@@ -47,6 +47,7 @@ export interface AnualFormData {
   tallaCalcetines: string
   modalidadPago: string
   descuentoHermanos: string
+  padresSeparados: boolean
   derechosImagen: boolean
   lopd: boolean
   comentarios: string
@@ -398,6 +399,18 @@ export function InscripcionAnualStep2({
               className={ic('telefono2')} placeholder="6XX XXX XXX" />
             <FieldError message={err('telefono2')} />
           </div>
+        </div>
+        <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <input
+            type="checkbox"
+            id="padresSeparados"
+            checked={formData.padresSeparados}
+            onChange={(e) => onChange('padresSeparados', e.target.checked)}
+            className="mt-1 h-4 w-4 text-red-600 border-gray-300 rounded flex-shrink-0"
+          />
+          <label htmlFor="padresSeparados" className="cursor-pointer text-sm text-gray-700 leading-relaxed">
+            Los padres del/de la jugador/a están separados o divorciados. Marca esta casilla solo si procede.
+          </label>
         </div>
       </div>
 

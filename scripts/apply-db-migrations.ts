@@ -144,6 +144,10 @@ const MIGRATIONS: { name: string; sql: string }[] = [
     name: '20260609120000_add_dniJugador',
     sql: 'ALTER TABLE inscripciones ADD COLUMN dniJugador TEXT;',
   },
+  {
+    name: '20260611120000_add_padres_separados',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN padresSeparados INTEGER NOT NULL DEFAULT 0;',
+  },
 ]
 
 const EXPECTED_COLUMNS = [
@@ -185,6 +189,7 @@ const EXPECTED_COLUMNS = [
   'firmaMimeType',
   'nombreArchivoFirma',
   'derechosImagen',
+  'padresSeparados',
   'comentarios',
   'email',
   'sexo',

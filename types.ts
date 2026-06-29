@@ -35,6 +35,7 @@ export interface Inscripcion {
   firmaMimeType?: string | null;
   nombreArchivoFirma?: string | null;
   derechosImagen: boolean;
+  padresSeparados?: boolean;
   nombreArchivoDerechosImagen?: string | null;
   comentarios?: string | null;
   // Campos exclusivos inscripción anual

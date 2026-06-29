@@ -238,6 +238,7 @@ export type InscripcionAnualPayload = {
   tallaCalcetines: string
   modalidadPago: string
   descuentoHermanos?: string
+  padresSeparados?: string | boolean
   derechosImagen?: string | boolean
   comentarios?: string
 }
@@ -291,6 +292,14 @@ export function getInscripcionAnualSchema() {
       { errorMap: () => ({ message: 'Selecciona una modalidad de pago' }) }
     ),
     descuentoHermanos: z.enum(['no', '2-hermanos', '3-hermanos']).optional(),
+    padresSeparados: z.preprocess(
+      (value) => {
+        if (value === true || value === 'true') return true
+        if (value === false || value === 'false' || value === undefined || value === '') return false
+        return value
+      },
+      z.boolean()
+    ),
     derechosImagen: z.preprocess(
       (value) => {
         if (value === true || value === 'true') return true

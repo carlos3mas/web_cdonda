@@ -87,7 +87,7 @@ function wrapWithReconnect(client: PrismaClient): PrismaClient {
             if (typeof modelValue === 'function') {
               return (...args: unknown[]) =>
                 withReconnect((db) => {
-                  const model = (db as Record<string, unknown>)[prop as string]
+                  const model = (db as unknown as Record<string, unknown>)[prop as string]
                   if (!model || typeof model !== 'object') {
                     throw new Error(`[prisma] Modelo no encontrado: ${String(prop)}`)
                   }
@@ -106,7 +106,7 @@ function wrapWithReconnect(client: PrismaClient): PrismaClient {
       if (typeof value === 'function') {
         return (...args: unknown[]) =>
           withReconnect((db) => {
-            const method = (db as Record<string, unknown>)[prop as string]
+            const method = (db as unknown as Record<string, unknown>)[prop as string]
             if (typeof method !== 'function') {
               throw new Error(`[prisma] Método no encontrado: ${String(prop)}`)
             }

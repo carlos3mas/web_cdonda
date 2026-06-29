@@ -5,11 +5,28 @@ export const dynamic = 'force-dynamic'
 
 /** Comprueba contenedor, BD y configuración mínima de auth (sin datos sensibles). */
 export async function GET() {
+  const databaseUrl = process.env.DATABASE_URL ?? ''
+  const isTurso =
+    databaseUrl.includes('turso.io') || databaseUrl.startsWith('libsql://')
+
   const checks = {
     ok: true,
     db: false,
-    authConfigured: Boolean(process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_URL),
+    databaseUrl: Boolean(databaseUrl),
+    databaseUrlFormat: isTurso ? 'turso' : databaseUrl ? 'other' : 'missing',
     tursoToken: Boolean(process.env.TURSO_AUTH_TOKEN),
+    authConfigured: Boolean(process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_URL),
+    dbError: null as string | null,
+  }
+
+  if (isTurso && !checks.tursoToken) {
+    checks.ok = false
+    checks.dbError = 'TURSO_AUTH_TOKEN no configurado'
+  }
+
+  if (!checks.databaseUrl) {
+    checks.ok = false
+    checks.dbError = 'DATABASE_URL no configurada'
   }
 
   try {
@@ -18,6 +35,8 @@ export async function GET() {
   } catch (error) {
     checks.ok = false
     checks.db = false
+    const message = error instanceof Error ? error.message : String(error)
+    checks.dbError = message.slice(0, 200)
     console.error('[health] Database check failed:', error)
   }
 

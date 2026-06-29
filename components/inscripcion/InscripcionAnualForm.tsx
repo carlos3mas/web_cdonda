@@ -112,8 +112,8 @@ export function InscripcionAnualForm() {
       return
     }
 
-    if (!justificante) {
-      setFieldErrors({ justificante: 'Debes adjuntar el justificante de pago' })
+    if (formData.modalidadPago !== 'unico' && !justificante) {
+      setFieldErrors({ justificante: 'Debes adjuntar el justificante de pago (cuota 1)' })
       scrollToField('justificante')
       return
     }
@@ -141,7 +141,7 @@ export function InscripcionAnualForm() {
 
       if (dniFrontal) fd.append('dniFrontal', dniFrontal)
       if (dniReverso) fd.append('dniReverso', dniReverso)
-      fd.append('justificantePago', justificante)
+      if (justificante) fd.append('justificantePago', justificante)
 
       const firmaBlob = await canvasToBlob()
       if (firmaBlob) fd.append('firmaTutor', firmaBlob, 'firma.png')
@@ -206,6 +206,12 @@ export function InscripcionAnualForm() {
             <p className="text-sm text-gray-500 leading-relaxed">
               Hemos recibido tu inscripción. En breve el club se pondrá en contacto contigo para confirmar los detalles.
             </p>
+            {formData.modalidadPago === 'unico' && !justificante && (
+              <p className="text-sm text-amber-700 mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                Recuerda subir el justificante del pago único antes del <strong>5 de agosto</strong> en la pestaña
+                «Añadir o actualizar justificantes».
+              </p>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -229,7 +235,7 @@ export function InscripcionAnualForm() {
           className={mode === 'cuotas' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           onClick={() => setMode('cuotas')}
         >
-          Añadir justificantes de cuotas
+          Añadir o actualizar justificantes
         </Button>
       </div>
 

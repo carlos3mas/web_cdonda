@@ -485,9 +485,16 @@ export function InscripcionAnualStep2({
       <div className="space-y-4">
         <SectionTitle>Modalidad de pago</SectionTitle>
         <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-          <p className="text-sm font-semibold text-red-700">
-            Para formalizar la inscripción es obligatorio adjuntar el justificante del primer pago (cuota 1).
-          </p>
+          {formData.modalidadPago === 'unico' ? (
+            <p className="text-sm font-semibold text-red-700">
+              Con <strong>pago único</strong> puedes formalizar la inscripción sin justificante y subirlo después
+              (antes del 5 de agosto) en «Añadir o actualizar justificantes». Si ya lo tienes, adjúntalo ahora.
+            </p>
+          ) : (
+            <p className="text-sm font-semibold text-red-700">
+              Para formalizar la inscripción es obligatorio adjuntar el justificante del primer pago (cuota 1).
+            </p>
+          )}
         </div>
         {categoriaSeleccionada === 'chupetines' && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 space-y-3">
@@ -610,10 +617,15 @@ export function InscripcionAnualStep2({
 
         <FileUploadZone
           id="justificante"
-          label="Justificante de pago (cuota 1)"
+          label={formData.modalidadPago === 'unico' ? 'Justificante de pago (pago único)' : 'Justificante de pago (cuota 1)'}
           file={justificante}
           onFile={onJustificante}
-          required
+          required={formData.modalidadPago !== 'unico'}
+          aviso={
+            formData.modalidadPago === 'unico'
+              ? 'Opcional al inscribirte. Si aún no has pagado, completa la inscripción y sube el justificante real antes del 5 de agosto en la pestaña «Añadir o actualizar justificantes».'
+              : undefined
+          }
         />
         <FieldError message={err('justificante')} />
       </div>

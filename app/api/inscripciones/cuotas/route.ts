@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { inscripcionRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
 import { compressFile } from '@/lib/file-compression'
+import { isPagoUnico } from '@/lib/anualConfig'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,6 +35,9 @@ export async function GET(request: NextRequest) {
         modalidadPago: true,
         cuota1Pagada: true,
         cuota2Pagada: true,
+        pagada: true,
+        nombreArchivoJustificante: true,
+        nombreArchivoJustificanteCuota2: true,
       },
     })
 
@@ -57,7 +61,6 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const inscripcionId = String(formData.get('inscripcionId') || '')
     const cuota = String(formData.get('cuota') || '')
-    // Compatibilidad: aceptamos ambos nombres de campo por posibles bundles en caché.
     const justificanteRaw =
       formData.get('justificantePago') ??
       formData.get('justificante')
@@ -67,8 +70,8 @@ export async function POST(request: NextRequest) {
     if (!inscripcionId) {
       return NextResponse.json({ error: 'Falta la inscripción' }, { status: 400 })
     }
-    if (cuota !== '2') {
-      return NextResponse.json({ error: 'Cuota inválida (solo cuota 2)' }, { status: 400 })
+    if (cuota !== '1' && cuota !== '2') {
+      return NextResponse.json({ error: 'Cuota inválida' }, { status: 400 })
     }
     if (!justificanteFile) {
       return NextResponse.json({ error: 'Debes adjuntar el justificante' }, { status: 400 })
@@ -86,31 +89,60 @@ export async function POST(request: NextRequest) {
 
     const existing = await prisma.inscripcion.findUnique({
       where: { id: inscripcionId },
-      select: { id: true, tipoInscripcion: true, modalidadPago: true, cuota1Pagada: true },
+      select: {
+        id: true,
+        tipoInscripcion: true,
+        modalidadPago: true,
+        cuota1Pagada: true,
+        cuota2Pagada: true,
+      },
     })
 
     if (!existing || existing.tipoInscripcion !== 'anual') {
       return NextResponse.json({ error: 'Jugador anual no encontrado' }, { status: 404 })
     }
-    if (existing.modalidadPago === 'unico' || existing.modalidadPago === 'anual') {
-      return NextResponse.json({ error: 'Este jugador tiene modalidad de pago único' }, { status: 400 })
+
+    const pagoUnico = isPagoUnico(existing.modalidadPago)
+
+    if (cuota === '1') {
+      if (!pagoUnico && existing.modalidadPago !== 'fraccionado') {
+        return NextResponse.json({ error: 'Modalidad de pago no válida para cuota 1' }, { status: 400 })
+      }
+
+      await prisma.inscripcion.update({
+        where: { id: inscripcionId },
+        data: {
+          justificantePago: buffer.toString('base64'),
+          justificantePagoMimeType: compressResult.mimeType,
+          nombreArchivoJustificante: justificanteFile.name,
+          cuota1Pagada: true,
+          pagada: pagoUnico ? true : !!existing.cuota2Pagada,
+        },
+      })
+
+      return NextResponse.json({ success: true, cuota: '1', reemplazado: true })
     }
 
-    const data = {
-      justificantePagoCuota2: buffer.toString('base64'),
-      justificantePagoCuota2MimeType: compressResult.mimeType,
-      nombreArchivoJustificanteCuota2: justificanteFile.name,
-      cuota2Pagada: true,
-      // En fraccionado, queda pagada cuando cuota1 y cuota2 están en true.
-      pagada: !!existing.cuota1Pagada,
+    // Cuota 2 — solo fraccionado
+    if (pagoUnico) {
+      return NextResponse.json(
+        { error: 'Este jugador tiene pago único. Sube el justificante como pago único (cuota 1).' },
+        { status: 400 }
+      )
     }
 
     await prisma.inscripcion.update({
       where: { id: inscripcionId },
-      data,
+      data: {
+        justificantePagoCuota2: buffer.toString('base64'),
+        justificantePagoCuota2MimeType: compressResult.mimeType,
+        nombreArchivoJustificanteCuota2: justificanteFile.name,
+        cuota2Pagada: true,
+        pagada: !!existing.cuota1Pagada,
+      },
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, cuota: '2', reemplazado: true })
   } catch (error) {
     console.error('Error al subir justificante de cuota:', error)
     return NextResponse.json({ error: 'Error al guardar justificante de cuota' }, { status: 500 })

@@ -43,6 +43,10 @@ export const MODALIDADES_PAGO_ANUAL = [
 
 export type ModalidadPagoId = (typeof MODALIDADES_PAGO_ANUAL)[number]['id']
 
+export function isPagoUnico(modalidad: string | null | undefined): boolean {
+  return modalidad === 'unico' || modalidad === 'anual'
+}
+
 export const SEXOS_ANUAL = [
   { id: 'M', label: 'Masculino' },
   { id: 'F', label: 'Femenino' },

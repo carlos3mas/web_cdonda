@@ -1,11 +1,14 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { CheckCircle2, Loader2, Search } from 'lucide-react'
+import { isPagoUnico } from '@/lib/anualConfig'
+
+type CuotaValue = '1' | '2'
 
 type AnnualSearchResult = {
   id: string
@@ -16,6 +19,15 @@ type AnnualSearchResult = {
   modalidadPago: string | null
   cuota1Pagada: boolean | null
   cuota2Pagada: boolean | null
+  pagada: boolean | null
+  nombreArchivoJustificante: string | null
+  nombreArchivoJustificanteCuota2: string | null
+}
+
+function modalidadLabel(modalidad: string | null): string {
+  if (isPagoUnico(modalidad)) return 'Pago único'
+  if (modalidad === 'fraccionado') return 'Pago fraccionado'
+  return modalidad || '—'
 }
 
 export function InscripcionAnualCuotas() {
@@ -23,14 +35,26 @@ export function InscripcionAnualCuotas() {
   const [results, setResults] = useState<AnnualSearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [cuota, setCuota] = useState<'2'>('2')
+  const [cuota, setCuota] = useState<CuotaValue>('1')
   const [file, setFile] = useState<File | null>(null)
   const [sending, setSending] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [lastUploadLabel, setLastUploadLabel] = useState('')
   const [message, setMessage] = useState<string>('')
   const [error, setError] = useState<string>('')
 
   const selected = useMemo(() => results.find((r) => r.id === selectedId) || null, [results, selectedId])
+  const selectedEsUnico = selected ? isPagoUnico(selected.modalidadPago) : false
+
+  useEffect(() => {
+    if (!selected) return
+    setCuota(selectedEsUnico ? '1' : selected.cuota2Pagada ? '1' : '2')
+  }, [selected, selectedEsUnico])
+
+  const justificanteActual =
+    cuota === '1'
+      ? selected?.nombreArchivoJustificante
+      : selected?.nombreArchivoJustificanteCuota2
 
   const handleSearch = async () => {
     setError('')
@@ -74,7 +98,17 @@ export function InscripcionAnualCuotas() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'No se pudo subir el justificante')
 
-      setMessage(`Justificante de cuota ${cuota} subido correctamente.`)
+      const label = selectedEsUnico
+        ? 'pago único'
+        : cuota === '1'
+          ? 'cuota 1'
+          : 'cuota 2'
+      setLastUploadLabel(label)
+      setMessage(
+        justificanteActual
+          ? `Justificante de ${label} actualizado correctamente. El archivo anterior ha sido sustituido.`
+          : `Justificante de ${label} subido correctamente.`
+      )
       setUploadSuccess(true)
       setFile(null)
       await handleSearch()
@@ -100,7 +134,8 @@ export function InscripcionAnualCuotas() {
           <CheckCircle2 className="h-14 w-14 text-emerald-600 mx-auto mb-3" />
           <h2 className="text-xl sm:text-2xl font-bold text-emerald-700">¡Justificante enviado!</h2>
           <p className="text-sm text-gray-600 mt-2">
-            El justificante de la cuota 2 se ha guardado correctamente y la cuota ya aparece marcada en el panel de administración.
+            El justificante de {lastUploadLabel} se ha guardado correctamente
+            {justificanteActual ? ' y ha sustituido al anterior' : ''}.
           </p>
           <div className="mt-5">
             <Button type="button" onClick={resetAfterSuccess} className="bg-blue-600 hover:bg-blue-700">
@@ -116,9 +151,14 @@ export function InscripcionAnualCuotas() {
     <Card className="border border-blue-100">
       <CardContent className="p-4 sm:p-6 space-y-5">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-blue-700">Añadir justificantes de cuotas</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-blue-700">Añadir o actualizar justificantes</h2>
           <p className="text-sm text-gray-600 mt-1">
-            Busca al jugador anual ya inscrito y sube el justificante de la cuota 2 (solo modalidad fraccionada).
+            Busca al jugador ya inscrito y sube el justificante de pago. Si ya había uno (incluso provisional),
+            el nuevo archivo lo sustituye automáticamente.
+          </p>
+          <p className="text-xs text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <strong>Pago único:</strong> puedes inscribirte sin justificante y subirlo aquí antes del 5 de agosto.
+            <strong className="ml-1">Pago fraccionado:</strong> sube aquí la cuota 2 cuando la realices.
           </p>
         </div>
 
@@ -128,6 +168,7 @@ export function InscripcionAnualCuotas() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), void handleSearch())}
               placeholder="Nombre o apellidos del jugador"
               className="pl-9"
             />
@@ -152,7 +193,7 @@ export function InscripcionAnualCuotas() {
                   {r.nombreJugador} {r.apellidos}
                 </p>
                 <p className="text-xs text-gray-500">
-                  Nacimiento: {new Date(r.fechaNacimiento).toLocaleDateString()} · Categoría: {r.categoria || '—'}
+                  {modalidadLabel(r.modalidadPago)} · Categoría: {r.categoria || '—'}
                 </p>
               </button>
             ))}
@@ -161,23 +202,59 @@ export function InscripcionAnualCuotas() {
 
         {selected ? (
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
+            <p className="text-sm font-medium text-gray-800">
+              Modalidad: {modalidadLabel(selected.modalidadPago)}
+            </p>
+
             <div className="flex flex-wrap gap-2 text-xs">
-              <span className={`px-2 py-1 rounded ${selected.cuota1Pagada ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>Cuota 1</span>
-              <span className={`px-2 py-1 rounded ${selected.cuota2Pagada ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>Cuota 2</span>
+              {selectedEsUnico ? (
+                <span
+                  className={`px-2 py-1 rounded ${
+                    selected.nombreArchivoJustificante
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-amber-100 text-amber-800'
+                  }`}
+                >
+                  {selected.nombreArchivoJustificante ? 'Justificante subido' : 'Pendiente de justificante'}
+                </span>
+              ) : (
+                <>
+                  <span
+                    className={`px-2 py-1 rounded ${
+                      selected.cuota1Pagada ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    Cuota 1
+                  </span>
+                  <span
+                    className={`px-2 py-1 rounded ${
+                      selected.cuota2Pagada ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    Cuota 2
+                  </span>
+                </>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="cuota" className="text-sm">Cuota a registrar</Label>
-                <select
-                  id="cuota"
-                  className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                  value={cuota}
-                  onChange={(e) => setCuota(e.target.value as '2')}
-                  disabled={selected.modalidadPago === 'unico' || selected.modalidadPago === 'anual'}
-                >
-                  <option value="2">Cuota 2</option>
-                </select>
+                <Label htmlFor="cuota" className="text-sm">Tipo de justificante</Label>
+                {selectedEsUnico ? (
+                  <p id="cuota" className="mt-1 text-sm text-gray-700 font-medium">
+                    Pago único (sustituye el anterior si existe)
+                  </p>
+                ) : (
+                  <select
+                    id="cuota"
+                    className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    value={cuota}
+                    onChange={(e) => setCuota(e.target.value as CuotaValue)}
+                  >
+                    <option value="1">Cuota 1 (actualizar)</option>
+                    <option value="2">Cuota 2</option>
+                  </select>
+                )}
               </div>
               <div>
                 <Label htmlFor="justiCuota" className="text-sm">Justificante (PDF o imagen)</Label>
@@ -189,6 +266,10 @@ export function InscripcionAnualCuotas() {
                 />
                 {file ? (
                   <p className="mt-1 text-xs text-emerald-700">Archivo seleccionado: {file.name}</p>
+                ) : justificanteActual ? (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Actual: {justificanteActual} — se reemplazará al guardar
+                  </p>
                 ) : null}
               </div>
             </div>
@@ -196,17 +277,12 @@ export function InscripcionAnualCuotas() {
             <Button
               type="button"
               onClick={handleUpload}
-              disabled={sending || selected.modalidadPago === 'unico' || selected.modalidadPago === 'anual'}
+              disabled={sending}
               className="bg-red-600 hover:bg-red-700"
             >
               {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-              Guardar justificante cuota
+              {justificanteActual ? 'Actualizar justificante' : 'Guardar justificante'}
             </Button>
-            {(selected.modalidadPago === 'unico' || selected.modalidadPago === 'anual') ? (
-              <p className="text-xs text-amber-700">
-                Este jugador tiene pago único y no necesita cuota adicional.
-              </p>
-            ) : null}
           </div>
         ) : null}
 

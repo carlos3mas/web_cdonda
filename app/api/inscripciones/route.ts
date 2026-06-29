@@ -181,22 +181,35 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: formatValidationIssues(issues), issues }, { status: 400 })
       }
 
-      if (!justificanteFile) {
-        return NextResponse.json({ error: 'Debes adjuntar el justificante de pago' }, { status: 400 })
+      if (!justificanteFile || justificanteFile.size === 0) {
+        if (modalidadPago !== 'unico') {
+          return NextResponse.json({ error: 'Debes adjuntar el justificante de pago' }, { status: 400 })
+        }
       }
       if (!firmaFile || firmaFile.size === 0) {
         return NextResponse.json({ error: 'La firma del tutor es obligatoria' }, { status: 400 })
       }
 
-      // Procesar justificante
-      const justFileValidation = await validateFile(justificanteFile, 10)
-      if (!justFileValidation.valid) {
-        return NextResponse.json({ error: justFileValidation.error || 'Justificante no válido' }, { status: 400 })
+      let justBuffer: Buffer | null = null
+      let justCompressMimeType: string | null = null
+      let justificanteFileName: string | null = null
+
+      if (justificanteFile && justificanteFile.size > 0) {
+        const justFileValidation = await validateFile(justificanteFile, 10)
+        if (!justFileValidation.valid) {
+          return NextResponse.json({ error: justFileValidation.error || 'Justificante no válido' }, { status: 400 })
+        }
+        const justBytes = await justificanteFile.arrayBuffer()
+        justBuffer = Buffer.from(justBytes)
+        const justCompress = await compressFile(
+          justBuffer,
+          justFileValidation.type || justificanteFile.type,
+          800
+        )
+        justBuffer = Buffer.from(justCompress.buffer)
+        justCompressMimeType = justCompress.mimeType
+        justificanteFileName = justificanteFile.name
       }
-      const justBytes = await justificanteFile.arrayBuffer()
-      let justBuffer = Buffer.from(justBytes)
-      const justCompress = await compressFile(justBuffer, justFileValidation.type || justificanteFile.type, 800)
-      justBuffer = Buffer.from(justCompress.buffer)
 
       // Procesar firma
       const firmaBytes = await firmaFile.arrayBuffer()
@@ -321,10 +334,10 @@ export async function POST(request: NextRequest) {
         tallaCamiseta: tallaCamiseta || null,
         tallaPantalon: tallaPantalon || null,
         tallaCalcetines: tallaCalcetines || null,
-        pagada: modalidadPago === 'unico',
-        justificantePago: justBuffer.toString('base64'),
-        justificantePagoMimeType: justCompress.mimeType,
-        nombreArchivoJustificante: justificanteFile.name,
+        pagada: modalidadPago === 'unico' && !!justBuffer,
+        justificantePago: justBuffer ? justBuffer.toString('base64') : null,
+        justificantePagoMimeType: justCompressMimeType,
+        nombreArchivoJustificante: justificanteFileName,
         firma: firmaBuffer.toString('base64'),
         firmaMimeType: 'image/png',
         nombreArchivoFirma: 'firma.png',
@@ -343,7 +356,7 @@ export async function POST(request: NextRequest) {
       const createData = {
         ...baseData,
         descuentoHermanos: descuentoHermanos || 'no',
-        cuota1Pagada: true,
+        cuota1Pagada: !!justBuffer,
         cuota2Pagada: false,
         cuota3Pagada: false,
       }

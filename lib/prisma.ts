@@ -37,11 +37,58 @@ function createPrismaClient(): PrismaClient {
   })
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient()
-
-if (!globalForPrisma.prisma) {
-  globalForPrisma.prisma = prisma
+function isConnectionError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  const normalized = message.toLowerCase()
+  return (
+    normalized.includes('terminated') ||
+    normalized.includes('fetch failed') ||
+    normalized.includes('econnreset') ||
+    normalized.includes('socket hang up')
+  )
 }
+
+export async function reconnectPrisma(): Promise<void> {
+  if (globalForPrisma.prisma) {
+    try {
+      await globalForPrisma.prisma.$disconnect()
+    } catch {
+      /* ya desconectado */
+    }
+  }
+  globalForPrisma.prisma = createPrismaClient()
+}
+
+/** Reintenta una operación tras reconectar si Turso corta la conexión. */
+export async function withDbRetry<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation()
+  } catch (error) {
+    if (!isConnectionError(error)) throw error
+    console.warn('[prisma] Conexión perdida, reconectando...')
+    await reconnectPrisma()
+    return await operation()
+  }
+}
+
+function getPrismaClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient()
+  }
+  return globalForPrisma.prisma
+}
+
+/** Cliente singleton; el proxy delega siempre al cliente actual (permite reconectar). */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getPrismaClient()
+    const value = Reflect.get(client, prop)
+    if (typeof value === 'function') {
+      return (value as (...args: unknown[]) => unknown).bind(client)
+    }
+    return value
+  },
+})
 
 async function ensureDefaultAdmin() {
   if (!process.env.DATABASE_URL) {
@@ -77,7 +124,10 @@ if (
   process.env.DATABASE_URL &&
   typeof window === 'undefined'
 ) {
-  ensureDefaultAdmin().catch(() => {
-    /* silenciar en build */
-  })
+  // Diferir para no competir con login/consultas críticas en arranque en frío
+  setTimeout(() => {
+    ensureDefaultAdmin().catch(() => {
+      /* silenciar en build */
+    })
+  }, 5000)
 }

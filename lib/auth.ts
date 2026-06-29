@@ -1,7 +1,7 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { prisma } from '@/lib/prisma'
+import { prisma, withDbRetry } from '@/lib/prisma'
 
 const useSecureCookies =
   process.env.NEXTAUTH_URL?.startsWith('https://') ?? process.env.NODE_ENV === 'production'
@@ -22,9 +22,11 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email.trim().toLowerCase()
 
         try {
-          const admin = await prisma.admin.findUnique({
-            where: { email },
-          })
+          const admin = await withDbRetry(() =>
+            prisma.admin.findUnique({
+              where: { email },
+            })
+          )
 
           if (!admin) {
             return null

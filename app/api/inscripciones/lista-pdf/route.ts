@@ -1,69 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
 import { requireAuth } from '@/lib/auth-middleware'
+import { getInscripcionesForListaPDF } from '@/lib/inscripciones-admin'
 import { generateListaInscripcionesPDF } from '@/lib/pdfGenerator'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
+
 export async function GET(request: NextRequest) {
-  // Proteger con autenticación
   const authError = await requireAuth(request)
   if (authError) return authError
 
   try {
     const { searchParams } = new URL(request.url)
     const tipoInscripcion = searchParams.get('tipo')
-    const estado = searchParams.get('estado') // 'pagados' o 'pendientes'
-    const busqueda = searchParams.get('busqueda') // Búsqueda de texto
-    const ids = searchParams.get('ids')
+    const estado = searchParams.get('estado')
+    const busqueda = searchParams.get('busqueda')
+    const idsParam = searchParams.get('ids')
+    const ids = idsParam
+      ? idsParam.split(',').map((id) => id.trim()).filter(Boolean)
+      : null
 
-    // Construir el objeto where con todos los filtros
-    const where: Prisma.InscripcionWhereInput = {}
-
-    // Filtro por tipo de inscripción
-    if (tipoInscripcion && tipoInscripcion !== 'todos') {
-      where.tipoInscripcion = tipoInscripcion
-    }
-
-    // Filtro por estado de pago
-    if (estado === 'pagados') {
-      where.pagada = true
-    } else if (estado === 'pendientes') {
-      where.pagada = false
-    }
-
-    if (ids) {
-      const list = ids.split(',').map((id) => id.trim()).filter(Boolean)
-      if (list.length > 0) {
-        where.id = { in: list }
-      }
-    }
-
-    let inscripciones = await prisma.inscripcion.findMany({
-      where,
-      orderBy: {
-        createdAt: 'desc'
-      }
+    const inscripciones = await getInscripcionesForListaPDF({
+      tipo: tipoInscripcion,
+      estado: estado === 'pagados' || estado === 'pendientes' ? estado : null,
+      busqueda,
+      ids,
     })
-
-    // Aplicar filtro de búsqueda si existe (búsqueda en memoria porque es más flexible)
-    if (busqueda && busqueda.trim()) {
-      const query = busqueda.toLowerCase().trim()
-      const isYear = /^\d{4}$/.test(query)
-      inscripciones = inscripciones.filter((inscripcion) => {
-        if (isYear) {
-          return new Date(inscripcion.fechaNacimiento).getFullYear() === Number(query)
-        }
-        return (
-          inscripcion.nombreJugador.toLowerCase().includes(query) ||
-          inscripcion.apellidos.toLowerCase().includes(query) ||
-          inscripcion.dni.toLowerCase().includes(query) ||
-          inscripcion.nombreTutor.toLowerCase().includes(query) ||
-          (inscripcion.email && inscripcion.email.toLowerCase().includes(query)) ||
-          inscripcion.telefono1.toLowerCase().includes(query) ||
-          (inscripcion.telefono2 && inscripcion.telefono2.toLowerCase().includes(query))
-        )
-      })
-    }
 
     if (inscripciones.length === 0) {
       return NextResponse.json(
@@ -72,16 +34,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Generar el PDF con la lista
     const pdfBytes = await generateListaInscripcionesPDF(inscripciones)
 
-    // Nombre del archivo
-    const tipoLabel = tipoInscripcion && tipoInscripcion !== 'todos'
-      ? tipoInscripcion.replace('-', '_')
-      : 'todas'
+    const tipoLabel =
+      tipoInscripcion && tipoInscripcion !== 'todos'
+        ? tipoInscripcion.replace('-', '_')
+        : 'todas'
     const fileName = `lista_inscripciones_${tipoLabel}_${new Date().toISOString().split('T')[0]}.pdf`
 
-    // Devolver el PDF (convertir Uint8Array a Buffer)
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
@@ -97,4 +57,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Inscripcion } from '@/types'
 import { formatDate } from '@/lib/utils'
-import { CheckCircle, ChevronLeft, ChevronRight, Download, Eye, FileDown, Filter, Search, Trash2, X, XCircle } from 'lucide-react'
+import { CheckCircle, ChevronLeft, ChevronRight, Download, Eye, FileDown, Filter, Loader2, Search, Trash2, X, XCircle } from 'lucide-react'
 import { DeleteConfirmDialog } from './DeleteConfirmDialog'
 import { InscripcionDialog } from './InscripcionDialog'
 
@@ -43,6 +43,7 @@ export function InscripcionesTable({
   const [searchQuery, setSearchQuery] = useState('')
   const [estadoFilter, setEstadoFilter] = useState<'todos' | 'pagados' | 'pendientes'>('todos')
   const [sexoFilter, setSexoFilter] = useState<'todos' | 'M' | 'F'>('todos')
+  const [downloadingListaPdf, setDownloadingListaPdf] = useState(false)
 
   const getAnnualPaidStatus = (inscripcion: Inscripcion) => {
     const modalidad = inscripcion.modalidadPago
@@ -195,6 +196,9 @@ export function InscripcionesTable({
   const showPagination = totalCount != null && totalCount > pageSize && onPageChange
 
   const handleDownloadListaPDF = async () => {
+    if (downloadingListaPdf) return
+
+    setDownloadingListaPdf(true)
     try {
       const params = new URLSearchParams()
       params.append('tipo', tipoInscripcion)
@@ -206,32 +210,52 @@ export function InscripcionesTable({
       if (searchQuery.trim()) {
         params.append('busqueda', searchQuery.trim())
       }
-      
-      const url = `/api/inscripciones/lista-pdf?${params.toString()}`
-      const response = await fetch(url)
-      
+
+      const controller = new AbortController()
+      const timeoutId = window.setTimeout(() => controller.abort(), 120_000)
+
+      const response = await fetch(`/api/inscripciones/lista-pdf?${params.toString()}`, {
+        credentials: 'include',
+        signal: controller.signal,
+      })
+
+      window.clearTimeout(timeoutId)
+
       if (!response.ok) {
-        throw new Error('Error al generar PDF')
+        let message = 'Error al generar el PDF'
+        try {
+          const body = (await response.json()) as { error?: string }
+          if (body.error) message = body.error
+        } catch {
+          /* respuesta no JSON */
+        }
+        throw new Error(message)
       }
 
       const blob = await response.blob()
       const urlBlob = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = urlBlob
-      
+
       let tipoLabel = tipoInscripcion !== 'todos' ? tipoInscripcion.replace('-', '_') : 'todas'
       if (estadoFilter !== 'todos') {
         tipoLabel += `_${estadoFilter}`
       }
       a.download = `lista_inscripciones_${tipoLabel}_${new Date().toISOString().split('T')[0]}.pdf`
-      
+
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(urlBlob)
       document.body.removeChild(a)
     } catch (error) {
       console.error('Error al descargar PDF de lista:', error)
-      alert('Error al descargar la lista de inscripciones')
+      if (error instanceof Error && error.name === 'AbortError') {
+        alert('La descarga tardó demasiado. Inténtalo de nuevo.')
+      } else {
+        alert(error instanceof Error ? error.message : 'Error al descargar la lista de inscripciones')
+      }
+    } finally {
+      setDownloadingListaPdf(false)
     }
   }
 
@@ -259,10 +283,17 @@ export function InscripcionesTable({
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2"
+                disabled={downloadingListaPdf || isLoading}
               >
-                <FileDown className="h-4 w-4" />
-                <span className="hidden sm:inline">Descargar Lista PDF</span>
-                <span className="sm:hidden">PDF</span>
+                {downloadingListaPdf ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileDown className="h-4 w-4" />
+                )}
+                <span className="hidden sm:inline">
+                  {downloadingListaPdf ? 'Generando PDF…' : 'Descargar Lista PDF'}
+                </span>
+                <span className="sm:hidden">{downloadingListaPdf ? '…' : 'PDF'}</span>
               </Button>
             </div>
           </div>

@@ -3,7 +3,7 @@ import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 import bcrypt from 'bcryptjs'
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient }
+const globalForPrisma = global as unknown as { prisma: PrismaClient | undefined }
 
 function createPrismaClient() {
   const databaseUrl = process.env.DATABASE_URL
@@ -25,31 +25,40 @@ function createPrismaClient() {
     url: databaseUrl,
     authToken: authToken || undefined,
   })
-  
+
   const adapter = new PrismaLibSQL(libsql)
-  
+
   const prismaClient = new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'production'
-      ? ['error', 'warn'] 
+      ? ['error', 'warn']
       : ['query', 'error', 'warn', 'info'],
     errorFormat: 'pretty',
   })
-  
-  // Manejar desconexión en producción
-  if (process.env.NODE_ENV === 'production') {
-    // Asegurar que las conexiones se cierren correctamente
-    process.on('beforeExit', async () => {
+
+  const disconnect = async () => {
+    try {
       await prismaClient.$disconnect()
-    })
+    } catch {
+      /* ya desconectado */
+    }
   }
-  
+
+  process.on('beforeExit', disconnect)
+  process.on('SIGTERM', disconnect)
+  process.on('SIGINT', disconnect)
+
   return prismaClient
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient()
+function getPrismaClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient()
+  }
+  return globalForPrisma.prisma
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+export const prisma = getPrismaClient()
 
 async function ensureDefaultAdmin() {
   // No hacer nada si no hay DATABASE_URL

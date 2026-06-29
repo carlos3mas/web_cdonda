@@ -20,7 +20,7 @@ const otherSponsors = [
   'LOGILOP.webp',
   'Marplac.webp',
   'MOZ-TILES.webp',
-  'PURA-MAGIA.webp',
+  'pura-magia.webp',
   'tiles-cut.webp',
   'rotulos.webp',
   'sara-blazquez.webp',

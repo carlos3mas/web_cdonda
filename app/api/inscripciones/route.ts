@@ -14,10 +14,10 @@ import {
   type InscripcionValidationPayload,
 } from '@/lib/inscripcionValidation'
 import { generateClausulaDerechosImagenDocument } from '@/lib/anualDocuments'
+import { Prisma } from '@prisma/client'
 
 const ANUAL_OPTIONAL_SCHEMA_FIELDS = [
   'dniJugador',
-  'padresSeparados',
   'documentoDerechosImagen',
   'documentoDerechosImagenMimeType',
   'nombreArchivoDerechosImagen',
@@ -33,12 +33,49 @@ function stripAnualOptionalFields<T extends Record<string, unknown>>(data: T) {
 
 function isPrismaSchemaMismatch(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error)
+  const normalized = message.toLowerCase()
   return (
     (error instanceof Error && error.name === 'PrismaClientValidationError') ||
     message.includes('Unknown argument') ||
-    message.includes('no such column') ||
-    message.includes('SQLITE_ERROR')
+    normalized.includes('no such column') ||
+    normalized.includes('no column named') ||
+    normalized.includes('has no column named') ||
+    normalized.includes('sqlite_error') ||
+    normalized.includes('sqlite_unknown')
   )
+}
+
+function isMissingPadresSeparadosColumn(error: unknown): boolean {
+  const message = (error instanceof Error ? error.message : String(error)).toLowerCase()
+  return message.includes('padresseparados')
+}
+
+async function createAnualInscripcion(createData: Prisma.InscripcionCreateInput) {
+  try {
+    return await prisma.inscripcion.create({ data: createData })
+  } catch (error) {
+    if (isMissingPadresSeparadosColumn(error)) {
+      const migrationError = new Error(
+        'Falta la columna padresSeparados en Turso. Ejecuta npm run db:apply-migrations en el servidor.'
+      )
+      migrationError.name = 'SchemaMigrationRequired'
+      throw migrationError
+    }
+
+    if (!isPrismaSchemaMismatch(error)) throw error
+
+    const shortMsg = shortenPrismaErrorMessage(
+      error instanceof Error ? error.message : String(error)
+    )
+    console.warn(
+      '⚠️ Reintentando inscripción anual sin otros campos opcionales:',
+      shortMsg
+    )
+
+    return await prisma.inscripcion.create({
+      data: stripAnualOptionalFields(createData) as Prisma.InscripcionCreateInput,
+    })
+  }
 }
 
 function shortenPrismaErrorMessage(message: string): string {
@@ -361,23 +398,7 @@ export async function POST(request: NextRequest) {
         cuota3Pagada: false,
       }
 
-      let inscripcionAnual
-      try {
-        inscripcionAnual = await prisma.inscripcion.create({ data: createData })
-      } catch (error) {
-        if (!isPrismaSchemaMismatch(error)) throw error
-
-        const shortMsg = shortenPrismaErrorMessage(
-          error instanceof Error ? error.message : String(error)
-        )
-        console.warn(
-          '⚠️ Reintentando inscripción anual sin campos nuevos (reinicia el servidor tras migraciones):',
-          shortMsg
-        )
-        inscripcionAnual = await prisma.inscripcion.create({
-          data: stripAnualOptionalFields(createData) as typeof createData,
-        })
-      }
+      const inscripcionAnual = await createAnualInscripcion(createData)
 
       console.log('✅ Inscripción anual guardada:', inscripcionAnual.id)
       return NextResponse.json({ success: true, inscripcionId: inscripcionAnual.id, message: 'Inscripción anual creada correctamente' })
@@ -613,17 +634,22 @@ export async function POST(request: NextRequest) {
       shortMessage.includes('Unknown argument') ||
       (error instanceof Error && error.name === 'PrismaClientValidationError')
 
+    const needsMigration =
+      error instanceof Error && error.name === 'SchemaMigrationRequired'
+
     return NextResponse.json(
       {
-        error: isStaleClient
-          ? 'El servidor necesita reiniciarse tras actualizar la base de datos. Cierra y vuelve a ejecutar npm run dev, o redeploy en producción.'
-          : 'Error al procesar la inscripción',
+        error: needsMigration
+          ? 'La base de datos necesita una actualización. El club está aplicando la migración; inténtalo de nuevo en unos minutos.'
+          : isStaleClient
+            ? 'El servidor necesita reiniciarse tras actualizar la base de datos. Cierra y vuelve a ejecutar npm run dev, o redeploy en producción.'
+            : 'Error al procesar la inscripción',
         details:
-          process.env.NODE_ENV === 'production' && !isStaleClient
+          process.env.NODE_ENV === 'production' && !isStaleClient && !needsMigration
             ? 'Error interno del servidor'
             : shortMessage,
       },
-      { status: 500 }
+      { status: needsMigration ? 503 : 500 }
     )
   }
 }

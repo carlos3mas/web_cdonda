@@ -12,6 +12,7 @@ export async function GET() {
   const checks = {
     ok: true,
     db: false,
+    padresSeparadosColumn: false,
     databaseUrl: Boolean(databaseUrl),
     databaseUrlFormat: isTurso ? 'turso' : databaseUrl ? 'other' : 'missing',
     tursoToken: Boolean(process.env.TURSO_AUTH_TOKEN),
@@ -32,6 +33,16 @@ export async function GET() {
   try {
     await prisma.$queryRaw`SELECT 1`
     checks.db = true
+
+    const columns = await prisma.$queryRaw<{ name: string }[]>`
+      PRAGMA table_info(inscripciones)
+    `
+    checks.padresSeparadosColumn = columns.some((c) => c.name === 'padresSeparados')
+    if (!checks.padresSeparadosColumn) {
+      checks.ok = false
+      checks.dbError =
+        'Falta columna padresSeparados. Ejecuta: npm run db:apply-migrations'
+    }
   } catch (error) {
     checks.ok = false
     checks.db = false

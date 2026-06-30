@@ -25,6 +25,9 @@ const nextConfig = {
   },
   experimental: {
     scrollRestoration: true,
+    serverActions: {
+      bodySizeLimit: '15mb',
+    },
   },
   async redirects() {
     return [
@@ -48,6 +51,10 @@ const nextConfig = {
       ? "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' ws: https://www.googletagmanager.com; frame-src 'self' https://www.google.com https://maps.google.com https://www.google.es; child-src 'self' https://www.google.com https://maps.google.com https://www.google.es; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
       : "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://www.googletagmanager.com; frame-src 'self' https://www.google.com https://maps.google.com https://www.google.es; child-src 'self' https://www.google.com https://maps.google.com https://www.google.es; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
     return [
+      {
+        source: '/api/:path*',
+        headers: [{ key: 'Cache-Control', value: 'no-transform' }],
+      },
       {
         source: '/(.*)',
         headers: [

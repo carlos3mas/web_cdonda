@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth-middleware'
 import { decrypt } from '@/lib/encryption'
+import { binaryResponse } from '@/lib/binary-response'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,17 +63,11 @@ export async function GET(
     }
 
     const imageBuffer = decrypt(encriptado)
-    const body = new Uint8Array(imageBuffer)
 
-    return new NextResponse(body, {
-      status: 200,
-      headers: {
-        'Content-Type': mimeType || 'image/jpeg',
-        'Content-Length': String(imageBuffer.length),
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Pragma': 'no-cache',
-        'X-Content-Type-Options': 'nosniff',
-      },
+    return binaryResponse(imageBuffer, {
+      'Content-Type': mimeType || 'image/jpeg',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      Pragma: 'no-cache',
     })
   } catch (error) {
     console.error('Error al servir foto DNI:', error)

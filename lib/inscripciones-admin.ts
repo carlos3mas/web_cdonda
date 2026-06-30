@@ -89,6 +89,38 @@ export const LISTA_PDF_SELECT = {
   pagada: true,
 } satisfies Prisma.InscripcionSelect
 
+/** Campos para generar PDF de inscripción (sin justificantes ni DNI cifrado). */
+export const PDF_INSCRIPCION_SELECT = {
+  id: true,
+  tipoInscripcion: true,
+  nombreJugador: true,
+  apellidos: true,
+  fechaNacimiento: true,
+  dni: true,
+  dniJugador: true,
+  direccion: true,
+  localidad: true,
+  codigoPostal: true,
+  semanasCampus: true,
+  diasSueltos: true,
+  tallaCamiseta: true,
+  tallaPantalon: true,
+  tallaCalcetines: true,
+  nombreTutor: true,
+  telefono1: true,
+  telefono2: true,
+  enfermedad: true,
+  medicacion: true,
+  alergico: true,
+  numeroSeguridadSocial: true,
+  email: true,
+  categoria: true,
+  padresSeparados: true,
+  firma: true,
+  firmaMimeType: true,
+  createdAt: true,
+} satisfies Prisma.InscripcionSelect
+
 type StatsRow = {
   totalInscripciones: bigint | number
   inscripcionesPagadas: bigint | number

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-middleware'
 import { getInscripcionesForListaPDF } from '@/lib/inscripciones-admin'
 import { generateListaInscripcionesPDF } from '@/lib/pdfGenerator'
+import { binaryResponse } from '@/lib/binary-response'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -42,12 +43,9 @@ export async function GET(request: NextRequest) {
         : 'todas'
     const fileName = `lista_inscripciones_${tipoLabel}_${new Date().toISOString().split('T')[0]}.pdf`
 
-    return new NextResponse(Buffer.from(pdfBytes), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-      },
+    return binaryResponse(Buffer.from(pdfBytes), {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${fileName}"`,
     })
   } catch (error) {
     console.error('Error al generar PDF de lista:', error)

@@ -1,33 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { PDF_INSCRIPCION_SELECT } from '@/lib/inscripciones-admin'
 import { generatePDFForInscripcion } from '@/lib/pdfGenerator'
+import { binaryResponse } from '@/lib/binary-response'
+import { Inscripcion } from '@/types'
+
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const inscripcion = await prisma.inscripcion.findUnique({
-      where: { id: params.id }
+    const row = await prisma.inscripcion.findUnique({
+      where: { id: params.id },
+      select: PDF_INSCRIPCION_SELECT,
     })
 
-    if (!inscripcion) {
+    if (!row) {
       return NextResponse.json(
         { error: 'Inscripción no encontrada' },
         { status: 404 }
       )
     }
 
-    // Generar el PDF (usa plantilla si existe, sino genera desde cero)
-    const pdfBytes = await generatePDFForInscripcion(inscripcion)
+    const pdfBytes = await generatePDFForInscripcion(row as Inscripcion)
 
-    // Devolver el PDF (convertir Uint8Array a Buffer)
-    return new NextResponse(Buffer.from(pdfBytes), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="inscripcion-${inscripcion.id}.pdf"`,
-      },
+    return binaryResponse(Buffer.from(pdfBytes), {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="inscripcion-${row.id}.pdf"`,
     })
   } catch (error) {
     console.error('Error al generar PDF:', error)
@@ -37,4 +39,3 @@ export async function GET(
     )
   }
 }
-

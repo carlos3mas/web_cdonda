@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-middleware'
+import { binaryResponse } from '@/lib/binary-response'
 import { prisma } from '@/lib/prisma'
 
 /**
@@ -74,14 +75,10 @@ export async function GET(
     const contentType = payload.mime || 'application/octet-stream'
     const originalFilename = payload.name || `justificante-cuota-${cuota}`
     
-    // Devolver el archivo con headers apropiados
-    return new NextResponse(fileBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `inline; filename="${originalFilename}"`,
-        'Cache-Control': 'private, max-age=3600',
-      },
+    return binaryResponse(fileBuffer, {
+      'Content-Type': contentType,
+      'Content-Disposition': `inline; filename="${originalFilename}"`,
+      'Cache-Control': 'private, max-age=3600, no-transform',
     })
   } catch (error) {
     console.error('Error al servir justificante:', error)

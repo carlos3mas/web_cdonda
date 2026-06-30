@@ -10,6 +10,7 @@ import { InscripcionAnualStep1 } from './InscripcionAnualStep1'
 import { InscripcionAnualStep2, type AnualFormData } from './InscripcionAnualStep2'
 import { InscripcionAnualCuotas } from './InscripcionAnualCuotas'
 import { type TipoAnualId, getTipoAnual } from '@/lib/anualConfig'
+import { compressImageFileForUpload } from '@/lib/client-image-compress'
 import {
   getInscripcionAnualSchema,
   issuesToFieldErrors,
@@ -127,6 +128,16 @@ export function InscripcionAnualForm() {
     setSubmitStatus('submitting')
 
     try {
+      const [dniFrontalOpt, dniReversoOpt, justificanteOpt] = await Promise.all([
+        dniFrontal ? compressImageFileForUpload(dniFrontal) : Promise.resolve(null),
+        dniReverso ? compressImageFileForUpload(dniReverso) : Promise.resolve(null),
+        justificante
+          ? justificante.type.startsWith('image/')
+            ? compressImageFileForUpload(justificante)
+            : Promise.resolve(justificante)
+          : Promise.resolve(null),
+      ])
+
       const fd = new FormData()
       fd.append('tipoInscripcion', 'anual')
       fd.append('categoria', tipoSeleccionado!)
@@ -139,20 +150,30 @@ export function InscripcionAnualForm() {
         }
       })
 
-      if (dniFrontal) fd.append('dniFrontal', dniFrontal)
-      if (dniReverso) fd.append('dniReverso', dniReverso)
-      if (justificante) fd.append('justificantePago', justificante)
+      if (dniFrontalOpt) fd.append('dniFrontal', dniFrontalOpt)
+      if (dniReversoOpt) fd.append('dniReverso', dniReversoOpt)
+      if (justificanteOpt) fd.append('justificantePago', justificanteOpt)
 
       const firmaBlob = await canvasToBlob()
       if (firmaBlob) fd.append('firmaTutor', firmaBlob, 'firma.png')
 
       const res = await fetch('/api/inscripciones', { method: 'POST', body: fd })
-      const data = await res.json() as {
+
+      const raw = await res.text()
+      let data: {
         success?: boolean
         inscripcionId?: string
         error?: string
         details?: string
         issues?: { path: (string | number)[]; message: string }[]
+      } = {}
+
+      try {
+        data = raw ? (JSON.parse(raw) as typeof data) : {}
+      } catch {
+        throw new Error(
+          'La conexión se interrumpió al procesar la inscripción. Prueba con fotos más ligeras, buena señal Wi‑Fi o desde otro navegador.'
+        )
       }
 
       if (!res.ok) {
@@ -179,6 +200,7 @@ export function InscripcionAnualForm() {
       const res = await fetch(`/api/inscripciones/${id}/pdf`)
       if (!res.ok) return
       const blob = await res.blob()
+      if (blob.size === 0) return
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

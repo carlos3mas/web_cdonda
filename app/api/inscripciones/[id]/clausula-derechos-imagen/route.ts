@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-middleware'
+import { binaryResponse } from '@/lib/binary-response'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -30,13 +31,10 @@ export async function GET(
     const fileName =
       inscripcion.nombreArchivoDerechosImagen || 'clausula-derechos-imagen.pdf'
 
-    return new NextResponse(fileBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': inscripcion.documentoDerechosImagenMimeType || 'application/pdf',
-        'Content-Disposition': `inline; filename="${fileName}"`,
-        'Cache-Control': 'private, max-age=3600',
-      },
+    return binaryResponse(fileBuffer, {
+      'Content-Type': inscripcion.documentoDerechosImagenMimeType || 'application/pdf',
+      'Content-Disposition': `inline; filename="${fileName}"`,
+      'Cache-Control': 'private, max-age=3600, no-transform',
     })
   } catch (error) {
     console.error('Error al servir cláusula de derechos de imagen:', error)

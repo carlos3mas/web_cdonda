@@ -90,6 +90,7 @@ function shortenPrismaErrorMessage(message: string): string {
 
 // Deshabilitar cache para estas rutas
 export const dynamic = 'force-dynamic'
+export const maxDuration = 120
 export const revalidate = 0
 
 // GET - Obtener todas las inscripciones (opcionalmente filtradas por tipo)

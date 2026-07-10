@@ -1,4 +1,4 @@
-import { PDFDocument, PDFImage, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, PDFImage, PDFPage, PDFFont, rgb, StandardFonts } from 'pdf-lib'
 import sharp from 'sharp'
 import { Inscripcion } from '@/types'
 import { formatDate } from './utils'
@@ -721,377 +721,332 @@ function getListaPdfEstado(inscripcion: Inscripcion): 'Paga' | 'Pendi' {
   return inscripcion.pagada ? 'Paga' : 'Pendi'
 }
 
-function truncateText(text: string, maxWidth: number): string {
-  // Aproximación: 1 punto ≈ 0.6 caracteres con fuente de 8pt
-  const maxChars = Math.floor(maxWidth * 0.6)
-  if (text.length <= maxChars) return text
-  return text.substring(0, maxChars - 3) + '...'
+function truncateToWidth(text: string, font: PDFFont, size: number, maxWidth: number): string {
+  const safe = text.replace(/\s+/g, ' ').trim()
+  if (!safe) return '—'
+  if (font.widthOfTextAtSize(safe, size) <= maxWidth) return safe
+
+  let truncated = safe
+  while (truncated.length > 0 && font.widthOfTextAtSize(`${truncated}…`, size) > maxWidth) {
+    truncated = truncated.slice(0, -1)
+  }
+  return truncated ? `${truncated}…` : '…'
+}
+
+function formatListaPdfTallas(inscripcion: Inscripcion): string {
+  const parts = [
+    inscripcion.tallaCamiseta,
+    inscripcion.tallaPantalon,
+    inscripcion.tallaCalcetines,
+  ].filter(Boolean)
+  return parts.length ? parts.join(' / ') : '—'
+}
+
+type ListaPdfColumn = {
+  label: string
+  width: number
+  align?: 'left' | 'center' | 'right'
+}
+
+function buildListaPdfColumns(tableWidth: number): ListaPdfColumn[] {
+  const columns: ListaPdfColumn[] = [
+    { label: 'Nº', width: 28, align: 'center' },
+    { label: 'Tipo', width: 40, align: 'center' },
+    { label: 'Jugador', width: 132 },
+    { label: 'DNI', width: 76, align: 'center' },
+    { label: 'Tutor', width: 158 },
+    { label: 'Tel.', width: 78, align: 'center' },
+    { label: 'Nac.', width: 56, align: 'center' },
+    { label: 'Tallas', width: 92, align: 'center' },
+    { label: 'Estado', width: 52, align: 'center' },
+  ]
+
+  const total = columns.reduce((sum, col) => sum + col.width, 0)
+  if (total !== tableWidth) {
+    const extra = tableWidth - total
+    columns[2].width += Math.floor(extra * 0.55)
+    columns[4].width += extra - Math.floor(extra * 0.55)
+  }
+
+  return columns
+}
+
+function getColumnXs(margin: number, columns: ListaPdfColumn[]): number[] {
+  const xs: number[] = []
+  let x = margin
+  for (const col of columns) {
+    xs.push(x)
+    x += col.width
+  }
+  return xs
+}
+
+function drawTextInCell(
+  page: PDFPage,
+  text: string,
+  x: number,
+  width: number,
+  y: number,
+  font: PDFFont,
+  size: number,
+  color: ReturnType<typeof rgb>,
+  align: 'left' | 'center' | 'right' = 'left',
+  pad = 4
+) {
+  const maxWidth = width - pad * 2
+  const content = truncateToWidth(text, font, size, maxWidth)
+  const textWidth = font.widthOfTextAtSize(content, size)
+  let drawX = x + pad
+  if (align === 'center') drawX = x + (width - textWidth) / 2
+  if (align === 'right') drawX = x + width - pad - textWidth
+
+  page.drawText(content, { x: drawX, y, size, font, color })
 }
 
 // Función para generar PDF con lista completa de inscripciones en formato tabla
 export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create()
-  const page = pdfDoc.addPage([842, 595]) // A4 apaisado
+  const pageSize: [number, number] = [842, 595]
+  let page = pdfDoc.addPage(pageSize)
   const { width, height } = page.getSize()
 
-  // Cargar fuentes
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
-  // Colores
-  const redColor = rgb(0.86, 0.15, 0.15) // #dc2626
-  const blackColor = rgb(0, 0, 0)
-  const grayColor = rgb(0.4, 0.4, 0.4)
-  const lightGrayColor = rgb(0.9, 0.9, 0.9)
+  const redColor = rgb(0.86, 0.15, 0.15)
+  const blackColor = rgb(0.1, 0.1, 0.1)
+  const grayColor = rgb(0.45, 0.45, 0.45)
+  const lightGrayColor = rgb(0.96, 0.96, 0.96)
+  const borderColor = rgb(0.82, 0.82, 0.82)
 
-  let yPosition = height - 40
-  const margin = 40
-  const tableWidth = width - (margin * 2) // 595 - 80 = 515 puntos disponibles
-  const rowHeight = 19
-  const headerHeight = 30
+  const margin = 36
+  const tableWidth = width - margin * 2
+  const rowHeight = 20
+  const headerRowHeight = 24
+  const cellFontSize = 7.5
+  const headerFontSize = 8
+  const columns = buildListaPdfColumns(tableWidth)
+  const columnXs = getColumnXs(margin, columns)
 
-  // Cargar logo del equipo
-  let logoImage = null
+  let logoImage: Awaited<ReturnType<PDFDocument['embedPng']>> | null = null
   try {
     const logoPath = join(process.cwd(), 'public', 'images', 'logos', 'escudo-cd-onda.webp')
     if (existsSync(logoPath)) {
       const logoBytes = await readFile(logoPath)
-      logoImage = await pdfDoc.embedPng(logoBytes)
+      const pngBuffer = await sharp(logoBytes).png().toBuffer()
+      logoImage = await pdfDoc.embedPng(pngBuffer)
     }
   } catch (error) {
     console.warn('No se pudo cargar el logo:', error)
   }
 
-  // Encabezado - fondo rojo más alto para que no corte el texto
-  const headerHeightTotal = 74
-  page.drawRectangle({
-    x: 0,
-    y: yPosition - 20,
-    width: width,
-    height: headerHeightTotal,
-    color: redColor,
-  })
-
-  // Dibujar logo si existe - ajustado para mejor visualización
-  let textStartX = margin
-  if (logoImage) {
-    const logoSize = 38
-    const logoX = margin + 5
-    const logoY = yPosition - 15
-    page.drawImage(logoImage, {
-      x: logoX,
-      y: logoY,
-      width: logoSize,
-      height: logoSize,
+  const drawFullPageHeader = (targetPage: typeof page, yTop: number) => {
+    const bannerHeight = 58
+    targetPage.drawRectangle({
+      x: 0,
+      y: yTop - bannerHeight,
+      width,
+      height: bannerHeight,
+      color: redColor,
     })
-    textStartX = logoX + logoSize + 12 // Espacio después del logo
-  }
 
-  page.drawText('CLUB DEPORTIVO ONDA', {
-    x: textStartX,
-    y: yPosition + 10,
-    size: 18,
-    font: fontBold,
-    color: rgb(1, 1, 1),
-  })
-
-  page.drawText('Lista de Inscripciones', {
-    x: textStartX,
-    y: yPosition - 6,
-    size: 12,
-    font: font,
-    color: rgb(1, 1, 1),
-  })
-
-  page.drawText(`Total: ${inscripciones.length} inscripciones`, {
-    x: textStartX,
-    y: yPosition - 20,
-    size: 10,
-    font: font,
-    color: rgb(1, 1, 1),
-  })
-
-  yPosition -= (headerHeightTotal + 10)
-
-  // Definir columnas de la tabla - ajustadas para que quepan en el ancho disponible
-  // Ancho total disponible: 515 puntos
-  const columns = [
-    { label: 'Nº', width: 22 },
-    { label: 'Tipo', width: 46 },
-    { label: 'Jugador', width: 108 },
-    { label: 'DNI', width: 62 },
-    { label: 'Tutor', width: 100 },
-    { label: 'Teléfono', width: 68 },
-    { label: 'Fecha Nac.', width: 58 },
-    { label: 'Tallas', width: 108 },
-    { label: 'Estado', width: 44 },
-  ]
-
-  // Verificar que las columnas quepan
-  const totalColumnWidth = columns.reduce((sum, col) => sum + col.width, 0)
-  if (totalColumnWidth > tableWidth) {
-    // Ajustar proporcionalmente si excede
-    const scale = tableWidth / totalColumnWidth
-    columns.forEach(col => {
-      col.width = Math.floor(col.width * scale)
-    })
-  }
-
-  const columnPositions: number[] = []
-  let currentX = margin
-  columns.forEach((col, index) => {
-    columnPositions.push(currentX)
-    if (index < columns.length - 1) {
-      currentX += col.width
-    } else {
-      // La última columna se ajusta al ancho disponible
-      columnPositions.push(currentX)
+    let textX = margin
+    if (logoImage) {
+      const logoSize = 34
+      targetPage.drawImage(logoImage, {
+        x: margin,
+        y: yTop - bannerHeight + 12,
+        width: logoSize,
+        height: logoSize,
+      })
+      textX = margin + logoSize + 10
     }
-  })
 
-  // Dibujar encabezado de la tabla
-  page.drawRectangle({
-    x: margin,
-    y: yPosition - headerHeight,
-    width: tableWidth,
-    height: headerHeight,
-    color: redColor,
-  })
-
-  columns.forEach((col, index) => {
-    const label = truncateText(col.label, col.width - 6)
-    page.drawText(label, {
-      x: columnPositions[index] + 3,
-      y: yPosition - 20,
-      size: 9,
+    targetPage.drawText('CLUB DEPORTIVO ONDA', {
+      x: textX,
+      y: yTop - 22,
+      size: 16,
       font: fontBold,
       color: rgb(1, 1, 1),
     })
-  })
+    targetPage.drawText('Lista de Inscripciones', {
+      x: textX,
+      y: yTop - 38,
+      size: 11,
+      font,
+      color: rgb(1, 1, 1),
+    })
+    targetPage.drawText(`${inscripciones.length} inscripciones`, {
+      x: width - margin - 90,
+      y: yTop - 30,
+      size: 10,
+      font: fontBold,
+      color: rgb(1, 1, 1),
+    })
 
-  yPosition -= headerHeight + 5
+    return yTop - bannerHeight - 12
+  }
 
-  // Dibujar filas de datos
-  inscripciones.forEach((inscripcion, index) => {
-    // Si no hay espacio, crear nueva página
-    if (yPosition < 100) {
-      const newPage = pdfDoc.addPage([842, 595])
-      yPosition = height - 40
+  const drawCompactPageHeader = (targetPage: typeof page, yTop: number) => {
+    const bannerHeight = 28
+    targetPage.drawRectangle({
+      x: margin,
+      y: yTop - bannerHeight,
+      width: tableWidth,
+      height: bannerHeight,
+      color: rgb(0.98, 0.95, 0.95),
+      borderColor: redColor,
+      borderWidth: 0.6,
+    })
+    targetPage.drawText('Lista de Inscripciones — continuación', {
+      x: margin + 8,
+      y: yTop - 19,
+      size: 9,
+      font: fontBold,
+      color: redColor,
+    })
+    return yTop - bannerHeight - 8
+  }
 
-      // Repetir encabezado completo en nueva página
-      const headerHeightTotal = 74
-      newPage.drawRectangle({
-        x: 0,
-        y: yPosition - 20,
-        width: width,
-        height: headerHeightTotal,
-        color: redColor,
-      })
+  const drawTableHeader = (targetPage: typeof page, yTop: number) => {
+    targetPage.drawRectangle({
+      x: margin,
+      y: yTop - headerRowHeight,
+      width: tableWidth,
+      height: headerRowHeight,
+      color: redColor,
+    })
 
-      // Dibujar logo en nueva página si existe
-      let textStartXNew = margin
-      if (logoImage) {
-        const logoSize = 38
-        const logoX = margin + 5
-        const logoY = yPosition - 15
-        newPage.drawImage(logoImage, {
-          x: logoX,
-          y: logoY,
-          width: logoSize,
-          height: logoSize,
-        })
-        textStartXNew = logoX + logoSize + 12
-      }
+    columns.forEach((col, index) => {
+      drawTextInCell(
+        targetPage,
+        col.label,
+        columnXs[index],
+        col.width,
+        yTop - 16,
+        fontBold,
+        headerFontSize,
+        rgb(1, 1, 1),
+        col.align ?? 'left'
+      )
+    })
 
-      newPage.drawText('CLUB DEPORTIVO ONDA', {
-        x: textStartXNew,
-        y: yPosition + 10,
-        size: 18,
-        font: fontBold,
-        color: rgb(1, 1, 1),
-      })
+    return yTop - headerRowHeight
+  }
 
-      newPage.drawText('Lista de Inscripciones', {
-        x: textStartXNew,
-        y: yPosition - 6,
-        size: 12,
-        font: font,
-        color: rgb(1, 1, 1),
-      })
-
-      newPage.drawText(`Total: ${inscripciones.length} inscripciones`, {
-        x: textStartXNew,
-        y: yPosition - 20,
-        size: 10,
-        font: font,
-        color: rgb(1, 1, 1),
-      })
-
-      yPosition -= (headerHeightTotal + 10)
-
-      // Repetir encabezado de tabla en nueva página
-      newPage.drawRectangle({
+  const drawRowBorders = (targetPage: typeof page, yTop: number, fill?: typeof lightGrayColor) => {
+    if (fill) {
+      targetPage.drawRectangle({
         x: margin,
-        y: yPosition - headerHeight,
-        width: tableWidth,
-        height: headerHeight,
-        color: redColor,
-      })
-
-      columns.forEach((col, colIndex) => {
-        const label = truncateText(col.label, col.width - 6)
-        newPage.drawText(label, {
-          x: columnPositions[colIndex] + 3,
-          y: yPosition - 20,
-          size: 9,
-          font: fontBold,
-          color: rgb(1, 1, 1),
-        })
-      })
-
-      yPosition -= headerHeight + 5
-    }
-
-    const currentPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1)
-    const isEven = index % 2 === 0
-
-    // Fondo alternado para filas
-    if (isEven) {
-      currentPage.drawRectangle({
-        x: margin,
-        y: yPosition - rowHeight,
+        y: yTop - rowHeight,
         width: tableWidth,
         height: rowHeight,
-        color: lightGrayColor,
+        color: fill,
       })
     }
 
-    // Línea divisoria
-    currentPage.drawLine({
-      start: { x: margin, y: yPosition },
-      end: { x: width - margin, y: yPosition },
-      thickness: 0.5,
-      color: grayColor,
+    targetPage.drawLine({
+      start: { x: margin, y: yTop },
+      end: { x: margin + tableWidth, y: yTop },
+      thickness: 0.4,
+      color: borderColor,
     })
 
-    // Datos de la fila - truncar según el ancho de cada columna
-    const numero = (index + 1).toString()
-    const tipo = truncateText(
+    for (const x of columnXs) {
+      targetPage.drawLine({
+        start: { x, y: yTop },
+        end: { x, y: yTop - rowHeight },
+        thickness: 0.25,
+        color: borderColor,
+      })
+    }
+    targetPage.drawLine({
+      start: { x: margin + tableWidth, y: yTop },
+      end: { x: margin + tableWidth, y: yTop - rowHeight },
+      thickness: 0.25,
+      color: borderColor,
+    })
+  }
+
+  let yPosition = drawFullPageHeader(page, height - 28)
+  yPosition = drawTableHeader(page, yPosition)
+
+  inscripciones.forEach((inscripcion, index) => {
+    if (yPosition - rowHeight < 52) {
+      page = pdfDoc.addPage(pageSize)
+      yPosition = drawCompactPageHeader(page, height - 28)
+      yPosition = drawTableHeader(page, yPosition)
+    }
+
+    const isEven = index % 2 === 0
+    drawRowBorders(page, yPosition, isEven ? lightGrayColor : undefined)
+
+    const values = [
+      String(index + 1),
       formatListaPdfTipoLabel(inscripcion.tipoInscripcion, inscripcion.categoria),
-      columns[1].width - 6
-    )
-    const jugador = truncateText(`${inscripcion.nombreJugador} ${inscripcion.apellidos}`, columns[2].width - 10)
-    const dni = truncateText(inscripcion.dni, columns[3].width - 10)
-    const tutor = truncateText(inscripcion.nombreTutor, columns[4].width - 10)
-    const telefono = truncateText(inscripcion.telefono1, columns[5].width - 10)
-    const fechaNac = formatDate(inscripcion.fechaNacimiento).substring(0, 10)
-    const tallasRaw = [
-      inscripcion.tallaCamiseta ? `C:${inscripcion.tallaCamiseta}` : '',
-      inscripcion.tallaPantalon ? `P:${inscripcion.tallaPantalon}` : '',
-      inscripcion.tallaCalcetines
-        ? `${inscripcion.tipoInscripcion === 'anual' ? 'Calzas' : 'Ca'}:${inscripcion.tallaCalcetines}`
-        : '',
-    ].filter(Boolean).join(' | ')
-    const tallas = truncateText(tallasRaw || '—', columns[7].width - 10)
-    const estado = getListaPdfEstado(inscripcion)
+      `${inscripcion.nombreJugador} ${inscripcion.apellidos}`,
+      inscripcion.dni,
+      inscripcion.nombreTutor,
+      inscripcion.telefono1,
+      formatDate(inscripcion.fechaNacimiento).substring(0, 10),
+      formatListaPdfTallas(inscripcion),
+      getListaPdfEstado(inscripcion),
+    ]
 
-    currentPage.drawText(numero, {
-      x: columnPositions[0] + 3,
-      y: yPosition - 15,
-      size: 8,
-      font: font,
-      color: blackColor,
-    })
+    values.forEach((value, colIndex) => {
+      const col = columns[colIndex]
+      const estadoColor =
+        colIndex === values.length - 1
+          ? value === 'Paga'
+            ? rgb(0.05, 0.55, 0.2)
+            : rgb(0.75, 0.35, 0.05)
+          : blackColor
 
-    currentPage.drawText(tipo, {
-      x: columnPositions[1] + 3,
-      y: yPosition - 15,
-      size: 8,
-      font: font,
-      color: blackColor,
-    })
-
-    currentPage.drawText(jugador, {
-      x: columnPositions[2] + 3,
-      y: yPosition - 15,
-      size: 8,
-      font: font,
-      color: blackColor,
-    })
-
-    currentPage.drawText(dni, {
-      x: columnPositions[3] + 3,
-      y: yPosition - 15,
-      size: 8,
-      font: font,
-      color: blackColor,
-    })
-
-    currentPage.drawText(tutor, {
-      x: columnPositions[4] + 3,
-      y: yPosition - 15,
-      size: 8,
-      font: font,
-      color: blackColor,
-    })
-
-    currentPage.drawText(telefono, {
-      x: columnPositions[5] + 3,
-      y: yPosition - 15,
-      size: 8,
-      font: font,
-      color: blackColor,
-    })
-
-    currentPage.drawText(fechaNac, {
-      x: columnPositions[6] + 3,
-      y: yPosition - 15,
-      size: 8,
-      font: font,
-      color: blackColor,
-    })
-
-    currentPage.drawText(tallas, {
-      x: columnPositions[7] + 3,
-      y: yPosition - 15,
-      size: 8,
-      font: font,
-      color: blackColor,
-    })
-
-    currentPage.drawText(estado, {
-      x: columnPositions[8] + 3,
-      y: yPosition - 15,
-      size: 8,
-      font: font,
-      color: estado === 'Paga' ? rgb(0, 0.6, 0) : rgb(0.8, 0.4, 0),
+      drawTextInCell(
+        page,
+        value,
+        columnXs[colIndex],
+        col.width,
+        yPosition - 14,
+        font,
+        cellFontSize,
+        estadoColor,
+        col.align ?? 'left'
+      )
     })
 
     yPosition -= rowHeight
   })
 
-  // Pie de página en todas las páginas
+  page.drawRectangle({
+    x: margin,
+    y: yPosition,
+    width: tableWidth,
+    height: 0.6,
+    color: borderColor,
+  })
+
   const totalPages = pdfDoc.getPageCount()
+  const generatedAt = formatDate(new Date())
   for (let i = 0; i < totalPages; i++) {
-    const page = pdfDoc.getPage(i)
-    page.drawText(`Página ${i + 1} de ${totalPages}`, {
-      x: width / 2 - 30,
-      y: 30,
-      size: 8,
-      font: font,
+    const footerPage = pdfDoc.getPage(i)
+    footerPage.drawText(`Página ${i + 1} de ${totalPages}`, {
+      x: width / 2 - 32,
+      y: 22,
+      size: 7.5,
+      font,
       color: grayColor,
     })
-    page.drawText(`Generado el ${formatDate(new Date())}`, {
+    footerPage.drawText(`Generado el ${generatedAt}`, {
       x: margin,
-      y: 30,
-      size: 8,
-      font: font,
+      y: 22,
+      size: 7.5,
+      font,
       color: grayColor,
     })
   }
 
-  const pdfBytes = await pdfDoc.save()
-  return pdfBytes
+  return pdfDoc.save()
 }
 
 export type ClausulaDerechosImagenInput = {

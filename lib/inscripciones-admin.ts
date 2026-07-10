@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client'
 import { prisma, withDbRetry } from '@/lib/prisma'
 import { DashboardStats, Inscripcion } from '@/types'
+import { buildTallasResumenAnual, type TallasResumenAnual } from '@/lib/tallas-resumen'
 
 /** Campos mínimos para la tabla del panel admin (sin blobs ni textos largos). */
 export const ADMIN_LIST_SELECT = {
@@ -365,6 +366,26 @@ export async function getAdminTabData(
       hasMore: offset + inscripciones.length < total,
     },
   }
+}
+
+export async function getTallasResumenAnual(categoria?: string | null): Promise<TallasResumenAnual> {
+  return withDbRetry(async () => {
+    const where: Prisma.InscripcionWhereInput = { tipoInscripcion: 'anual' }
+    if (categoria && categoria !== 'todos') {
+      where.categoria = categoria
+    }
+
+    const rows = await prisma.inscripcion.findMany({
+      where,
+      select: {
+        tallaCamiseta: true,
+        tallaPantalon: true,
+        tallaCalcetines: true,
+      },
+    })
+
+    return buildTallasResumenAnual(rows)
+  })
 }
 
 export async function getInscripcionDetail(id: string): Promise<Inscripcion | null> {

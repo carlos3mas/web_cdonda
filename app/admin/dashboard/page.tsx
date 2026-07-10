@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { DashboardHeader } from '@/components/admin/DashboardHeader'
 import { StatsCards } from '@/components/admin/StatsCards'
 import { InscripcionesTable, type AdminTableFilters } from '@/components/admin/InscripcionesTable'
+import { AnualTallasResumen } from '@/components/admin/AnualTallasResumen'
 import { DashboardStats, Inscripcion } from '@/types'
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -65,6 +66,7 @@ export default function AdminDashboardPage() {
   const { status } = useSession()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('anual')
+  const [anualSubView, setAnualSubView] = useState<'lista' | 'tallas'>('lista')
   const [tabData, setTabData] = useState<Record<string, TabCacheEntry>>({})
   const [pageByTab, setPageByTab] = useState<Record<string, number>>({ anual: 0 })
   const [filtersByTab, setFiltersByTab] = useState<Record<string, AdminTableFilters>>({})
@@ -161,6 +163,7 @@ export default function AdminDashboardPage() {
   const handleTabChange = (tipo: string) => {
     setActiveTab(tipo)
     setLoadError(null)
+    if (tipo !== 'anual') setAnualSubView('lista')
   }
 
   const handlePageChange = (tipo: string, page: number) => {
@@ -258,20 +261,48 @@ export default function AdminDashboardPage() {
                     tipoLabel={tipo.value === 'todos' ? undefined : tipo.label}
                   />
 
-                  <InscripcionesTable
-                    inscripciones={activeData.inscripciones}
-                    onUpdate={handleUpdate}
-                    showTipoFilter={tipo.value === 'todos'}
-                    tipoInscripcion={tipo.value}
-                    totalCount={activeData.pagination.total}
-                    page={activePage}
-                    pageSize={PAGE_SIZE}
-                    onPageChange={(page) => handlePageChange(tipo.value, page)}
-                    isLoading={isLoading}
-                    filters={getTabFilters(tipo.value)}
-                    onFiltersChange={(filters) => handleFiltersChange(tipo.value, filters)}
-                    unfilteredTotal={activeData.stats.totalInscripciones}
-                  />
+                  {tipo.value === 'anual' ? (
+                    <Tabs value={anualSubView} onValueChange={(v) => setAnualSubView(v as 'lista' | 'tallas')}>
+                      <TabsList className="mb-4 h-auto flex-wrap gap-1">
+                        <TabsTrigger value="lista">Listado de inscripciones</TabsTrigger>
+                        <TabsTrigger value="tallas">Pedido de ropa (tallas)</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="lista" className="mt-0">
+                        <InscripcionesTable
+                          inscripciones={activeData.inscripciones}
+                          onUpdate={handleUpdate}
+                          showTipoFilter={false}
+                          tipoInscripcion={tipo.value}
+                          totalCount={activeData.pagination.total}
+                          page={activePage}
+                          pageSize={PAGE_SIZE}
+                          onPageChange={(page) => handlePageChange(tipo.value, page)}
+                          isLoading={isLoading}
+                          filters={getTabFilters(tipo.value)}
+                          onFiltersChange={(filters) => handleFiltersChange(tipo.value, filters)}
+                          unfilteredTotal={activeData.stats.totalInscripciones}
+                        />
+                      </TabsContent>
+                      <TabsContent value="tallas" className="mt-0">
+                        <AnualTallasResumen />
+                      </TabsContent>
+                    </Tabs>
+                  ) : (
+                    <InscripcionesTable
+                      inscripciones={activeData.inscripciones}
+                      onUpdate={handleUpdate}
+                      showTipoFilter={tipo.value === 'todos'}
+                      tipoInscripcion={tipo.value}
+                      totalCount={activeData.pagination.total}
+                      page={activePage}
+                      pageSize={PAGE_SIZE}
+                      onPageChange={(page) => handlePageChange(tipo.value, page)}
+                      isLoading={isLoading}
+                      filters={getTabFilters(tipo.value)}
+                      onFiltersChange={(filters) => handleFiltersChange(tipo.value, filters)}
+                      unfilteredTotal={activeData.stats.totalInscripciones}
+                    />
+                  )}
                 </>
               )}
             </TabsContent>

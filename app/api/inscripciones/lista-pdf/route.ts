@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const tipoInscripcion = searchParams.get('tipo')
     const estado = searchParams.get('estado')
     const busqueda = searchParams.get('busqueda')
+    const sexo = searchParams.get('sexo')
     const idsParam = searchParams.get('ids')
     const ids = idsParam
       ? idsParam.split(',').map((id) => id.trim()).filter(Boolean)
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
       tipo: tipoInscripcion,
       estado: estado === 'pagados' || estado === 'pendientes' ? estado : null,
       busqueda,
+      sexo: sexo === 'M' || sexo === 'F' ? sexo : null,
       ids,
     })
 

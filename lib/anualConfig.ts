@@ -36,6 +36,38 @@ export function getTipoAnual(id: string) {
   return TIPOS_INSCRIPCION_ANUAL.find((t) => t.id === id) ?? null
 }
 
+/** Etiqueta corta para listas/PDF del panel admin. */
+export function formatListaPdfTipoLabel(
+  tipoInscripcion: string,
+  categoria?: string | null
+): string {
+  if (tipoInscripcion === 'anual') {
+    switch (categoria) {
+      case 'futbol-8':
+        return 'F8'
+      case 'futbol-11':
+        return 'F11'
+      case 'querubines':
+        return 'Querubín'
+      case 'chupetines':
+        return 'Chupetín'
+      default:
+        return categoria || 'Anual'
+    }
+  }
+
+  switch (tipoInscripcion) {
+    case 'campus-navidad':
+      return 'Navidad'
+    case 'campus-verano':
+      return 'Verano'
+    case 'campus-pascua':
+      return 'Pascua'
+    default:
+      return tipoInscripcion || '—'
+  }
+}
+
 export const MODALIDADES_PAGO_ANUAL = [
   { id: 'unico', label: 'Pago único', descripcion: 'Un solo pago de toda la cuota' },
   { id: 'fraccionado', label: 'Pago fraccionado', descripcion: 'Pago en 2 cuotas (reserva + resto)' },

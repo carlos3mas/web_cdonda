@@ -3,6 +3,7 @@ import sharp from 'sharp'
 import { Inscripcion } from '@/types'
 import { formatDate } from './utils'
 import { CAMPUS_VERANO_SEMANAS, formatSemanasCampus } from './campusVeranoConfig'
+import { formatListaPdfTipoLabel } from './anualConfig'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
@@ -709,6 +710,17 @@ function wrapText(text: string, maxCharsPerLine: number): string[] {
 }
 
 // Función auxiliar para truncar texto según ancho aproximado
+function getListaPdfEstado(inscripcion: Inscripcion): 'Paga' | 'Pendi' {
+  if (inscripcion.tipoInscripcion === 'anual') {
+    const modalidad = inscripcion.modalidadPago
+    if (modalidad === 'unico' || modalidad === 'anual') {
+      return inscripcion.cuota1Pagada ? 'Paga' : 'Pendi'
+    }
+    return inscripcion.cuota1Pagada && inscripcion.cuota2Pagada ? 'Paga' : 'Pendi'
+  }
+  return inscripcion.pagada ? 'Paga' : 'Pendi'
+}
+
 function truncateText(text: string, maxWidth: number): string {
   // Aproximación: 1 punto ≈ 0.6 caracteres con fuente de 8pt
   const maxChars = Math.floor(maxWidth * 0.6)
@@ -804,14 +816,15 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
   // Definir columnas de la tabla - ajustadas para que quepan en el ancho disponible
   // Ancho total disponible: 515 puntos
   const columns = [
-    { label: 'Nº', width: 24 },
-    { label: 'Jugador', width: 125 },
-    { label: 'DNI', width: 70 },
-    { label: 'Tutor', width: 115 },
-    { label: 'Teléfono', width: 75 },
-    { label: 'Fecha Nac.', width: 64 },
-    { label: 'Tallas', width: 130 },
-    { label: 'Estado', width: 50 },
+    { label: 'Nº', width: 22 },
+    { label: 'Tipo', width: 46 },
+    { label: 'Jugador', width: 108 },
+    { label: 'DNI', width: 62 },
+    { label: 'Tutor', width: 100 },
+    { label: 'Teléfono', width: 68 },
+    { label: 'Fecha Nac.', width: 58 },
+    { label: 'Tallas', width: 108 },
+    { label: 'Estado', width: 44 },
   ]
 
   // Verificar que las columnas quepan
@@ -963,10 +976,14 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
 
     // Datos de la fila - truncar según el ancho de cada columna
     const numero = (index + 1).toString()
-    const jugador = truncateText(`${inscripcion.nombreJugador} ${inscripcion.apellidos}`, columns[1].width - 10)
-    const dni = truncateText(inscripcion.dni, columns[2].width - 10)
-    const tutor = truncateText(inscripcion.nombreTutor, columns[3].width - 10)
-    const telefono = truncateText(inscripcion.telefono1, columns[4].width - 10)
+    const tipo = truncateText(
+      formatListaPdfTipoLabel(inscripcion.tipoInscripcion, inscripcion.categoria),
+      columns[1].width - 6
+    )
+    const jugador = truncateText(`${inscripcion.nombreJugador} ${inscripcion.apellidos}`, columns[2].width - 10)
+    const dni = truncateText(inscripcion.dni, columns[3].width - 10)
+    const tutor = truncateText(inscripcion.nombreTutor, columns[4].width - 10)
+    const telefono = truncateText(inscripcion.telefono1, columns[5].width - 10)
     const fechaNac = formatDate(inscripcion.fechaNacimiento).substring(0, 10)
     const tallasRaw = [
       inscripcion.tallaCamiseta ? `C:${inscripcion.tallaCamiseta}` : '',
@@ -975,8 +992,8 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
         ? `${inscripcion.tipoInscripcion === 'anual' ? 'Calzas' : 'Ca'}:${inscripcion.tallaCalcetines}`
         : '',
     ].filter(Boolean).join(' | ')
-    const tallas = truncateText(tallasRaw || '—', columns[6].width - 10)
-    const estado = inscripcion.pagada ? 'Paga' : 'Pendi'
+    const tallas = truncateText(tallasRaw || '—', columns[7].width - 10)
+    const estado = getListaPdfEstado(inscripcion)
 
     currentPage.drawText(numero, {
       x: columnPositions[0] + 3,
@@ -986,7 +1003,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       color: blackColor,
     })
 
-    currentPage.drawText(jugador, {
+    currentPage.drawText(tipo, {
       x: columnPositions[1] + 3,
       y: yPosition - 15,
       size: 8,
@@ -994,7 +1011,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       color: blackColor,
     })
 
-    currentPage.drawText(dni, {
+    currentPage.drawText(jugador, {
       x: columnPositions[2] + 3,
       y: yPosition - 15,
       size: 8,
@@ -1002,7 +1019,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       color: blackColor,
     })
 
-    currentPage.drawText(tutor, {
+    currentPage.drawText(dni, {
       x: columnPositions[3] + 3,
       y: yPosition - 15,
       size: 8,
@@ -1010,7 +1027,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       color: blackColor,
     })
 
-    currentPage.drawText(telefono, {
+    currentPage.drawText(tutor, {
       x: columnPositions[4] + 3,
       y: yPosition - 15,
       size: 8,
@@ -1018,7 +1035,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       color: blackColor,
     })
 
-    currentPage.drawText(fechaNac, {
+    currentPage.drawText(telefono, {
       x: columnPositions[5] + 3,
       y: yPosition - 15,
       size: 8,
@@ -1026,7 +1043,7 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       color: blackColor,
     })
 
-    currentPage.drawText(tallas, {
+    currentPage.drawText(fechaNac, {
       x: columnPositions[6] + 3,
       y: yPosition - 15,
       size: 8,
@@ -1034,12 +1051,20 @@ export async function generateListaInscripcionesPDF(inscripciones: Inscripcion[]
       color: blackColor,
     })
 
-    currentPage.drawText(estado, {
+    currentPage.drawText(tallas, {
       x: columnPositions[7] + 3,
       y: yPosition - 15,
       size: 8,
       font: font,
-      color: inscripcion.pagada ? rgb(0, 0.6, 0) : rgb(0.8, 0.4, 0),
+      color: blackColor,
+    })
+
+    currentPage.drawText(estado, {
+      x: columnPositions[8] + 3,
+      y: yPosition - 15,
+      size: 8,
+      font: font,
+      color: estado === 'Paga' ? rgb(0, 0.6, 0) : rgb(0.8, 0.4, 0),
     })
 
     yPosition -= rowHeight

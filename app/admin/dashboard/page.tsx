@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { DashboardHeader } from '@/components/admin/DashboardHeader'
 import { StatsCards } from '@/components/admin/StatsCards'
-import { InscripcionesTable } from '@/components/admin/InscripcionesTable'
+import { InscripcionesTable, type AdminTableFilters } from '@/components/admin/InscripcionesTable'
 import { DashboardStats, Inscripcion } from '@/types'
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -21,6 +21,12 @@ const tiposInscripcion = [
 
 const PAGE_SIZE = 50
 
+const DEFAULT_TABLE_FILTERS: AdminTableFilters = {
+  busqueda: '',
+  estado: 'todos',
+  sexo: 'todos',
+}
+
 type TabPagination = {
   offset: number
   total: number
@@ -35,8 +41,24 @@ type TabPayload = {
 
 type TabCacheEntry = TabPayload & { cacheKey: string }
 
-function cacheKeyFor(tipo: string, offset: number) {
-  return `${tipo}:${offset}`
+function cacheKeyFor(tipo: string, offset: number, filters: AdminTableFilters) {
+  return `${tipo}:${offset}:${filters.estado}:${filters.sexo}:${filters.busqueda}`
+}
+
+function buildDashboardQuery(
+  tipo: string,
+  offset: number,
+  filters: AdminTableFilters
+): string {
+  const params = new URLSearchParams({
+    tipo,
+    limit: String(PAGE_SIZE),
+    offset: String(offset),
+  })
+  if (filters.estado !== 'todos') params.set('estado', filters.estado)
+  if (filters.busqueda.trim()) params.set('busqueda', filters.busqueda.trim())
+  if (tipo === 'anual' && filters.sexo !== 'todos') params.set('sexo', filters.sexo)
+  return params.toString()
 }
 
 export default function AdminDashboardPage() {
@@ -45,12 +67,20 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState('anual')
   const [tabData, setTabData] = useState<Record<string, TabCacheEntry>>({})
   const [pageByTab, setPageByTab] = useState<Record<string, number>>({ anual: 0 })
+  const [filtersByTab, setFiltersByTab] = useState<Record<string, AdminTableFilters>>({})
   const [loadingTab, setLoadingTab] = useState<string | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const fetchAbortRef = useRef<AbortController | null>(null)
   const loadedKeysRef = useRef<Set<string>>(new Set())
   const pageByTabRef = useRef(pageByTab)
+  const filtersByTabRef = useRef(filtersByTab)
   pageByTabRef.current = pageByTab
+  filtersByTabRef.current = filtersByTab
+
+  const getTabFilters = useCallback(
+    (tipo: string): AdminTableFilters => filtersByTab[tipo] ?? DEFAULT_TABLE_FILTERS,
+    [filtersByTab]
+  )
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -59,9 +89,10 @@ export default function AdminDashboardPage() {
   }, [status, router])
 
   const loadTab = useCallback(
-    async (tipo: string, opts?: { offset?: number; force?: boolean }) => {
+    async (tipo: string, opts?: { offset?: number; force?: boolean; filters?: AdminTableFilters }) => {
+      const filters = opts?.filters ?? filtersByTabRef.current[tipo] ?? DEFAULT_TABLE_FILTERS
       const offset = opts?.offset ?? pageByTabRef.current[tipo] ?? 0
-      const key = cacheKeyFor(tipo, offset)
+      const key = cacheKeyFor(tipo, offset, filters)
 
       if (!opts?.force && loadedKeysRef.current.has(key)) {
         return
@@ -76,7 +107,7 @@ export default function AdminDashboardPage() {
 
       try {
         const res = await fetch(
-          `/api/inscripciones/dashboard?tipo=${tipo}&limit=${PAGE_SIZE}&offset=${offset}`,
+          `/api/inscripciones/dashboard?${buildDashboardQuery(tipo, offset, filters)}`,
           { credentials: 'include', signal: controller.signal }
         )
 
@@ -134,20 +165,30 @@ export default function AdminDashboardPage() {
 
   const handlePageChange = (tipo: string, page: number) => {
     const offset = page * PAGE_SIZE
-    loadedKeysRef.current.delete(cacheKeyFor(tipo, offset))
-    loadTab(tipo, { offset, force: true })
+    const filters = getTabFilters(tipo)
+    loadedKeysRef.current.delete(cacheKeyFor(tipo, offset, filters))
+    loadTab(tipo, { offset, force: true, filters })
+  }
+
+  const handleFiltersChange = (tipo: string, filters: AdminTableFilters) => {
+    setFiltersByTab((prev) => ({ ...prev, [tipo]: filters }))
+    setPageByTab((prev) => ({ ...prev, [tipo]: 0 }))
+    loadedKeysRef.current.clear()
+    loadTab(tipo, { offset: 0, force: true, filters })
   }
 
   const handleUpdate = () => {
     const offset = pageByTab[activeTab] ?? 0
-    loadedKeysRef.current.delete(cacheKeyFor(activeTab, offset))
-    loadTab(activeTab, { offset, force: true })
+    const filters = getTabFilters(activeTab)
+    loadedKeysRef.current.delete(cacheKeyFor(activeTab, offset, filters))
+    loadTab(activeTab, { offset, force: true, filters })
   }
 
   const handleRetry = () => {
     const offset = pageByTab[activeTab] ?? 0
-    loadedKeysRef.current.delete(cacheKeyFor(activeTab, offset))
-    loadTab(activeTab, { offset, force: true })
+    const filters = getTabFilters(activeTab)
+    loadedKeysRef.current.delete(cacheKeyFor(activeTab, offset, filters))
+    loadTab(activeTab, { offset, force: true, filters })
   }
 
   if (status === 'loading' || status === 'unauthenticated') {
@@ -227,6 +268,9 @@ export default function AdminDashboardPage() {
                     pageSize={PAGE_SIZE}
                     onPageChange={(page) => handlePageChange(tipo.value, page)}
                     isLoading={isLoading}
+                    filters={getTabFilters(tipo.value)}
+                    onFiltersChange={(filters) => handleFiltersChange(tipo.value, filters)}
+                    unfilteredTotal={activeData.stats.totalInscripciones}
                   />
                 </>
               )}

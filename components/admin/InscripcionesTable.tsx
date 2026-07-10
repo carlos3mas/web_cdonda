@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +12,12 @@ import { CheckCircle, ChevronLeft, ChevronRight, Download, Eye, FileDown, Filter
 import { DeleteConfirmDialog } from './DeleteConfirmDialog'
 import { InscripcionDialog } from './InscripcionDialog'
 
+export type AdminTableFilters = {
+  busqueda: string
+  estado: 'todos' | 'pagados' | 'pendientes'
+  sexo: 'todos' | 'M' | 'F'
+}
+
 interface InscripcionesTableProps {
   inscripciones: Inscripcion[]
   onUpdate: () => void
@@ -22,6 +28,9 @@ interface InscripcionesTableProps {
   pageSize?: number
   onPageChange?: (page: number) => void
   isLoading?: boolean
+  filters: AdminTableFilters
+  onFiltersChange: (filters: AdminTableFilters) => void
+  unfilteredTotal?: number
 }
 
 export function InscripcionesTable({
@@ -34,70 +43,50 @@ export function InscripcionesTable({
   pageSize = 50,
   onPageChange,
   isLoading = false,
+  filters,
+  onFiltersChange,
+  unfilteredTotal,
 }: InscripcionesTableProps) {
   const [selectedInscripcion, setSelectedInscripcion] = useState<Inscripcion | null>(null)
   const [deleteInscripcionId, setDeleteInscripcionId] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [detailLoading, setDetailLoading] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [estadoFilter, setEstadoFilter] = useState<'todos' | 'pagados' | 'pendientes'>('todos')
-  const [sexoFilter, setSexoFilter] = useState<'todos' | 'M' | 'F'>('todos')
+  const [searchInput, setSearchInput] = useState(filters.busqueda)
   const [downloadingListaPdf, setDownloadingListaPdf] = useState(false)
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const getAnnualPaidStatus = (inscripcion: Inscripcion) => {
-    const modalidad = inscripcion.modalidadPago
-    if (modalidad === 'unico' || modalidad === 'anual') {
-      return !!inscripcion.cuota1Pagada
-    }
-    return !!inscripcion.cuota1Pagada && !!inscripcion.cuota2Pagada
+  useEffect(() => {
+    setSearchInput(filters.busqueda)
+  }, [filters.busqueda])
+
+  const hasActiveFilters = useMemo(
+    () =>
+      filters.busqueda.trim() !== '' ||
+      filters.estado !== 'todos' ||
+      (tipoInscripcion === 'anual' && filters.sexo !== 'todos'),
+    [filters, tipoInscripcion]
+  )
+
+  const updateFilters = (partial: Partial<AdminTableFilters>) => {
+    onFiltersChange({ ...filters, ...partial })
   }
 
-  const filteredInscripciones = useMemo(() => {
-    if (!Array.isArray(inscripciones)) return []
-    let filtered = [...inscripciones]
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value)
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    searchDebounceRef.current = setTimeout(() => {
+      updateFilters({ busqueda: value })
+    }, 400)
+  }
 
-    // Filtrar por estado de pago
-    if (estadoFilter === 'pagados') {
-      filtered = filtered.filter((inscripcion) =>
-        inscripcion.tipoInscripcion === 'anual'
-          ? getAnnualPaidStatus(inscripcion)
-          : !!inscripcion.pagada
-      )
-    } else if (estadoFilter === 'pendientes') {
-      filtered = filtered.filter((inscripcion) =>
-        inscripcion.tipoInscripcion === 'anual'
-          ? !getAnnualPaidStatus(inscripcion)
-          : !inscripcion.pagada
-      )
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
     }
+  }, [])
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim()
-      const isYearSearch = /^\d{4}$/.test(query)
-      filtered = filtered.filter((inscripcion) => {
-        if (isYearSearch) {
-          return new Date(inscripcion.fechaNacimiento).getFullYear() === Number(query)
-        }
-        return (
-          inscripcion.nombreJugador.toLowerCase().includes(query) ||
-          inscripcion.apellidos.toLowerCase().includes(query) ||
-          inscripcion.dni.toLowerCase().includes(query) ||
-          (inscripcion.dniJugador && inscripcion.dniJugador.toLowerCase().includes(query)) ||
-          inscripcion.nombreTutor.toLowerCase().includes(query) ||
-          (inscripcion.email && inscripcion.email.toLowerCase().includes(query)) ||
-          inscripcion.telefono1.toLowerCase().includes(query) ||
-          (inscripcion.telefono2 && inscripcion.telefono2.toLowerCase().includes(query))
-        )
-      })
-    }
-
-    // Filtro por sexo (solo para la vista anual)
-    if (tipoInscripcion === 'anual' && sexoFilter !== 'todos') {
-      filtered = filtered.filter((inscripcion) => inscripcion.sexo === sexoFilter)
-    }
-    return filtered
-  }, [inscripciones, searchQuery, estadoFilter, sexoFilter, tipoInscripcion])
+  const filteredInscripciones = inscripciones
 
   const handleTogglePagada = async (inscripcion: Inscripcion) => {
     try {
@@ -203,12 +192,16 @@ export function InscripcionesTable({
       const params = new URLSearchParams()
       params.append('tipo', tipoInscripcion)
 
-      if (estadoFilter !== 'todos') {
-        params.append('estado', estadoFilter)
+      if (filters.estado !== 'todos') {
+        params.append('estado', filters.estado)
       }
 
-      if (searchQuery.trim()) {
-        params.append('busqueda', searchQuery.trim())
+      if (filters.busqueda.trim()) {
+        params.append('busqueda', filters.busqueda.trim())
+      }
+
+      if (tipoInscripcion === 'anual' && filters.sexo !== 'todos') {
+        params.append('sexo', filters.sexo)
       }
 
       const controller = new AbortController()
@@ -238,8 +231,8 @@ export function InscripcionesTable({
       a.href = urlBlob
 
       let tipoLabel = tipoInscripcion !== 'todos' ? tipoInscripcion.replace('-', '_') : 'todas'
-      if (estadoFilter !== 'todos') {
-        tipoLabel += `_${estadoFilter}`
+      if (filters.estado !== 'todos') {
+        tipoLabel += `_${filters.estado}`
       }
       a.download = `lista_inscripciones_${tipoLabel}_${new Date().toISOString().split('T')[0]}.pdf`
 
@@ -268,14 +261,16 @@ export function InscripcionesTable({
               <CardTitle>Inscripciones</CardTitle>
               <CardDescription>
                 {showPagination
-                  ? `Mostrando ${pageSize} por página. La búsqueda filtra la página actual.`
+                  ? hasActiveFilters
+                    ? `Filtros activos en todas las páginas. ${totalCount ?? 0} resultados.`
+                    : `Mostrando ${pageSize} por página. ${totalCount ?? 0} inscripciones.`
                   : 'Gestiona las inscripciones del club'}
               </CardDescription>
             </div>
             <div className="flex items-center gap-3">
-              {Array.isArray(inscripciones) && filteredInscripciones.length !== inscripciones.length && (
+              {hasActiveFilters && totalCount != null && unfilteredTotal != null && totalCount !== unfilteredTotal && (
                 <Badge variant="secondary">
-                  {filteredInscripciones.length} de {inscripciones.length}
+                  {totalCount} de {unfilteredTotal}
                 </Badge>
               )}
               <Button
@@ -303,13 +298,13 @@ export function InscripcionesTable({
               <Input
                 type="text"
                 placeholder="Buscar por nombre, DNI, tutor, email, teléfono o año (ej. 2015)..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
                 className="pl-10 pr-10"
               />
-              {searchQuery && (
+              {searchInput && (
                 <button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => handleSearchInputChange('')}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   <X className="h-4 w-4" />
@@ -319,7 +314,10 @@ export function InscripcionesTable({
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-gray-400" />
-                <Select value={estadoFilter} onValueChange={(v) => setEstadoFilter(v as 'todos' | 'pagados' | 'pendientes')}>
+                <Select
+                  value={filters.estado}
+                  onValueChange={(v) => updateFilters({ estado: v as AdminTableFilters['estado'] })}
+                >
                   <SelectTrigger className="w-[160px] sm:w-[180px]">
                     <SelectValue placeholder="Estado de pago" />
                   </SelectTrigger>
@@ -333,7 +331,10 @@ export function InscripcionesTable({
               {tipoInscripcion === 'anual' && (
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-gray-400" />
-                  <Select value={sexoFilter} onValueChange={(v) => setSexoFilter(v as 'todos' | 'M' | 'F')}>
+                  <Select
+                    value={filters.sexo}
+                    onValueChange={(v) => updateFilters({ sexo: v as AdminTableFilters['sexo'] })}
+                  >
                     <SelectTrigger className="w-[180px] sm:w-[200px]">
                       <SelectValue placeholder="Filtrar por sexo" />
                     </SelectTrigger>
@@ -371,9 +372,11 @@ export function InscripcionesTable({
                 {filteredInscripciones.length === 0 ? (
                   <tr>
                     <td colSpan={showTipoFilter ? 8 : 7} className="text-center py-8 text-gray-500">
-                      {!Array.isArray(inscripciones) || inscripciones.length === 0 
-                        ? 'No hay inscripciones todavía'
-                        : 'No se encontraron inscripciones con ese criterio de búsqueda'}
+                      {!Array.isArray(inscripciones) || inscripciones.length === 0
+                        ? hasActiveFilters
+                          ? 'No hay inscripciones con estos filtros'
+                          : 'No hay inscripciones todavía'
+                        : 'No hay inscripciones en esta página'}
                     </td>
                   </tr>
                 ) : (
@@ -492,8 +495,10 @@ export function InscripcionesTable({
             {filteredInscripciones.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 {!Array.isArray(inscripciones) || inscripciones.length === 0
-                  ? 'No hay inscripciones todavía'
-                  : 'No se encontraron inscripciones con ese criterio de búsqueda'}
+                  ? hasActiveFilters
+                    ? 'No hay inscripciones con estos filtros'
+                    : 'No hay inscripciones todavía'
+                  : 'No hay inscripciones en esta página'}
               </div>
             ) : (
               filteredInscripciones.map((inscripcion) => (

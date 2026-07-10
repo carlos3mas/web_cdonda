@@ -77,6 +77,7 @@ export const ADMIN_DETAIL_SELECT = {
 export const LISTA_PDF_SELECT = {
   id: true,
   tipoInscripcion: true,
+  categoria: true,
   nombreJugador: true,
   apellidos: true,
   fechaNacimiento: true,
@@ -87,6 +88,9 @@ export const LISTA_PDF_SELECT = {
   tallaPantalon: true,
   tallaCalcetines: true,
   pagada: true,
+  modalidadPago: true,
+  cuota1Pagada: true,
+  cuota2Pagada: true,
 } satisfies Prisma.InscripcionSelect
 
 /** Campos para generar PDF de inscripción (sin justificantes ni DNI cifrado). */
@@ -181,13 +185,12 @@ function mapListRow(row: Prisma.InscripcionGetPayload<{ select: typeof ADMIN_LIS
 }
 
 export async function getInscripcionesForAdminList(
-  tipo?: string | null,
+  filters: AdminListFilters = {},
   limit = 50,
   offset = 0
 ): Promise<Inscripcion[]> {
   return withDbRetry(async () => {
-    const where =
-      tipo && tipo !== 'todos' ? { tipoInscripcion: tipo } : {}
+    const where = buildAdminListWhere(filters)
 
     const rows = await prisma.inscripcion.findMany({
       where,
@@ -201,60 +204,124 @@ export async function getInscripcionesForAdminList(
   })
 }
 
-export type ListaPdfFilters = {
+export type AdminListFilters = {
   tipo?: string | null
   estado?: 'pagados' | 'pendientes' | null
   busqueda?: string | null
+  sexo?: 'M' | 'F' | null
   ids?: string[] | null
 }
 
-function buildListaPdfWhere(filters: ListaPdfFilters): Prisma.InscripcionWhereInput {
-  const where: Prisma.InscripcionWhereInput = {}
+/** Alias usado por el PDF de lista (mismos filtros que el panel). */
+export type ListaPdfFilters = AdminListFilters
 
-  if (filters.tipo && filters.tipo !== 'todos') {
-    where.tipoInscripcion = filters.tipo
+function annualPaidOrConditions(): Prisma.InscripcionWhereInput[] {
+  return [
+    { modalidadPago: { in: ['unico', 'anual'] }, cuota1Pagada: true },
+    { modalidadPago: 'fraccionado', cuota1Pagada: true, cuota2Pagada: true },
+    { modalidadPago: null, cuota1Pagada: true, cuota2Pagada: true },
+  ]
+}
+
+function buildEstadoWhere(
+  estado: 'pagados' | 'pendientes',
+  tipo?: string | null
+): Prisma.InscripcionWhereInput {
+  const paid = estado === 'pagados'
+  const isAnualTab = tipo === 'anual'
+  const isTodosTab = !tipo || tipo === 'todos'
+
+  if (isAnualTab) {
+    return paid
+      ? { OR: annualPaidOrConditions() }
+      : { NOT: { OR: annualPaidOrConditions() } }
   }
 
-  if (filters.estado === 'pagados') {
-    where.pagada = true
-  } else if (filters.estado === 'pendientes') {
-    where.pagada = false
+  if (isTodosTab) {
+    return paid
+      ? {
+          OR: [
+            { tipoInscripcion: { not: 'anual' }, pagada: true },
+            { tipoInscripcion: 'anual', OR: annualPaidOrConditions() },
+          ],
+        }
+      : {
+          AND: [
+            {
+              OR: [
+                { tipoInscripcion: { not: 'anual' }, pagada: false },
+                { tipoInscripcion: 'anual' },
+              ],
+            },
+            {
+              NOT: {
+                OR: [
+                  { tipoInscripcion: { not: 'anual' }, pagada: true },
+                  { tipoInscripcion: 'anual', OR: annualPaidOrConditions() },
+                ],
+              },
+            },
+          ],
+        }
+  }
+
+  return { pagada: paid }
+}
+
+export function buildAdminListWhere(filters: AdminListFilters): Prisma.InscripcionWhereInput {
+  const and: Prisma.InscripcionWhereInput[] = []
+
+  if (filters.tipo && filters.tipo !== 'todos') {
+    and.push({ tipoInscripcion: filters.tipo })
+  }
+
+  if (filters.sexo) {
+    and.push({ sexo: filters.sexo })
   }
 
   if (filters.ids?.length) {
-    where.id = { in: filters.ids }
+    and.push({ id: { in: filters.ids } })
+  }
+
+  if (filters.estado === 'pagados' || filters.estado === 'pendientes') {
+    and.push(buildEstadoWhere(filters.estado, filters.tipo))
   }
 
   const query = filters.busqueda?.trim()
   if (query) {
     if (/^\d{4}$/.test(query)) {
       const year = Number(query)
-      where.fechaNacimiento = {
-        gte: new Date(year, 0, 1),
-        lt: new Date(year + 1, 0, 1),
-      }
+      and.push({
+        fechaNacimiento: {
+          gte: new Date(year, 0, 1),
+          lt: new Date(year + 1, 0, 1),
+        },
+      })
     } else {
-      where.OR = [
-        { nombreJugador: { contains: query } },
-        { apellidos: { contains: query } },
-        { dni: { contains: query } },
-        { nombreTutor: { contains: query } },
-        { email: { contains: query } },
-        { telefono1: { contains: query } },
-        { telefono2: { contains: query } },
-      ]
+      and.push({
+        OR: [
+          { nombreJugador: { contains: query } },
+          { apellidos: { contains: query } },
+          { dni: { contains: query } },
+          { dniJugador: { contains: query } },
+          { nombreTutor: { contains: query } },
+          { email: { contains: query } },
+          { telefono1: { contains: query } },
+          { telefono2: { contains: query } },
+        ],
+      })
     }
   }
 
-  return where
+  return and.length > 0 ? { AND: and } : {}
 }
 
 export async function getInscripcionesForListaPDF(
-  filters: ListaPdfFilters
+  filters: AdminListFilters
 ): Promise<Inscripcion[]> {
   return withDbRetry(async () => {
     const rows = await prisma.inscripcion.findMany({
-      where: buildListaPdfWhere(filters),
+      where: buildAdminListWhere(filters),
       orderBy: { createdAt: 'desc' },
       select: LISTA_PDF_SELECT,
     })
@@ -269,17 +336,24 @@ export async function getInscripcionesForListaPDF(
   })
 }
 
+export async function countInscripcionesForAdminList(
+  filters: AdminListFilters = {}
+): Promise<number> {
+  return withDbRetry(() =>
+    prisma.inscripcion.count({ where: buildAdminListWhere(filters) })
+  )
+}
+
 export async function getAdminTabData(
-  tipo?: string | null,
+  filters: AdminListFilters = {},
   limit = 50,
   offset = 0
 ): Promise<AdminListResult> {
-  const [stats, inscripciones] = await Promise.all([
-    getInscripcionStats(tipo),
-    getInscripcionesForAdminList(tipo, limit, offset),
+  const [stats, total, inscripciones] = await Promise.all([
+    getInscripcionStats(filters.tipo),
+    countInscripcionesForAdminList(filters),
+    getInscripcionesForAdminList(filters, limit, offset),
   ])
-
-  const total = stats.totalInscripciones
 
   return {
     stats,

@@ -122,7 +122,11 @@ export async function GET(request: NextRequest) {
     const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : 50
     const offset = offsetParam ? Math.max(0, Number(offsetParam)) : 0
 
-    const inscripciones = await getInscripcionesForAdminList(tipoInscripcion, limit, offset)
+    const inscripciones = await getInscripcionesForAdminList(
+      { tipo: tipoInscripcion },
+      limit,
+      offset
+    )
 
     // Log para diagnóstico en producción
     console.log(`📊 Inscripciones obtenidas: ${inscripciones.length} (tipo: ${tipoInscripcion || 'todos'}, limit: ${limit})`)

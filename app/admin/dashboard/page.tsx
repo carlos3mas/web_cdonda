@@ -73,6 +73,7 @@ export default function AdminDashboardPage() {
   const [loadingTab, setLoadingTab] = useState<string | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const fetchAbortRef = useRef<AbortController | null>(null)
+  const loadRequestSeqRef = useRef(0)
   const loadedKeysRef = useRef<Set<string>>(new Set())
   const pageByTabRef = useRef(pageByTab)
   const filtersByTabRef = useRef(filtersByTab)
@@ -100,6 +101,8 @@ export default function AdminDashboardPage() {
         return
       }
 
+      const requestSeq = ++loadRequestSeqRef.current
+
       fetchAbortRef.current?.abort()
       const controller = new AbortController()
       fetchAbortRef.current = controller
@@ -113,6 +116,10 @@ export default function AdminDashboardPage() {
           { credentials: 'include', signal: controller.signal }
         )
 
+        if (requestSeq !== loadRequestSeqRef.current) {
+          return
+        }
+
         if (!res.ok) {
           throw new Error(
             res.status === 401
@@ -122,6 +129,10 @@ export default function AdminDashboardPage() {
         }
 
         const data = (await res.json()) as TabPayload
+
+        if (requestSeq !== loadRequestSeqRef.current) {
+          return
+        }
 
         if (!data.stats || !Array.isArray(data.inscripciones) || !data.pagination) {
           throw new Error('Respuesta inválida del servidor.')
@@ -137,12 +148,15 @@ export default function AdminDashboardPage() {
         if (error instanceof Error && error.name === 'AbortError') {
           return
         }
+        if (requestSeq !== loadRequestSeqRef.current) {
+          return
+        }
         console.error('Error al cargar datos:', error)
         setLoadError(
           error instanceof Error ? error.message : 'Error al cargar los datos.'
         )
       } finally {
-        if (!controller.signal.aborted) {
+        if (!controller.signal.aborted && requestSeq === loadRequestSeqRef.current) {
           setLoadingTab((current) => (current === tipo ? null : current))
         }
       }
@@ -174,6 +188,8 @@ export default function AdminDashboardPage() {
   }
 
   const handleFiltersChange = (tipo: string, filters: AdminTableFilters) => {
+    filtersByTabRef.current = { ...filtersByTabRef.current, [tipo]: filters }
+    pageByTabRef.current = { ...pageByTabRef.current, [tipo]: 0 }
     setFiltersByTab((prev) => ({ ...prev, [tipo]: filters }))
     setPageByTab((prev) => ({ ...prev, [tipo]: 0 }))
     loadedKeysRef.current.clear()
@@ -262,12 +278,26 @@ export default function AdminDashboardPage() {
                   />
 
                   {tipo.value === 'anual' ? (
-                    <Tabs value={anualSubView} onValueChange={(v) => setAnualSubView(v as 'lista' | 'tallas')}>
-                      <TabsList className="mb-4 h-auto flex-wrap gap-1">
-                        <TabsTrigger value="lista">Listado de inscripciones</TabsTrigger>
-                        <TabsTrigger value="tallas">Pedido de ropa (tallas)</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="lista" className="mt-0">
+                    <>
+                      <div className="mb-4 flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={anualSubView === 'lista' ? 'default' : 'outline'}
+                          onClick={() => setAnualSubView('lista')}
+                        >
+                          Listado de inscripciones
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={anualSubView === 'tallas' ? 'default' : 'outline'}
+                          onClick={() => setAnualSubView('tallas')}
+                        >
+                          Pedido de ropa (tallas)
+                        </Button>
+                      </div>
+                      {anualSubView === 'lista' ? (
                         <InscripcionesTable
                           inscripciones={activeData.inscripciones}
                           onUpdate={handleUpdate}
@@ -282,11 +312,10 @@ export default function AdminDashboardPage() {
                           onFiltersChange={(filters) => handleFiltersChange(tipo.value, filters)}
                           unfilteredTotal={activeData.stats.totalInscripciones}
                         />
-                      </TabsContent>
-                      <TabsContent value="tallas" className="mt-0">
+                      ) : (
                         <AnualTallasResumen />
-                      </TabsContent>
-                    </Tabs>
+                      )}
+                    </>
                   ) : (
                     <InscripcionesTable
                       inscripciones={activeData.inscripciones}

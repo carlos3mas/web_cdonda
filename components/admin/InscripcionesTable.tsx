@@ -55,6 +55,8 @@ export function InscripcionesTable({
   const [searchInput, setSearchInput] = useState(filters.busqueda)
   const [downloadingListaPdf, setDownloadingListaPdf] = useState(false)
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const filtersRef = useRef(filters)
+  filtersRef.current = filters
 
   useEffect(() => {
     setSearchInput(filters.busqueda)
@@ -69,7 +71,7 @@ export function InscripcionesTable({
   )
 
   const updateFilters = (partial: Partial<AdminTableFilters>) => {
-    onFiltersChange({ ...filters, ...partial })
+    onFiltersChange({ ...filtersRef.current, ...partial })
   }
 
   const handleSearchInputChange = (value: string) => {
@@ -80,9 +82,21 @@ export function InscripcionesTable({
     }, 400)
   }
 
+  const flushSearch = () => {
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current)
+      searchDebounceRef.current = null
+    }
+    if (searchInput !== filtersRef.current.busqueda) {
+      updateFilters({ busqueda: searchInput })
+    }
+  }
+
   useEffect(() => {
     return () => {
-      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current)
+      }
     }
   }, [])
 
@@ -300,6 +314,13 @@ export function InscripcionesTable({
                 placeholder="Buscar por nombre, DNI, tutor, email, teléfono o año (ej. 2015)..."
                 value={searchInput}
                 onChange={(e) => handleSearchInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    flushSearch()
+                  }
+                }}
+                onBlur={flushSearch}
                 className="pl-10 pr-10"
               />
               {searchInput && (

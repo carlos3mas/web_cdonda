@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { CheckCircle2, Loader2, Search } from 'lucide-react'
 import { isPagoUnico } from '@/lib/anualConfig'
+import { compressImageFileForUpload } from '@/lib/client-image-compress'
 
 type CuotaValue = '1' | '2'
 
@@ -48,7 +49,11 @@ export function InscripcionAnualCuotas() {
 
   useEffect(() => {
     if (!selected) return
-    setCuota(selectedEsUnico ? '1' : selected.cuota2Pagada ? '1' : '2')
+    if (selectedEsUnico) {
+      setCuota('1')
+      return
+    }
+    setCuota(selected.cuota1Pagada ? '2' : '1')
   }, [selected, selectedEsUnico])
 
   const justificanteActual =
@@ -89,13 +94,23 @@ export function InscripcionAnualCuotas() {
 
     setSending(true)
     try {
+      const fileToSend = await compressImageFileForUpload(file)
       const fd = new FormData()
       fd.append('inscripcionId', selectedId)
       fd.append('cuota', cuota)
-      fd.append('justificantePago', file)
+      fd.append('justificantePago', fileToSend)
 
       const res = await fetch('/api/inscripciones/cuotas', { method: 'POST', body: fd })
-      const data = await res.json()
+      let data: { error?: string; success?: boolean } = {}
+      try {
+        data = await res.json()
+      } catch {
+        throw new Error(
+          res.status === 429
+            ? 'Demasiados intentos seguidos. Espera un minuto e inténtalo de nuevo.'
+            : 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo otra vez.'
+        )
+      }
       if (!res.ok) throw new Error(data.error || 'No se pudo subir el justificante')
 
       const label = selectedEsUnico
@@ -261,7 +276,7 @@ export function InscripcionAnualCuotas() {
                 <Input
                   id="justiCuota"
                   type="file"
-                  accept="application/pdf,image/jpeg,image/png,image/webp"
+                  accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
                 />
                 {file ? (

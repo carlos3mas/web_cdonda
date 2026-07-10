@@ -20,6 +20,8 @@ setInterval(() => {
 }, 10 * 60 * 1000)
 
 interface RateLimitOptions {
+  /** Identificador para no mezclar contadores entre distintos límites */
+  name: string
   interval: number // en milisegundos
   maxRequests: number
 }
@@ -35,7 +37,7 @@ export function rateLimit(options: RateLimitOptions) {
                'unknown'
     
     const now = Date.now()
-    const key = `${ip}`
+    const key = `${options.name}:${ip}`
     
     if (!store[key]) {
       store[key] = {
@@ -73,6 +75,7 @@ export function rateLimit(options: RateLimitOptions) {
  * Rate limiter para inscripciones (más restrictivo)
  */
 export const inscripcionRateLimit = rateLimit({
+  name: 'inscripcion',
   interval: 60 * 60 * 1000, // 1 hora
   maxRequests: 5 // máximo 5 inscripciones por hora por IP
 })
@@ -81,14 +84,25 @@ export const inscripcionRateLimit = rateLimit({
  * Rate limiter para subida de archivos (restrictivo)
  */
 export const uploadRateLimit = rateLimit({
+  name: 'upload',
   interval: 60 * 1000, // 1 minuto
   maxRequests: 10 // máximo 10 subidas por minuto
+})
+
+/**
+ * Rate limiter para justificantes de cuotas (pestaña pública)
+ */
+export const cuotaUploadRateLimit = rateLimit({
+  name: 'cuota-upload',
+  interval: 60 * 1000, // 1 minuto
+  maxRequests: 15 // máximo 15 subidas por minuto
 })
 
 /**
  * Rate limiter general para APIs
  */
 export const apiRateLimit = rateLimit({
+  name: 'api',
   interval: 60 * 1000, // 1 minuto
   maxRequests: 60 // máximo 60 peticiones por minuto
 })

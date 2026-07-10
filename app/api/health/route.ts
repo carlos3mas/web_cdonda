@@ -13,6 +13,8 @@ export async function GET() {
     ok: true,
     db: false,
     padresSeparadosColumn: false,
+    cuota1PagadaColumn: false,
+    nombreArchivoJustificanteColumn: false,
     databaseUrl: Boolean(databaseUrl),
     databaseUrlFormat: isTurso ? 'turso' : databaseUrl ? 'other' : 'missing',
     tursoToken: Boolean(process.env.TURSO_AUTH_TOKEN),
@@ -38,10 +40,19 @@ export async function GET() {
       PRAGMA table_info(inscripciones)
     `
     checks.padresSeparadosColumn = columns.some((c) => c.name === 'padresSeparados')
-    if (!checks.padresSeparadosColumn) {
+    checks.cuota1PagadaColumn = columns.some((c) => c.name === 'cuota1Pagada')
+    checks.nombreArchivoJustificanteColumn = columns.some(
+      (c) => c.name === 'nombreArchivoJustificante'
+    )
+
+    const missingColumns: string[] = []
+    if (!checks.padresSeparadosColumn) missingColumns.push('padresSeparados')
+    if (!checks.cuota1PagadaColumn) missingColumns.push('cuota1Pagada')
+    if (!checks.nombreArchivoJustificanteColumn) missingColumns.push('nombreArchivoJustificante')
+
+    if (missingColumns.length > 0) {
       checks.ok = false
-      checks.dbError =
-        'Falta columna padresSeparados. Ejecuta: npm run db:apply-migrations'
+      checks.dbError = `Faltan columnas: ${missingColumns.join(', ')}. Ejecuta: npm run db:apply-migrations`
     }
   } catch (error) {
     checks.ok = false

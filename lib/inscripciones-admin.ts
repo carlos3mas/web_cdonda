@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client'
-import { prisma, withDbRetry } from '@/lib/prisma'
+import { withDbRetry } from '@/lib/prisma'
 import { DashboardStats, Inscripcion } from '@/types'
 import { buildTallasResumenAnual, type TallasResumenAnual } from '@/lib/tallas-resumen'
 
@@ -152,9 +152,9 @@ function toStats(row: StatsRow | undefined): DashboardStats {
 }
 
 export async function getInscripcionStats(tipo?: string | null): Promise<DashboardStats> {
-  return withDbRetry(async () => {
+  return withDbRetry(async (db) => {
   if (tipo && tipo !== 'todos') {
-    const [row] = await prisma.$queryRaw<StatsRow[]>`
+    const [row] = await db.$queryRaw<StatsRow[]>`
       SELECT
         COUNT(*) AS totalInscripciones,
         SUM(CASE WHEN pagada = 1 THEN 1 ELSE 0 END) AS inscripcionesPagadas,
@@ -165,7 +165,7 @@ export async function getInscripcionStats(tipo?: string | null): Promise<Dashboa
     return toStats(row)
   }
 
-  const [row] = await prisma.$queryRaw<StatsRow[]>`
+  const [row] = await db.$queryRaw<StatsRow[]>`
     SELECT
       COUNT(*) AS totalInscripciones,
       SUM(CASE WHEN pagada = 1 THEN 1 ELSE 0 END) AS inscripcionesPagadas,
@@ -190,10 +190,10 @@ export async function getInscripcionesForAdminList(
   limit = 50,
   offset = 0
 ): Promise<Inscripcion[]> {
-  return withDbRetry(async () => {
+  return withDbRetry(async (db) => {
     const where = buildAdminListWhere(filters)
 
-    const rows = await prisma.inscripcion.findMany({
+    const rows = await db.inscripcion.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       take: limit,
@@ -320,8 +320,8 @@ export function buildAdminListWhere(filters: AdminListFilters): Prisma.Inscripci
 export async function getInscripcionesForListaPDF(
   filters: AdminListFilters
 ): Promise<Inscripcion[]> {
-  return withDbRetry(async () => {
-    const rows = await prisma.inscripcion.findMany({
+  return withDbRetry(async (db) => {
+    const rows = await db.inscripcion.findMany({
       where: buildAdminListWhere(filters),
       orderBy: { createdAt: 'desc' },
       select: LISTA_PDF_SELECT,
@@ -340,8 +340,8 @@ export async function getInscripcionesForListaPDF(
 export async function countInscripcionesForAdminList(
   filters: AdminListFilters = {}
 ): Promise<number> {
-  return withDbRetry(() =>
-    prisma.inscripcion.count({ where: buildAdminListWhere(filters) })
+  return withDbRetry((db) =>
+    db.inscripcion.count({ where: buildAdminListWhere(filters) })
   )
 }
 
@@ -350,11 +350,21 @@ export async function getAdminTabData(
   limit = 50,
   offset = 0
 ): Promise<AdminListResult> {
-  const [stats, total, inscripciones] = await Promise.all([
+  const hasListFilters =
+    filters.estado === 'pagados' ||
+    filters.estado === 'pendientes' ||
+    Boolean(filters.busqueda?.trim()) ||
+    Boolean(filters.sexo) ||
+    Boolean(filters.ids?.length)
+
+  const [stats, inscripciones] = await Promise.all([
     getInscripcionStats(filters.tipo),
-    countInscripcionesForAdminList(filters),
     getInscripcionesForAdminList(filters, limit, offset),
   ])
+
+  const total = hasListFilters
+    ? await countInscripcionesForAdminList(filters)
+    : stats.totalInscripciones
 
   return {
     stats,
@@ -369,13 +379,13 @@ export async function getAdminTabData(
 }
 
 export async function getTallasResumenAnual(categoria?: string | null): Promise<TallasResumenAnual> {
-  return withDbRetry(async () => {
+  return withDbRetry(async (db) => {
     const where: Prisma.InscripcionWhereInput = { tipoInscripcion: 'anual' }
     if (categoria && categoria !== 'todos') {
       where.categoria = categoria
     }
 
-    const rows = await prisma.inscripcion.findMany({
+    const rows = await db.inscripcion.findMany({
       where,
       select: {
         tallaCamiseta: true,
@@ -389,15 +399,15 @@ export async function getTallasResumenAnual(categoria?: string | null): Promise<
 }
 
 export async function getInscripcionDetail(id: string): Promise<Inscripcion | null> {
-  return withDbRetry(async () => {
-    const row = await prisma.inscripcion.findUnique({
+  return withDbRetry(async (db) => {
+    const row = await db.inscripcion.findUnique({
       where: { id },
       select: ADMIN_DETAIL_SELECT,
     })
 
     if (!row) return null
 
-    const [flags] = await prisma.$queryRaw<
+    const [flags] = await db.$queryRaw<
       { tieneDniFrontal: number; tieneDniReverso: number }[]
     >`
       SELECT

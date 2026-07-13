@@ -62,6 +62,8 @@ function buildDashboardQuery(
   return params.toString()
 }
 
+const DASHBOARD_FETCH_TIMEOUT_MS = 45_000
+
 export default function AdminDashboardPage() {
   const { status } = useSession()
   const router = useRouter()
@@ -110,11 +112,15 @@ export default function AdminDashboardPage() {
       setLoadingTab(tipo)
       setLoadError(null)
 
+      const timeoutId = window.setTimeout(() => controller.abort(), DASHBOARD_FETCH_TIMEOUT_MS)
+
       try {
         const res = await fetch(
           `/api/inscripciones/dashboard?${buildDashboardQuery(tipo, offset, filters)}`,
           { credentials: 'include', signal: controller.signal }
         )
+
+        window.clearTimeout(timeoutId)
 
         if (requestSeq !== loadRequestSeqRef.current) {
           return
@@ -145,7 +151,11 @@ export default function AdminDashboardPage() {
         }))
         setPageByTab((prev) => ({ ...prev, [tipo]: offset }))
       } catch (error) {
+        window.clearTimeout(timeoutId)
         if (error instanceof Error && error.name === 'AbortError') {
+          if (requestSeq === loadRequestSeqRef.current) {
+            setLoadError('La carga tardó demasiado. Pulsa Reintentar.')
+          }
           return
         }
         if (requestSeq !== loadRequestSeqRef.current) {
@@ -156,7 +166,7 @@ export default function AdminDashboardPage() {
           error instanceof Error ? error.message : 'Error al cargar los datos.'
         )
       } finally {
-        if (!controller.signal.aborted && requestSeq === loadRequestSeqRef.current) {
+        if (requestSeq === loadRequestSeqRef.current) {
           setLoadingTab((current) => (current === tipo ? null : current))
         }
       }
@@ -169,10 +179,6 @@ export default function AdminDashboardPage() {
     const offset = pageByTabRef.current[activeTab] ?? 0
     loadTab(activeTab, { offset })
   }, [status, activeTab, loadTab])
-
-  useEffect(() => {
-    return () => fetchAbortRef.current?.abort()
-  }, [])
 
   const handleTabChange = (tipo: string) => {
     setActiveTab(tipo)

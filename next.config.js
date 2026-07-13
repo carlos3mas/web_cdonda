@@ -21,7 +21,8 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole:
+      process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
   experimental: {
     scrollRestoration: true,
@@ -47,9 +48,12 @@ const nextConfig = {
   transpilePackages: [],
   async headers() {
     const isDev = process.env.NODE_ENV !== 'production'
+    const analyticsConnectSrc =
+      'https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com'
+    const analyticsImgSrc = 'https://www.google-analytics.com https://www.googletagmanager.com'
     const csp = isDev
-      ? "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' ws: https://www.googletagmanager.com; frame-src 'self' https://www.google.com https://maps.google.com https://www.google.es; child-src 'self' https://www.google.com https://maps.google.com https://www.google.es; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
-      : "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://www.googletagmanager.com; frame-src 'self' https://www.google.com https://maps.google.com https://www.google.es; child-src 'self' https://www.google.com https://maps.google.com https://www.google.es; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+      ? `default-src 'self'; img-src 'self' data: blob: https: ${analyticsImgSrc}; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' ws: ${analyticsConnectSrc}; frame-src 'self' https://www.google.com https://maps.google.com https://www.google.es; child-src 'self' https://www.google.com https://maps.google.com https://www.google.es; frame-ancestors 'self'; base-uri 'self'; form-action 'self'`
+      : `default-src 'self'; img-src 'self' data: https: ${analyticsImgSrc}; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' ${analyticsConnectSrc}; frame-src 'self' https://www.google.com https://maps.google.com https://www.google.es; child-src 'self' https://www.google.com https://maps.google.com https://www.google.es; frame-ancestors 'self'; base-uri 'self'; form-action 'self'`
     return [
       {
         source: '/api/:path*',

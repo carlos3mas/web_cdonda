@@ -320,7 +320,6 @@ export function InscripcionesTable({
                     flushSearch()
                   }
                 }}
-                onBlur={flushSearch}
                 className="pl-10 pr-10"
               />
               {searchInput && (

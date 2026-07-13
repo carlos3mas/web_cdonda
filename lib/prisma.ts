@@ -48,6 +48,17 @@ function isConnectionError(error: unknown): boolean {
   )
 }
 
+export function isDbConnectionError(error: unknown): boolean {
+  return isConnectionError(error)
+}
+
+function getPrismaClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient()
+  }
+  return globalForPrisma.prisma
+}
+
 export async function reconnectPrisma(): Promise<void> {
   if (globalForPrisma.prisma) {
     try {
@@ -60,25 +71,18 @@ export async function reconnectPrisma(): Promise<void> {
 }
 
 /** Reintenta una operación tras reconectar si Turso corta la conexión. */
-export async function withDbRetry<T>(operation: () => Promise<T>): Promise<T> {
+export async function withDbRetry<T>(operation: (client: PrismaClient) => Promise<T>): Promise<T> {
   try {
-    return await operation()
+    return await operation(getPrismaClient())
   } catch (error) {
     if (!isConnectionError(error)) throw error
     console.warn('[prisma] Conexión perdida, reconectando...')
     await reconnectPrisma()
-    return await operation()
+    return await operation(getPrismaClient())
   }
 }
 
-function getPrismaClient(): PrismaClient {
-  if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = createPrismaClient()
-  }
-  return globalForPrisma.prisma
-}
-
-/** Cliente singleton; el proxy delega siempre al cliente actual (permite reconectar). */
+/** Cliente singleton; siempre apunta al cliente activo tras reconexión. */
 export const prisma = new Proxy({} as PrismaClient, {
   get(_target, prop) {
     const client = getPrismaClient()

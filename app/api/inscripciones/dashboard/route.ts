@@ -52,8 +52,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data, { headers })
   } catch (error) {
     console.error('Error al cargar dashboard de inscripciones:', error)
+    const message = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
-      { error: 'Error al cargar inscripciones' },
+      { error: 'Error al cargar inscripciones', detail: message.slice(0, 200) },
       { status: 500 }
     )
   }

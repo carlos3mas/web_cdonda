@@ -2,9 +2,11 @@
 
 import Script from 'next/script'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useCookieConsent } from '@/lib/hooks/useCookieConsent'
 
 export function GoogleAnalytics() {
+  const pathname = usePathname()
   const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
   const { hasConsent, isLoading } = useCookieConsent()
   const [shouldLoad, setShouldLoad] = useState(false)
@@ -15,6 +17,11 @@ export function GoogleAnalytics() {
       setShouldLoad(true)
     }
   }, [hasConsent, isLoading])
+
+  // No cargar en el panel de administración
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
 
   // Solo cargar en producción, si existe el ID y hay consentimiento
   if (!GA_MEASUREMENT_ID || process.env.NODE_ENV !== 'production' || !shouldLoad) {

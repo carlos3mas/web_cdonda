@@ -32,7 +32,11 @@ export default function AdminLoginPage() {
       })
 
       if (result?.error) {
-        setError('Credenciales inválidas. Comprueba email y contraseña.')
+        setError(
+          result.error.includes('base de datos')
+            ? result.error
+            : 'Credenciales inválidas. Comprueba email y contraseña.'
+        )
       } else if (result?.ok) {
         // Navegación completa para que el middleware lea la cookie de sesión
         window.location.assign('/admin/dashboard')

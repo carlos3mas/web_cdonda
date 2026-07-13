@@ -2,9 +2,15 @@
 
 import Script from 'next/script'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useCookieConsent } from '@/lib/hooks/useCookieConsent'
 
+function isAdminPath(pathname: string | null) {
+  return pathname?.startsWith('/admin') ?? false
+}
+
 export function GoogleTagManager() {
+  const pathname = usePathname()
   const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID
   const { hasConsent, isLoading } = useCookieConsent()
   const [shouldLoad, setShouldLoad] = useState(false)
@@ -15,6 +21,10 @@ export function GoogleTagManager() {
       setShouldLoad(true)
     }
   }, [hasConsent, isLoading])
+
+  if (isAdminPath(pathname)) {
+    return null
+  }
 
   // Solo cargar en producción, si existe el ID y hay consentimiento
   if (!GTM_ID || process.env.NODE_ENV !== 'production' || !shouldLoad) {
@@ -41,6 +51,7 @@ export function GoogleTagManager() {
 }
 
 export function GoogleTagManagerNoScript() {
+  const pathname = usePathname()
   const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID
   const { hasConsent, isLoading } = useCookieConsent()
   const [shouldLoad, setShouldLoad] = useState(false)
@@ -51,6 +62,10 @@ export function GoogleTagManagerNoScript() {
       setShouldLoad(true)
     }
   }, [hasConsent, isLoading])
+
+  if (isAdminPath(pathname)) {
+    return null
+  }
 
   if (!GTM_ID || process.env.NODE_ENV !== 'production' || !shouldLoad) {
     return null

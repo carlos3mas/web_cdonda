@@ -1,7 +1,7 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { prisma, withDbRetry } from '@/lib/prisma'
+import { withDbRetry, isDbConnectionError } from '@/lib/prisma'
 
 const useSecureCookies =
   process.env.NEXTAUTH_URL?.startsWith('https://') ?? process.env.NODE_ENV === 'production'
@@ -22,8 +22,8 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email.trim().toLowerCase()
 
         try {
-          const admin = await withDbRetry(() =>
-            prisma.admin.findUnique({
+          const admin = await withDbRetry((db) =>
+            db.admin.findUnique({
               where: { email },
             })
           )
@@ -45,6 +45,9 @@ export const authOptions: NextAuthOptions = {
           }
         } catch (error) {
           console.error('[auth] Error al verificar credenciales:', error)
+          if (isDbConnectionError(error)) {
+            throw new Error('No se pudo conectar con la base de datos. Inténtalo de nuevo.')
+          }
           return null
         }
       },

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma, withDbRetry } from '@/lib/prisma'
+import { withDbRetry } from '@/lib/prisma'
 import { cuotaUploadRateLimit } from '@/lib/rate-limit'
 import { validateFile } from '@/lib/file-validation'
 import { compressFile } from '@/lib/file-compression'
@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const rows = await withDbRetry(() =>
-      prisma.inscripcion.findMany({
+    const rows = await withDbRetry((db) =>
+      db.inscripcion.findMany({
         where: {
           tipoInscripcion: 'anual',
           OR: [
@@ -99,8 +99,8 @@ export async function POST(request: NextRequest) {
       console.warn('No se pudo comprimir el justificante, se guarda el original:', compressError)
     }
 
-    const existing = await withDbRetry(() =>
-      prisma.inscripcion.findUnique({
+    const existing = await withDbRetry((db) =>
+      db.inscripcion.findUnique({
         where: { id: inscripcionId },
         select: {
           id: true,
@@ -129,8 +129,8 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      await withDbRetry(() =>
-        prisma.inscripcion.update({
+      await withDbRetry((db) =>
+        db.inscripcion.update({
           where: { id: inscripcionId },
           data: {
             justificantePago: buffer.toString('base64'),
@@ -159,8 +159,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await withDbRetry(() =>
-      prisma.inscripcion.update({
+    await withDbRetry((db) =>
+      db.inscripcion.update({
         where: { id: inscripcionId },
         data: {
           justificantePagoCuota2: buffer.toString('base64'),

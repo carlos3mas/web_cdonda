@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const estado = searchParams.get('estado')
     const busqueda = searchParams.get('busqueda')
     const sexo = searchParams.get('sexo')
+    const ordenNacimiento = searchParams.get('ordenNacimiento')
     const idsParam = searchParams.get('ids')
     const ids = idsParam
       ? idsParam.split(',').map((id) => id.trim()).filter(Boolean)
@@ -27,6 +28,10 @@ export async function GET(request: NextRequest) {
       estado: estado === 'pagados' || estado === 'pendientes' ? estado : null,
       busqueda,
       sexo: sexo === 'M' || sexo === 'F' ? sexo : null,
+      ordenNacimiento:
+        ordenNacimiento === 'mayor' || ordenNacimiento === 'menor'
+          ? ordenNacimiento
+          : null,
       ids,
     })
 

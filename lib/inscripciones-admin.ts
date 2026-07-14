@@ -195,7 +195,7 @@ export async function getInscripcionesForAdminList(
 
     const rows = await db.inscripcion.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: buildAdminListOrderBy(filters),
       take: limit,
       skip: offset,
       select: ADMIN_LIST_SELECT,
@@ -210,6 +210,7 @@ export type AdminListFilters = {
   estado?: 'pagados' | 'pendientes' | null
   busqueda?: string | null
   sexo?: 'M' | 'F' | null
+  ordenNacimiento?: 'inscripcion' | 'mayor' | 'menor' | null
   ids?: string[] | null
 }
 
@@ -317,13 +318,33 @@ export function buildAdminListWhere(filters: AdminListFilters): Prisma.Inscripci
   return and.length > 0 ? { AND: and } : {}
 }
 
+export function buildAdminListOrderBy(
+  filters: AdminListFilters
+): Prisma.InscripcionOrderByWithRelationInput[] {
+  if (filters.ordenNacimiento === 'mayor') {
+    return [
+      { fechaNacimiento: 'asc' },
+      { apellidos: 'asc' },
+      { nombreJugador: 'asc' },
+    ]
+  }
+  if (filters.ordenNacimiento === 'menor') {
+    return [
+      { fechaNacimiento: 'desc' },
+      { apellidos: 'asc' },
+      { nombreJugador: 'asc' },
+    ]
+  }
+  return [{ createdAt: 'desc' }]
+}
+
 export async function getInscripcionesForListaPDF(
   filters: AdminListFilters
 ): Promise<Inscripcion[]> {
   return withDbRetry(async (db) => {
     const rows = await db.inscripcion.findMany({
       where: buildAdminListWhere(filters),
-      orderBy: { createdAt: 'desc' },
+      orderBy: buildAdminListOrderBy(filters),
       select: LISTA_PDF_SELECT,
     })
 

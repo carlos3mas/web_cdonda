@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
     const estado = searchParams.get('estado')
     const busqueda = searchParams.get('busqueda')
     const sexo = searchParams.get('sexo')
+    const ordenNacimiento = searchParams.get('ordenNacimiento')
     const limit = limitParam ? Math.max(1, Math.min(100, Number(limitParam))) : 50
     const offset = offsetParam ? Math.max(0, Number(offsetParam)) : 0
 
@@ -40,6 +41,10 @@ export async function GET(request: NextRequest) {
         estado: estado === 'pagados' || estado === 'pendientes' ? estado : null,
         busqueda,
         sexo: sexo === 'M' || sexo === 'F' ? sexo : null,
+        ordenNacimiento:
+          ordenNacimiento === 'mayor' || ordenNacimiento === 'menor'
+            ? ordenNacimiento
+            : null,
       },
       limit,
       offset

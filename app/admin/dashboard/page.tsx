@@ -26,6 +26,7 @@ const DEFAULT_TABLE_FILTERS: AdminTableFilters = {
   busqueda: '',
   estado: 'todos',
   sexo: 'todos',
+  ordenNacimiento: 'inscripcion',
 }
 
 type TabPagination = {
@@ -43,7 +44,7 @@ type TabPayload = {
 type TabCacheEntry = TabPayload & { cacheKey: string }
 
 function cacheKeyFor(tipo: string, offset: number, filters: AdminTableFilters) {
-  return `${tipo}:${offset}:${filters.estado}:${filters.sexo}:${filters.busqueda}`
+  return `${tipo}:${offset}:${filters.estado}:${filters.sexo}:${filters.busqueda}:${filters.ordenNacimiento}`
 }
 
 function buildDashboardQuery(
@@ -59,6 +60,9 @@ function buildDashboardQuery(
   if (filters.estado !== 'todos') params.set('estado', filters.estado)
   if (filters.busqueda.trim()) params.set('busqueda', filters.busqueda.trim())
   if (tipo === 'anual' && filters.sexo !== 'todos') params.set('sexo', filters.sexo)
+  if (filters.ordenNacimiento !== 'inscripcion') {
+    params.set('ordenNacimiento', filters.ordenNacimiento)
+  }
   return params.toString()
 }
 

@@ -16,6 +16,7 @@ export type AdminTableFilters = {
   busqueda: string
   estado: 'todos' | 'pagados' | 'pendientes'
   sexo: 'todos' | 'M' | 'F'
+  ordenNacimiento: 'inscripcion' | 'mayor' | 'menor'
 }
 
 interface InscripcionesTableProps {
@@ -66,6 +67,7 @@ export function InscripcionesTable({
     () =>
       filters.busqueda.trim() !== '' ||
       filters.estado !== 'todos' ||
+      filters.ordenNacimiento !== 'inscripcion' ||
       (tipoInscripcion === 'anual' && filters.sexo !== 'todos'),
     [filters, tipoInscripcion]
   )
@@ -218,6 +220,10 @@ export function InscripcionesTable({
         params.append('sexo', filters.sexo)
       }
 
+      if (filters.ordenNacimiento !== 'inscripcion') {
+        params.append('ordenNacimiento', filters.ordenNacimiento)
+      }
+
       const controller = new AbortController()
       const timeoutId = window.setTimeout(() => controller.abort(), 120_000)
 
@@ -366,6 +372,24 @@ export function InscripcionesTable({
                   </Select>
                 </div>
               )}
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <Select
+                  value={filters.ordenNacimiento}
+                  onValueChange={(v) =>
+                    updateFilters({ ordenNacimiento: v as AdminTableFilters['ordenNacimiento'] })
+                  }
+                >
+                  <SelectTrigger className="w-[200px] sm:w-[240px]">
+                    <SelectValue placeholder="Ordenar por edad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inscripcion">Inscripción reciente</SelectItem>
+                    <SelectItem value="mayor">Edad: mayor a menor</SelectItem>
+                    <SelectItem value="menor">Edad: menor a mayor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardHeader>

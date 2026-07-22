@@ -195,19 +195,78 @@ export function InscripcionDialog({ inscripcion, open, onOpenChange, isLoading }
         <div className="px-5 sm:px-6 py-6 space-y-4 bg-slate-50/40">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <SectionCard title="Jugador" icon={<UserRound className="h-4 w-4" />}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field icon={<User className="h-4 w-4" />} label="Nombre" value={inscripcion.nombreJugador} />
-                <Field icon={<User className="h-4 w-4" />} label="Apellidos" value={inscripcion.apellidos} />
-              </div>
+              {isAnual ? (
+                <div className="flex flex-col sm:flex-row gap-4 items-start">
+                  <div className="w-[108px] h-[144px] rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm flex-shrink-0 flex items-center justify-center">
+                    {inscripcion.tieneFotoFicha ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={`/api/inscripciones/${inscripcion.id}/foto-ficha`}
+                        alt={`Foto de ficha de ${inscripcion.nombreJugador}`}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-center px-2 text-slate-400">
+                        <UserRound className="h-8 w-8 mx-auto mb-1" />
+                        <p className="text-[10px] leading-tight">Sin foto</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Field icon={<User className="h-4 w-4" />} label="Nombre" value={inscripcion.nombreJugador} />
+                      <Field icon={<User className="h-4 w-4" />} label="Apellidos" value={inscripcion.apellidos} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Field icon={<Calendar className="h-4 w-4" />} label="Fecha de nacimiento" value={formatDate(inscripcion.fechaNacimiento)} />
+                      <Field
+                        icon={<CreditCard className="h-4 w-4" />}
+                        label="DNI"
+                        value={inscripcion.dniJugador || '—'}
+                      />
+                    </div>
+                    {inscripcion.tieneFotoFicha ? (
+                      <div className="flex flex-wrap gap-2">
+                        <a
+                          href={`/api/inscripciones/${inscripcion.id}/foto-ficha`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button size="sm" variant="outline">
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Ver foto
+                          </Button>
+                        </a>
+                        <a
+                          href={`/api/inscripciones/${inscripcion.id}/foto-ficha`}
+                          download={inscripcion.nombreArchivoFotoFicha || 'foto-ficha.jpg'}
+                        >
+                          <Button size="sm" variant="outline">
+                            <Download className="h-4 w-4 mr-2" />
+                            Descargar
+                          </Button>
+                        </a>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field icon={<User className="h-4 w-4" />} label="Nombre" value={inscripcion.nombreJugador} />
+                    <Field icon={<User className="h-4 w-4" />} label="Apellidos" value={inscripcion.apellidos} />
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field icon={<Calendar className="h-4 w-4" />} label="Fecha de nacimiento" value={formatDate(inscripcion.fechaNacimiento)} />
-                <Field
-                  icon={<CreditCard className="h-4 w-4" />}
-                  label="DNI"
-                  value={isAnual ? (inscripcion.dniJugador || '—') : (inscripcion.dni || '—')}
-                />
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field icon={<Calendar className="h-4 w-4" />} label="Fecha de nacimiento" value={formatDate(inscripcion.fechaNacimiento)} />
+                    <Field
+                      icon={<CreditCard className="h-4 w-4" />}
+                      label="DNI"
+                      value={inscripcion.dni || '—'}
+                    />
+                  </div>
+                </>
+              )}
             </SectionCard>
 
             <SectionCard title="Tutor/a" icon={<User className="h-4 w-4" />}>

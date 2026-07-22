@@ -15,6 +15,7 @@ export async function GET() {
     padresSeparadosColumn: false,
     cuota1PagadaColumn: false,
     nombreArchivoJustificanteColumn: false,
+    fotoFichaColumn: false,
     databaseUrl: Boolean(databaseUrl),
     databaseUrlFormat: isTurso ? 'turso' : databaseUrl ? 'other' : 'missing',
     tursoToken: Boolean(process.env.TURSO_AUTH_TOKEN),
@@ -44,11 +45,13 @@ export async function GET() {
     checks.nombreArchivoJustificanteColumn = columns.some(
       (c) => c.name === 'nombreArchivoJustificante'
     )
+    checks.fotoFichaColumn = columns.some((c) => c.name === 'fotoFicha')
 
     const missingColumns: string[] = []
     if (!checks.padresSeparadosColumn) missingColumns.push('padresSeparados')
     if (!checks.cuota1PagadaColumn) missingColumns.push('cuota1Pagada')
     if (!checks.nombreArchivoJustificanteColumn) missingColumns.push('nombreArchivoJustificante')
+    if (!checks.fotoFichaColumn) missingColumns.push('fotoFicha')
 
     if (missingColumns.length > 0) {
       checks.ok = false

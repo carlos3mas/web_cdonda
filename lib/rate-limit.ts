@@ -99,6 +99,15 @@ export const cuotaUploadRateLimit = rateLimit({
 })
 
 /**
+ * Rate limiter para foto de ficha (pestaña pública)
+ */
+export const fotoFichaUploadRateLimit = rateLimit({
+  name: 'foto-ficha-upload',
+  interval: 60 * 1000, // 1 minuto
+  maxRequests: 15 // máximo 15 subidas por minuto
+})
+
+/**
  * Rate limiter general para APIs
  */
 export const apiRateLimit = rateLimit({

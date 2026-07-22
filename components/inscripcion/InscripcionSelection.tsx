@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, Users, GraduationCap, ArrowRight, Check } from 'lucide-react'
+import { Calendar, Users, GraduationCap, ArrowRight, Check, Camera, FileUp } from 'lucide-react'
 import { useI18n } from '@/lib/i18n/context'
 
 export function InscripcionSelection() {
@@ -167,6 +167,55 @@ export function InscripcionSelection() {
           )
         })}
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.35 }}
+        className="max-w-4xl mx-auto mb-12"
+      >
+        <Card className="border-violet-200 bg-violet-50/40">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-xl text-violet-800">¿Ya te has inscrito?</CardTitle>
+            <CardDescription className="text-base text-violet-900/80">
+              Si ya has formalizado la inscripción anual, puedes completar estos trámites sin volver a
+              rellenar el formulario.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Link href="/inscripcion-anual" className="w-full">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-auto py-4 justify-start border-blue-200 bg-white hover:bg-blue-50"
+              >
+                <FileUp className="h-5 w-5 mr-3 text-blue-600 flex-shrink-0" />
+                <span className="text-left">
+                  <span className="block font-semibold text-gray-900">Justificantes de pago</span>
+                  <span className="block text-xs text-gray-500 font-normal">
+                    Sube o actualiza el justificante de cuota
+                  </span>
+                </span>
+              </Button>
+            </Link>
+            <Link href="/foto-ficha" className="w-full">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-auto py-4 justify-start border-violet-200 bg-white hover:bg-violet-50"
+              >
+                <Camera className="h-5 w-5 mr-3 text-violet-700 flex-shrink-0" />
+                <span className="text-left">
+                  <span className="block font-semibold text-gray-900">Foto de ficha</span>
+                  <span className="block text-xs text-gray-500 font-normal">
+                    Añade o cambia la foto tipo carnet
+                  </span>
+                </span>
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

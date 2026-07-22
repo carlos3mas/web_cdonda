@@ -85,6 +85,7 @@ function shortenPrismaErrorMessage(message: string): string {
     .replace(/documentoDerechosImagen:\s*"[^"]{100,}"/g, 'documentoDerechosImagen: "<truncado>"')
     .replace(/dniFrontalEncriptado:\s*"[^"]{100,}"/g, 'dniFrontalEncriptado: "<truncado>"')
     .replace(/dniReversoEncriptado:\s*"[^"]{100,}"/g, 'dniReversoEncriptado: "<truncado>"')
+    .replace(/fotoFicha:\s*"[^"]{100,}"/g, 'fotoFicha: "<truncado>"')
     .slice(0, 1500)
 }
 
@@ -197,6 +198,7 @@ export async function POST(request: NextRequest) {
       const dniJugador = (formData.get('dniJugador') as string) || ''
       const dniFrontalFile = formData.get('dniFrontal') as File | null
       const dniReversoFile = formData.get('dniReverso') as File | null
+      const fotoFichaFile = formData.get('fotoFicha') as File | null
 
       const anualPayload = {
         nombreJugador, apellidos, dniJugador, fechaNacimiento, sexo, email,
@@ -352,6 +354,41 @@ export async function POST(request: NextRequest) {
         console.log(`🔐 DNI reverso cifrado (${getFileInfo(dniBuffer, 'dni').sizeFormatted})`)
       }
 
+      let fotoFichaBase64: string | null = null
+      let fotoFichaMimeType: string | null = null
+      let nombreArchivoFotoFicha: string | null = null
+
+      if (fotoFichaFile && fotoFichaFile.size > 0) {
+        if (!fotoFichaFile.type.startsWith('image/')) {
+          return NextResponse.json(
+            { error: 'La foto de ficha debe ser una imagen (JPG, PNG o WEBP).' },
+            { status: 400 }
+          )
+        }
+        const fotoValidation = await validateFile(fotoFichaFile, 8)
+        if (!fotoValidation.valid) {
+          return NextResponse.json(
+            { error: `Foto de ficha: ${fotoValidation.error || 'archivo no válido'}` },
+            { status: 400 }
+          )
+        }
+        const fotoBytes = await fotoFichaFile.arrayBuffer()
+        let fotoBuffer = Buffer.from(fotoBytes)
+        try {
+          const compressed = await compressFile(
+            fotoBuffer,
+            fotoValidation.type || fotoFichaFile.type,
+            700
+          )
+          fotoBuffer = Buffer.from(compressed.buffer)
+          fotoFichaMimeType = compressed.mimeType
+        } catch {
+          fotoFichaMimeType = fotoValidation.type || fotoFichaFile.type
+        }
+        fotoFichaBase64 = fotoBuffer.toString('base64')
+        nombreArchivoFotoFicha = fotoFichaFile.name || 'foto-ficha.jpg'
+      }
+
       const baseData = {
         tipoInscripcion: 'anual' as const,
         nombreJugador,
@@ -393,6 +430,9 @@ export async function POST(request: NextRequest) {
         documentoDerechosImagen,
         documentoDerechosImagenMimeType,
         nombreArchivoDerechosImagen,
+        fotoFicha: fotoFichaBase64,
+        fotoFichaMimeType,
+        nombreArchivoFotoFicha,
       }
 
       const createData = {

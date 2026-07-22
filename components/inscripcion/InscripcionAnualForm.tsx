@@ -1,16 +1,17 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, CheckCircle, ChevronLeft, Download, Loader2 } from 'lucide-react'
+import { AlertCircle, Camera, CheckCircle, ChevronLeft, Download, Loader2 } from 'lucide-react'
 import SignaturePad from 'signature_pad'
 import { InscripcionAnualStep1 } from './InscripcionAnualStep1'
 import { InscripcionAnualStep2, type AnualFormData } from './InscripcionAnualStep2'
 import { InscripcionAnualCuotas } from './InscripcionAnualCuotas'
 import { type TipoAnualId, getTipoAnual } from '@/lib/anualConfig'
-import { compressImageFileForUpload } from '@/lib/client-image-compress'
+import { compressImageFileForUpload, prepareCarnetPhotoForUpload } from '@/lib/client-image-compress'
 import {
   getInscripcionAnualSchema,
   issuesToFieldErrors,
@@ -57,6 +58,8 @@ export function InscripcionAnualForm() {
   const [dniFrontal, setDniFrontal] = useState<File | null>(null)
   const [dniReverso, setDniReverso] = useState<File | null>(null)
   const [justificante, setJustificante] = useState<File | null>(null)
+  const [fotoFicha, setFotoFicha] = useState<File | null>(null)
+  const [fotoFichaPreviewUrl, setFotoFichaPreviewUrl] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
@@ -72,6 +75,36 @@ export function InscripcionAnualForm() {
       delete next[field as string]
       return next
     })
+  }
+
+  const handleFotoFicha = async (file: File | null) => {
+    setFieldErrors((prev) => {
+      if (!prev.fotoFicha) return prev
+      const next = { ...prev }
+      delete next.fotoFicha
+      return next
+    })
+    if (fotoFichaPreviewUrl) {
+      URL.revokeObjectURL(fotoFichaPreviewUrl)
+      setFotoFichaPreviewUrl(null)
+    }
+    if (!file) {
+      setFotoFicha(null)
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      setFieldErrors((prev) => ({ ...prev, fotoFicha: 'La foto de ficha debe ser una imagen.' }))
+      setFotoFicha(null)
+      return
+    }
+    try {
+      const prepared = await prepareCarnetPhotoForUpload(file)
+      setFotoFicha(prepared)
+      setFotoFichaPreviewUrl(URL.createObjectURL(prepared))
+    } catch {
+      setFotoFicha(file)
+      setFotoFichaPreviewUrl(URL.createObjectURL(file))
+    }
   }
 
   const handleContinuar = () => {
@@ -128,7 +161,7 @@ export function InscripcionAnualForm() {
     setSubmitStatus('submitting')
 
     try {
-      const [dniFrontalOpt, dniReversoOpt, justificanteOpt] = await Promise.all([
+      const [dniFrontalOpt, dniReversoOpt, justificanteOpt, fotoFichaOpt] = await Promise.all([
         dniFrontal ? compressImageFileForUpload(dniFrontal) : Promise.resolve(null),
         dniReverso ? compressImageFileForUpload(dniReverso) : Promise.resolve(null),
         justificante
@@ -136,6 +169,7 @@ export function InscripcionAnualForm() {
             ? compressImageFileForUpload(justificante)
             : Promise.resolve(justificante)
           : Promise.resolve(null),
+        fotoFicha ? Promise.resolve(fotoFicha) : Promise.resolve(null),
       ])
 
       const fd = new FormData()
@@ -153,6 +187,7 @@ export function InscripcionAnualForm() {
       if (dniFrontalOpt) fd.append('dniFrontal', dniFrontalOpt)
       if (dniReversoOpt) fd.append('dniReverso', dniReversoOpt)
       if (justificanteOpt) fd.append('justificantePago', justificanteOpt)
+      if (fotoFichaOpt) fd.append('fotoFicha', fotoFichaOpt)
 
       const firmaBlob = await canvasToBlob()
       if (firmaBlob) fd.append('firmaTutor', firmaBlob, 'firma.png')
@@ -234,6 +269,15 @@ export function InscripcionAnualForm() {
                 «Añadir o actualizar justificantes».
               </p>
             )}
+            {!fotoFicha && (
+              <p className="text-sm text-violet-800 mt-4 bg-violet-50 border border-violet-200 rounded-lg px-4 py-3">
+                Si aún no has subido la foto de ficha, puedes hacerlo en cualquier momento en{' '}
+                <a href="/foto-ficha" className="font-semibold underline underline-offset-2">
+                  cdonda.es/foto-ficha
+                </a>
+                .
+              </p>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -258,6 +302,12 @@ export function InscripcionAnualForm() {
           onClick={() => setMode('cuotas')}
         >
           Añadir o actualizar justificantes
+        </Button>
+        <Button asChild variant="outline" className="border-violet-300 text-violet-800 hover:bg-violet-50">
+          <Link href="/foto-ficha">
+            <Camera className="h-4 w-4 mr-2" />
+            Foto de ficha (ya inscritos)
+          </Link>
         </Button>
       </div>
 
@@ -319,9 +369,12 @@ export function InscripcionAnualForm() {
                     dniFrontal={dniFrontal}
                     dniReverso={dniReverso}
                     justificante={justificante}
+                    fotoFicha={fotoFicha}
+                    fotoFichaPreviewUrl={fotoFichaPreviewUrl}
                     onDniFrontal={setDniFrontal}
                     onDniReverso={setDniReverso}
                     onJustificante={setJustificante}
+                    onFotoFicha={(file) => void handleFotoFicha(file)}
                     signaturePadRef={signaturePadRef}
                     signatureCanvasRef={signatureCanvasRef}
                     fieldErrors={fieldErrors}

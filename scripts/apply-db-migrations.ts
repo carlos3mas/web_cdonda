@@ -148,6 +148,18 @@ const MIGRATIONS: { name: string; sql: string }[] = [
     name: '20260611120000_add_padres_separados',
     sql: 'ALTER TABLE inscripciones ADD COLUMN padresSeparados INTEGER NOT NULL DEFAULT 0;',
   },
+  {
+    name: '20260722160000_add_fotoFicha',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN fotoFicha TEXT;',
+  },
+  {
+    name: '20260722160000_add_fotoFichaMimeType',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN fotoFichaMimeType TEXT;',
+  },
+  {
+    name: '20260722160000_add_nombreArchivoFotoFicha',
+    sql: 'ALTER TABLE inscripciones ADD COLUMN nombreArchivoFotoFicha TEXT;',
+  },
 ]
 
 const EXPECTED_COLUMNS = [
@@ -204,6 +216,9 @@ const EXPECTED_COLUMNS = [
   'documentoDerechosImagen',
   'documentoDerechosImagenMimeType',
   'nombreArchivoDerechosImagen',
+  'fotoFicha',
+  'fotoFichaMimeType',
+  'nombreArchivoFotoFicha',
   'createdAt',
   'updatedAt',
 ]

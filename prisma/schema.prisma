@@ -65,6 +65,9 @@ model Inscripcion {
   documentoDerechosImagen          String?  // PDF cláusula aceptada (base64)
   documentoDerechosImagenMimeType  String?
   nombreArchivoDerechosImagen      String?
+  fotoFicha                 String?  // Foto tipo carnet para ficha federativa (base64)
+  fotoFichaMimeType         String?
+  nombreArchivoFotoFicha    String?
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
 

@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AlertCircle, Upload, FileText, CheckCircle, ShieldCheck, X, ExternalLink } from 'lucide-react'
+import { AlertCircle, Upload, FileText, CheckCircle, ShieldCheck, X, ExternalLink, Camera } from 'lucide-react'
 import { CLAUSULA_DERECHOS_IMAGEN } from '@/lib/anualDocuments.constants'
 import {
   SEXOS_ANUAL,
@@ -60,9 +60,12 @@ interface InscripcionAnualStep2Props {
   dniFrontal: File | null
   dniReverso: File | null
   justificante: File | null
+  fotoFicha: File | null
+  fotoFichaPreviewUrl?: string | null
   onDniFrontal: (file: File | null) => void
   onDniReverso: (file: File | null) => void
   onJustificante: (file: File | null) => void
+  onFotoFicha: (file: File | null) => void
   signaturePadRef: React.MutableRefObject<SignaturePad | null>
   signatureCanvasRef: React.MutableRefObject<HTMLCanvasElement | null>
   fieldErrors: Record<string, string>
@@ -203,9 +206,12 @@ export function InscripcionAnualStep2({
   dniFrontal,
   dniReverso,
   justificante,
+  fotoFicha,
+  fotoFichaPreviewUrl,
   onDniFrontal,
   onDniReverso,
   onJustificante,
+  onFotoFicha,
   signaturePadRef,
   signatureCanvasRef,
   fieldErrors,
@@ -350,6 +356,86 @@ export function InscripcionAnualStep2({
         </div>
       </div>
 
+      {/* B2 – Foto de ficha */}
+      <div className="space-y-4" id="fotoFicha">
+        <SectionTitle>Foto de ficha</SectionTitle>
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 flex gap-3 items-start">
+          <AlertCircle className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" aria-hidden />
+          <div className="space-y-1 text-sm text-amber-900">
+            <p className="font-semibold">Foto tipo carnet con fondo blanco</p>
+            <p className="leading-relaxed">
+              Adjunta una fotografía reciente, vertical, con el rostro centrado y fondo blanco liso.
+              Si no la tienes ahora, podrás subirla más tarde en la página de{' '}
+              <a href="/foto-ficha" className="font-semibold underline underline-offset-2">
+                foto de ficha
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
+          <div className="space-y-1.5">
+            <Label htmlFor="fotoFichaInput" className="text-sm">
+              Foto tipo carnet <span className="text-gray-400 font-normal">(opcional)</span>
+            </Label>
+            <label
+              htmlFor="fotoFichaInput"
+              className={cn(
+                'flex items-center gap-3 p-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors',
+                fotoFicha
+                  ? 'border-green-400 bg-green-50'
+                  : 'border-gray-300 hover:border-violet-400 hover:bg-violet-50'
+              )}
+            >
+              {fotoFicha ? (
+                <>
+                  <Camera className="h-5 w-5 text-green-600 flex-shrink-0" />
+                  <span className="text-sm text-green-700 font-medium truncate flex-1">{fotoFicha.name}</span>
+                  <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                </>
+              ) : (
+                <>
+                  <Upload className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                  <span className="text-sm text-gray-600">Seleccionar imagen (JPG, PNG, WEBP)</span>
+                </>
+              )}
+            </label>
+            <input
+              id="fotoFichaInput"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+              className="hidden"
+              onChange={(e) => onFotoFicha(e.target.files?.[0] ?? null)}
+            />
+            {fotoFicha ? (
+              <button
+                type="button"
+                onClick={() => onFotoFicha(null)}
+                className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1"
+              >
+                <X className="h-3 w-3" /> Eliminar
+              </button>
+            ) : null}
+            <FieldError message={err('fotoFicha')} />
+          </div>
+          <div className="w-[108px] h-[144px] rounded-lg border-2 border-dashed border-violet-300 bg-white overflow-hidden flex items-center justify-center shadow-sm mx-auto sm:mx-0">
+            {fotoFichaPreviewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={fotoFichaPreviewUrl}
+                alt="Vista previa foto carnet"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="text-center px-2 text-violet-400">
+                <Camera className="h-7 w-7 mx-auto mb-1" />
+                <p className="text-[10px] leading-tight">Vista previa</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* C – Datos del tutor */}
       <div className="space-y-4">
         <SectionTitle>Tutor/a responsable</SectionTitle>
@@ -420,6 +506,19 @@ export function InscripcionAnualStep2({
         <p className="text-sm text-gray-600">
           Indica las tallas para la equipación incluida en la inscripción anual.
         </p>
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 flex gap-3 items-start">
+          <AlertCircle className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" aria-hidden />
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-amber-900">
+              Importante — recogida de equipación en Lizondo
+            </p>
+            <p className="text-sm text-amber-900 leading-relaxed">
+              Para retirar la ropa en Lizondo será imprescindible presentar el justificante de pago
+              de la equipación en formato impreso. Sin dicho documento no se podrá hacer entrega
+              del material.
+            </p>
+          </div>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <TallaSelect
             id="tallaCamiseta"

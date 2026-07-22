@@ -39,3 +39,20 @@ export function getCuotaUploadErrorMessage(error: unknown): { status: number; me
   }
   return { status: 500, message: 'Error al guardar justificante de cuota' }
 }
+
+export function getFotoFichaUploadErrorMessage(error: unknown): { status: number; message: string } {
+  if (isPrismaSchemaMismatch(error)) {
+    return {
+      status: 503,
+      message:
+        'La base de datos necesita una actualización. Contacta con el club o inténtalo más tarde.',
+    }
+  }
+  if (isConnectionError(error)) {
+    return {
+      status: 503,
+      message: 'Error de conexión al guardar. Espera unos segundos e inténtalo de nuevo.',
+    }
+  }
+  return { status: 500, message: 'Error al guardar la foto de ficha' }
+}

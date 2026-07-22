@@ -44,9 +44,11 @@ export interface Inscripcion {
   categoria?: string | null;
   modalidadPago?: string | null;
   descuentoHermanos?: string | null;
+  nombreArchivoFotoFicha?: string | null;
   // Los campos cifrados del DNI nunca se exponen al cliente
   tieneDniFrontal?: boolean;
   tieneDniReverso?: boolean;
+  tieneFotoFicha?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

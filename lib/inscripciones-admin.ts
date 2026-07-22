@@ -23,6 +23,7 @@ export const ADMIN_LIST_SELECT = {
   cuota3Pagada: true,
   modalidadPago: true,
   nombreArchivoJustificante: true,
+  nombreArchivoFotoFicha: true,
   createdAt: true,
 } satisfies Prisma.InscripcionSelect
 
@@ -70,6 +71,8 @@ export const ADMIN_DETAIL_SELECT = {
   descuentoHermanos: true,
   dniFrontalMimeType: true,
   dniReversoMimeType: true,
+  nombreArchivoFotoFicha: true,
+  fotoFichaMimeType: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.InscripcionSelect
@@ -429,11 +432,12 @@ export async function getInscripcionDetail(id: string): Promise<Inscripcion | nu
     if (!row) return null
 
     const [flags] = await db.$queryRaw<
-      { tieneDniFrontal: number; tieneDniReverso: number }[]
+      { tieneDniFrontal: number; tieneDniReverso: number; tieneFotoFicha: number }[]
     >`
       SELECT
         (dniFrontalEncriptado IS NOT NULL) AS tieneDniFrontal,
-        (dniReversoEncriptado IS NOT NULL) AS tieneDniReverso
+        (dniReversoEncriptado IS NOT NULL) AS tieneDniReverso,
+        (fotoFicha IS NOT NULL) AS tieneFotoFicha
       FROM inscripciones
       WHERE id = ${id}
     `
@@ -442,6 +446,7 @@ export async function getInscripcionDetail(id: string): Promise<Inscripcion | nu
       ...row,
       tieneDniFrontal: Boolean(flags?.tieneDniFrontal),
       tieneDniReverso: Boolean(flags?.tieneDniReverso),
+      tieneFotoFicha: Boolean(flags?.tieneFotoFicha),
     } as Inscripcion
   })
 }
